@@ -87,9 +87,14 @@ export default function Footer() {
                 <div className="footer__bottom-inner wrap">
                     <p className="footer__copy">© 2026 Lifewood – All Rights Reserved.</p>
                     <ul className="footer__legal">
-                        {['Privacy Policy', 'Cookie Policy', 'Terms and Conditions', 'Cookie Settings'].map((t) => (
-                            <li key={t}>
-                                <Link to={`/${t.toLowerCase().replace(/ /g, '-')}`}>{t}</Link>
+                        {[
+                            { label: 'Privacy Policy',       to: '/privacy-policy' },
+                            { label: 'Cookie Policy',        to: '/cookie-policy' },
+                            { label: 'Terms and Conditions', to: '/terms-and-conditions' },
+                            { label: 'Cookie Settings',      to: '/cookie-policy' },
+                        ].map(({ label, to }) => (
+                            <li key={label}>
+                                <Link to={to}>{label}</Link>
                             </li>
                         ))}
                     </ul>

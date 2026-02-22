@@ -1,106 +1,244 @@
 /* ── INNOVATION SECTION ──────────────────────────────────── */
 
+/* Glow pulse — decorative ring behind video card */
+@keyframes glow-pulse {
+    0%, 100% { opacity: 0.35; transform: scale(1);    }
+    50%       { opacity: 0.55; transform: scale(1.04); }
+}
+
+/* Pulsing dot on the badge */
+@keyframes dot-ping {
+    0%   { transform: scale(1);   opacity: 1; }
+    70%  { transform: scale(2.2); opacity: 0; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ── Section shell ───────────────────────────────────────── */
 .innov {
     background: var(--c-ice);
     padding-block: var(--s-120);
+    overflow: hidden;
 }
 
-.innov__inner {
+/* ── Two-column grid ─────────────────────────────────────── */
+.innov-inner {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--s-80);
+    gap: clamp(var(--s-48), 6vw, var(--s-96));
     align-items: center;
 }
 
-/* Text column */
-.innov__text {
+/* ── Text column ─────────────────────────────────────────── */
+.innov-text {
     display: flex;
     flex-direction: column;
-    gap: var(--s-28);
+    gap: var(--s-24);
 }
 
-.innov__heading {
+.innov-heading {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3rem);
+    font-size: clamp(2rem, 4vw, 3.25rem);
     font-weight: var(--fw-black);
-    letter-spacing: -0.03em;
-    line-height: 1.1;
+    letter-spacing: -0.035em;
+    line-height: 1.08;
     color: var(--c-charcoal);
 }
 
-.innov__heading-em {
+.innov-heading-em {
     background: linear-gradient(135deg, var(--c-forest) 0%, #2a6048 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-.innov__body {
-    font-size: var(--t-18);
-    line-height: 1.7;
+.innov-body {
+    font-size: clamp(var(--t-16), 1.4vw, var(--t-18));
+    line-height: 1.8;
     color: var(--c-steel);
-    max-width: 480px;
+    max-width: 460px;
 }
 
-/* Video card column */
-.innov__card {
+/* ── Stat strip ──────────────────────────────────────────── */
+.innov-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--s-24);
+    padding-top: var(--s-8);
+    border-top: 1px solid var(--border-subtle);
+    margin-top: var(--s-8);
+}
+
+.innov-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.innov-stat-value {
+    font-family: var(--font-display);
+    font-size: var(--t-22);
+    font-weight: var(--fw-black);
+    letter-spacing: -0.03em;
+    color: var(--c-forest);
+    line-height: 1;
+}
+
+.innov-stat-label {
+    font-size: var(--t-12);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--c-steel);
+    white-space: nowrap;
+}
+
+.innov-stat-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border-subtle);
+    flex-shrink: 0;
+}
+
+/* ── Video card column ───────────────────────────────────── */
+.innov-card {
     position: relative;
     border-radius: var(--r-24);
-    overflow: hidden;
+    overflow: visible; /* let glow ring bleed out */
     aspect-ratio: 4 / 3;
-    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.14);
 }
 
-.innov__video {
+/* Decorative glow ring — sits behind the card */
+.innov-card-glow {
+    position: absolute;
+    inset: -24px;
+    border-radius: calc(var(--r-24) + 24px);
+    background: radial-gradient(
+        ellipse at 60% 40%,
+        rgba(19, 48, 32, 0.18) 0%,
+        rgba(245, 166, 35, 0.10) 50%,
+        transparent 75%
+    );
+    z-index: 0;
+    animation: glow-pulse 4s var(--ease-inout) infinite;
+    pointer-events: none;
+}
+
+.innov-video {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+    border-radius: var(--r-24);
+    box-shadow:
+        0 2px 4px  rgba(0, 0, 0, 0.06),
+        0 24px 64px rgba(0, 0, 0, 0.18);
 }
 
-.innov__card-overlay {
+.innov-card-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top,
-            rgba(0, 0, 0, 0.55) 0%,
-            transparent 55%);
+    z-index: 2;
+    border-radius: var(--r-24);
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.50) 0%,
+        rgba(0, 0, 0, 0.10) 40%,
+        transparent 70%
+    );
+    pointer-events: none;
 }
 
-.innov__card-badge {
+/* ── Badge ───────────────────────────────────────────────── */
+.innov-card-badge {
     position: absolute;
-    bottom: var(--s-24);
-    left: var(--s-24);
-    display: flex;
+    bottom: var(--s-20);
+    left: var(--s-20);
+    z-index: 3;
+    display: inline-flex;
     align-items: center;
     gap: var(--s-8);
+    padding: 7px 14px;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--r-full);
     font-family: var(--font-display);
     font-size: var(--t-12);
     font-weight: var(--fw-semibold);
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.85);
+    user-select: none;
 }
 
-.innov__card-badge-dot {
-    width: 4px;
-    height: 4px;
+.innov-card-badge-dot {
+    position: relative;
+    width: 7px;
+    height: 7px;
     border-radius: 50%;
     background: var(--c-saffron);
+    flex-shrink: 0;
 }
 
-/* Responsive */
+/* Ripple ring behind the dot */
+.innov-card-badge-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--c-saffron);
+    animation: dot-ping 1.8s var(--ease-out) infinite;
+}
+
+.innov-card-badge-year {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: var(--t-11);
+    letter-spacing: 0.06em;
+    padding-left: var(--s-4);
+    border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 900px) {
-    .innov__inner {
+    .innov-inner {
         grid-template-columns: 1fr;
+        gap: var(--s-48);
     }
 
-    .innov__card {
+    .innov-card {
         aspect-ratio: 16 / 9;
+    }
+
+    .innov-body {
+        max-width: 100%;
     }
 }
 
 @media (max-width: 600px) {
     .innov {
         padding-block: var(--s-80);
+    }
+
+    .innov-stats {
+        gap: var(--s-16);
+    }
+
+    .innov-stat-value {
+        font-size: var(--t-20);
+    }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .innov-card-glow {
+        animation: none !important;
+        opacity: 0.3;
+    }
+
+    .innov-card-badge-dot::after {
+        animation: none !important;
     }
 }

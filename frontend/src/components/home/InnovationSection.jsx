@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useReveal } from '../../hooks/useReveal';
+import dataStreamVideo from '../../assets/videos/futuristic-data-stream-in-motion.mp4';
 import './InnovationSection.css';
 
 export default function InnovationSection() {
@@ -8,6 +9,7 @@ export default function InnovationSection() {
 
     useReveal(sectionRef);
 
+    /* Play / pause based on viewport visibility — saves CPU when off-screen */
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
@@ -21,39 +23,64 @@ export default function InnovationSection() {
 
     return (
         <section className="innov" id="innovation" ref={sectionRef}>
-            <div className="innov__inner wrap">
+            <div className="innov-inner wrap">
 
-                {/* Text */}
-                <div className="innov__text">
-                    <span className="section-eyebrow reveal"><span className="section-dot" /> Innovation</span>
+                {/* ── Text column ── */}
+                <div className="innov-text">
+                    <span className="section-eyebrow reveal">
+                        <span className="section-dot" /> Innovation
+                    </span>
 
-                    <h2 className="innov__heading reveal reveal-delay-1">
+                    <h2 className="innov-heading reveal reveal-delay-1">
                         Constant Innovation:<br />
-                        <span className="innov__heading-em">Unlimited Possibilities.</span>
+                        <span className="innov-heading-em">Unlimited Possibilities.</span>
                     </h2>
 
-                    <p className="innov__body reveal reveal-delay-2">
-                        No matter the industry, size or the type of data involved, our solutions
+                    <p className="innov-body reveal reveal-delay-2">
+                        No matter the industry, size, or the type of data involved, our solutions
                         are capable of satisfying any AI-data processing requirement.
                     </p>
+
+                    {/* Subtle stat strip */}
+                    <div className="innov-stats reveal reveal-delay-3">
+                        <div className="innov-stat">
+                            <span className="innov-stat-value">50+</span>
+                            <span className="innov-stat-label">Languages</span>
+                        </div>
+                        <div className="innov-stat-divider" aria-hidden />
+                        <div className="innov-stat">
+                            <span className="innov-stat-value">40+</span>
+                            <span className="innov-stat-label">Delivery Centres</span>
+                        </div>
+                        <div className="innov-stat-divider" aria-hidden />
+                        <div className="innov-stat">
+                            <span className="innov-stat-value">24/7</span>
+                            <span className="innov-stat-label">Operations</span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Video card */}
-                <div className="innov__card reveal reveal-delay-2">
+                {/* ── Video card column ── */}
+                <div className="innov-card reveal reveal-delay-2">
+                    {/* Decorative glow ring behind the card */}
+                    <div className="innov-card-glow" aria-hidden />
+
                     <video
                         ref={videoRef}
-                        className="innov__video"
+                        className="innov-video"
                         autoPlay
                         muted
                         loop
                         playsInline
-                        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                        preload="metadata"
+                        src={dataStreamVideo}
                     />
-                    <div className="innov__card-overlay" />
-                    <div className="innov__card-badge">
-                        <span>Innovation</span>
-                        <span className="innov__card-badge-dot" />
-                        <span>2026</span>
+                    <div className="innov-card-overlay" />
+
+                    <div className="innov-card-badge">
+                        <span className="innov-card-badge-dot" aria-hidden />
+                        <span>Live Innovation</span>
+                        <span className="innov-card-badge-year">2026</span>
                     </div>
                 </div>
 

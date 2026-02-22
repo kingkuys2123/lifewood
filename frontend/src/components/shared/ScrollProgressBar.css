@@ -1,0 +1,49 @@
+/* ── Scroll Progress Bar ─────────────────────────────────── */
+
+.scroll-progress {
+    /* Sits above everything including the navbar (z-index: 100) */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 101;
+    /* Track — subtle, barely visible */
+    background: rgba(0, 0, 0, 0.06);
+    pointer-events: none;
+}
+
+.scroll-progress__bar {
+    height: 100%;
+    /* --progress is a unitless 0–1 value set via inline style.
+       scaleX(0) = fully collapsed, scaleX(1) = fully expanded. */
+    width: 100%;
+    transform: scaleX(var(--progress, 0));
+    transform-origin: left center;
+    /* Saffron → forest gradient — matches the brand colour system */
+    background: linear-gradient(
+        90deg,
+        var(--c-saffron) 0%,
+        #e8950f 60%,
+        var(--c-forest) 100%
+    );
+    border-radius: 0 var(--r-full) var(--r-full) 0;
+    /* Glow — gives the leading edge a subtle halo */
+    box-shadow: 0 0 8px rgba(245, 166, 35, 0.55),
+                0 0 2px  rgba(245, 166, 35, 0.4);
+    /* Hint to browser that this layer will change frequently */
+    will-change: transform;
+    transition: transform 80ms linear;
+}
+
+/* The bar is naturally invisible when scaleX is 0 (progress = 0),
+   so no extra hide rule is needed — it appears only once scrolling starts. */
+
+/* ── Accessibility: reduced-motion — remove transition/glow ─ */
+@media (prefers-reduced-motion: reduce) {
+    .scroll-progress__bar {
+        transition: none;
+        box-shadow: none;
+    }
+}
+

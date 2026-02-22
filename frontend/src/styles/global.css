@@ -291,3 +291,47 @@ button {
   50%  { transform: translateX(5px); }
   100% { transform: translateX(0); }
 }
+
+/* ── Custom Scrollbar ───────────────────────────────────────  */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--c-mist) transparent;
+}
+
+/* WebKit (Chrome, Safari, Edge) — track */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Thumb — resting state */
+::-webkit-scrollbar-thumb {
+  background: var(--c-mist);
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background var(--dur-base);
+}
+
+/* Thumb — hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-steel);
+  background-clip: padding-box;
+}
+
+/* Thumb — active / dragging */
+::-webkit-scrollbar-thumb:active {
+  background: var(--c-charcoal);
+  background-clip: padding-box;
+}
+
+/* Corner where vertical + horizontal scrollbars meet */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

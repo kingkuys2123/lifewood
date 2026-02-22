@@ -1,4 +1,27 @@
-/* Base scroll offset for fixed navbar */
+/* ── Scroll baseline ─────────────────────────────────────── */
+
+/* Offset native anchor scrolls so content clears the fixed navbar */
 html {
-    scroll-padding-top: var(--navbar-h);
+    scroll-padding-top: var(--navbar-h, 64px);
+}
+
+/* Named sections also honour the navbar offset as a scroll margin */
+section[id] {
+    scroll-margin-top: var(--navbar-h, 64px);
+}
+
+/* ── Accessibility: reduced-motion ──────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

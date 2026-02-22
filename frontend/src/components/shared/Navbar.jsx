@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import brandIcon from '../../assets/branding/lifewood-icon.png';
 import './Navbar.css';
 
@@ -33,42 +33,99 @@ export const NAV_ITEMS = [
     { label: 'Contact Us', to: '/contact' },
 ];
 
-function DropdownItem({ item }) {
+/** Detects whether we are currently in the mobile breakpoint */
+function useIsMobile(breakpoint = 1100) {
+    const [isMobile, setIsMobile] = useState(() => window.innerWidth <= breakpoint);
+    useEffect(() => {
+        const mq = window.matchMedia(`(max-width: ${breakpoint}px)`);
+        const handler = (e) => setIsMobile(e.matches);
+        mq.addEventListener('change', handler);
+        return () => mq.removeEventListener('change', handler);
+    }, [breakpoint]);
+    return isMobile;
+}
+
+function DropdownItem({ item, closeMobileMenu }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
+    const isMobile = useIsMobile();
 
+    // Close dropdown when clicking outside (desktop only)
     useEffect(() => {
-        const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+        if (isMobile) return;
+        const close = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        };
         document.addEventListener('mousedown', close);
         return () => document.removeEventListener('mousedown', close);
-    }, []);
+    }, [isMobile]);
+
+    // Close accordion when switching to desktop
+    useEffect(() => {
+        if (!isMobile) setOpen(false);
+    }, [isMobile]);
 
     if (!item.children) {
         return (
             <li className="nav__item">
-                <Link to={item.to} className="nav__link">{item.label}</Link>
+                <Link
+                    to={item.to}
+                    className="nav__link"
+                    onClick={closeMobileMenu}
+                >
+                    {item.label}
+                </Link>
             </li>
         );
     }
+
+    const handleDesktopEnter = () => { if (!isMobile) setOpen(true); };
+    const handleDesktopLeave = () => { if (!isMobile) setOpen(false); };
+    const handleMobileToggle = (e) => {
+        if (isMobile) {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen((v) => !v);
+        }
+    };
 
     return (
         <li
             ref={ref}
             className={`nav__item nav__item--has-drop${open ? ' nav__item--open' : ''}`}
-            onMouseEnter={() => setOpen(true)}
-            onMouseLeave={() => setOpen(false)}
+            onMouseEnter={handleDesktopEnter}
+            onMouseLeave={handleDesktopLeave}
         >
-            <button className="nav__link nav__link--parent" aria-expanded={open}>
+            <button
+                className="nav__link nav__link--parent"
+                aria-expanded={open}
+                aria-haspopup="true"
+                onClick={handleMobileToggle}
+            >
                 {item.label}
-                <svg className="nav__caret" width="10" height="6" viewBox="0 0 10 6" fill="none">
+                <svg
+                    className={`nav__caret${open ? ' nav__caret--open' : ''}`}
+                    width="10"
+                    height="6"
+                    viewBox="0 0 10 6"
+                    fill="none"
+                    aria-hidden="true"
+                >
                     <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
             </button>
-            <div className="nav__dropdown" role="menu">
+            <div className="nav__dropdown" role="menu" aria-label={item.label}>
                 <ul className="nav__drop-list">
                     {item.children.map((c) => (
                         <li key={c.label}>
-                            <Link to={c.to} className="nav__drop-link" role="menuitem">{c.label}</Link>
+                            <Link
+                                to={c.to}
+                                className="nav__drop-link"
+                                role="menuitem"
+                                onClick={closeMobileMenu}
+                            >
+                                {c.label}
+                            </Link>
                         </li>
                     ))}
                 </ul>
@@ -80,55 +137,100 @@ function DropdownItem({ item }) {
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const location = useLocation();
 
+    const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
+
+    // Close drawer on route change
+    useEffect(() => {
+        closeMobileMenu();
+    }, [location.pathname, closeMobileMenu]);
+
+    // Scroll sentinel
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 16);
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
+    // Lock body scroll when drawer is open
     useEffect(() => {
         document.body.style.overflow = mobileOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [mobileOpen]);
 
+    // Close drawer on Escape key
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') closeMobileMenu(); };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [closeMobileMenu]);
+
     return (
-        <header className={`navbar${scrolled ? ' navbar--solid' : ''}`}>
-            <div className="navbar__wrap">
+        <>
+            {/* Backdrop overlay — tap outside to close on mobile */}
+            {mobileOpen && (
+                <div
+                    className="navbar__overlay"
+                    aria-hidden="true"
+                    onClick={closeMobileMenu}
+                />
+            )}
 
-                {/* Brand — left-most */}
-                <Link to="/" className="navbar__brand" aria-label="lifewood home" style={{ color: '#133020' }}>
-                    <img src={brandIcon} alt="" className="nav-brand-icon" />
-                    life<em style={{ color: '#133020', fontStyle: 'normal' }}>wood</em>
-                </Link>
+            <header className={`navbar${scrolled ? ' navbar--solid' : ''}${mobileOpen ? ' navbar--menu-open' : ''}`}>
+                <div className="navbar__wrap">
 
-                {/* Nav — center */}
-                <nav className={`navbar__nav${mobileOpen ? ' navbar__nav--open' : ''}`} aria-label="Main">
-                    <ul className="navbar__list">
-                        {NAV_ITEMS.map((item) => (
-                            <DropdownItem key={item.label} item={item} />
-                        ))}
-                        {/* Mobile-only Apply Now in menu */}
-                        <li className="nav__item nav__item--mobile-only">
-                            <Link to="/apply" className="nav__link nav__link--cta" onClick={() => setMobileOpen(false)}>Apply Now</Link>
-                        </li>
-                    </ul>
-                </nav>
+                    {/* Brand — left-most */}
+                    <Link to="/" className="navbar__brand" aria-label="Lifewood home" onClick={closeMobileMenu} style={{ color: '#133020' }}>
+                        <img src={brandIcon} alt="" className="nav-brand-icon" />
+                        life<em style={{ color: '#133020', fontStyle: 'normal' }}>wood</em>
+                    </Link>
 
-                {/* Right — Desktop Apply Now & Mobile Toggle */}
-                <div className="navbar__end">
-                    <Link to="/apply" className="btn btn-saffron navbar__apply">Apply Now</Link>
-
-                    {/* Mobile toggle moved inside end cluster for right-most positioning */}
-                    <button
-                        className={`navbar__burger${mobileOpen ? ' navbar__burger--x' : ''}`}
-                        onClick={() => setMobileOpen(!mobileOpen)}
-                        aria-label="Toggle navigation"
+                    {/* Nav drawer */}
+                    <nav
+                        className={`navbar__nav${mobileOpen ? ' navbar__nav--open' : ''}`}
+                        aria-label="Main navigation"
+                        id="main-nav"
                     >
-                        <span /><span /><span />
-                    </button>
+                        <ul className="navbar__list" role="list">
+                            {NAV_ITEMS.map((item) => (
+                                <DropdownItem
+                                    key={item.label}
+                                    item={item}
+                                    closeMobileMenu={closeMobileMenu}
+                                />
+                            ))}
+                            {/* Mobile-only Apply Now */}
+                            <li className="nav__item nav__item--mobile-only">
+                                <Link
+                                    to="/apply"
+                                    className="nav__link nav__link--cta"
+                                    onClick={closeMobileMenu}
+                                >
+                                    Apply Now
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    {/* Right cluster — Desktop CTA + Hamburger */}
+                    <div className="navbar__end">
+                        <Link to="/apply" className="btn btn-saffron navbar__apply">Apply Now</Link>
+
+                        <button
+                            className={`navbar__burger${mobileOpen ? ' navbar__burger--x' : ''}`}
+                            onClick={() => setMobileOpen((v) => !v)}
+                            aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                            aria-expanded={mobileOpen}
+                            aria-controls="main-nav"
+                        >
+                            <span aria-hidden="true" />
+                            <span aria-hidden="true" />
+                            <span aria-hidden="true" />
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
+        </>
     );
 }

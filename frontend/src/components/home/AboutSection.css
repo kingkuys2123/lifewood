@@ -48,12 +48,18 @@
     background: var(--c-saffron);
     border-radius: var(--r-full);
     transform-origin: left;
-    animation: expandLine 0.6s var(--ease-out) 0.3s both;
+    transform: scaleX(0);
+    opacity: 0;
 }
 
 @keyframes expandLine {
     from { transform: scaleX(0); opacity: 0; }
     to   { transform: scaleX(1); opacity: 1; }
+}
+
+/* Only play when the parent .about__left has been revealed */
+.about__left.reveal--visible .about__accent-line {
+    animation: expandLine 0.6s var(--ease-out) 0.25s both;
 }
 
 /* Right */

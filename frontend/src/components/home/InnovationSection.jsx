@@ -1,28 +1,18 @@
 import { useEffect, useRef } from 'react';
+import { useReveal } from '../../hooks/useReveal';
 import './InnovationSection.css';
 
 export default function InnovationSection() {
     const sectionRef = useRef(null);
-    const videoRef = useRef(null);
+    const videoRef   = useRef(null);
 
-    useEffect(() => {
-        const els = sectionRef.current?.querySelectorAll('.reveal') ?? [];
-        if (!els.length) return;
-        const obs = new IntersectionObserver(
-            (entries) => entries.forEach(e => {
-                if (e.isIntersecting) { e.target.classList.add('reveal--visible'); obs.unobserve(e.target); }
-            }),
-            { threshold: 0.1 }
-        );
-        els.forEach(el => obs.observe(el));
-        return () => obs.disconnect();
-    }, []);
+    useReveal(sectionRef);
 
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
         const obs = new IntersectionObserver(
-            ([e]) => { e.isIntersecting ? video.play().catch(() => { }) : video.pause(); },
+            ([e]) => { e.isIntersecting ? video.play().catch(() => {}) : video.pause(); },
             { threshold: 0.1 }
         );
         obs.observe(video);

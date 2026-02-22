@@ -1,22 +1,11 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useReveal } from '../../hooks/useReveal';
 import './AboutSection.css';
 
 export default function AboutSection() {
     const sectionRef = useRef(null);
-
-    useEffect(() => {
-        const els = sectionRef.current?.querySelectorAll('.reveal') ?? [];
-        if (!els.length) return;
-        const obs = new IntersectionObserver(
-            (entries) => entries.forEach(e => {
-                if (e.isIntersecting) { e.target.classList.add('reveal--visible'); obs.unobserve(e.target); }
-            }),
-            { threshold: 0.15 }
-        );
-        els.forEach(el => obs.observe(el));
-        return () => obs.disconnect();
-    }, []);
+    useReveal(sectionRef, 0.12);
 
     return (
         <section className="about" id="about" ref={sectionRef}>

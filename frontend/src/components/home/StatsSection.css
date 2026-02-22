@@ -142,10 +142,10 @@
     border-color: rgba(19, 48, 32, 0.12);
 }
 
-/* Staggered entrance via --card-delay CSS custom prop */
-.stats__card.reveal--visible {
+/* Entrance — fires when data-visible flips to true */
+.stats__card[data-visible="true"] {
     animation: statsCardIn 0.6s var(--ease-out) both;
-    animation-delay: var(--card-delay, 0ms);
+    animation-delay: calc(var(--card-i, 0) * 90ms);
 }
 
 /* Number */
@@ -157,12 +157,12 @@
     line-height: 1;
     color: var(--c-forest);
     transition: color var(--dur-base);
-    will-change: contents;
+    will-change: transform;
 }
 
-/* Pop the number when the count-up finishes (triggered via animation on active) */
-.stats__card.reveal--visible .stats__number {
-    animation: numberPop 0.45s var(--ease-spring) calc(var(--card-delay, 0ms) + 1300ms) both;
+/* Pop the number after count-up finishes */
+.stats__card[data-visible="true"] .stats__number {
+    animation: numberPop 0.45s var(--ease-spring) calc(var(--card-i, 0) * 90ms + 1300ms) both;
 }
 
 .stats__card:hover .stats__number {
@@ -193,8 +193,8 @@
         width var(--dur-slow) var(--ease-out);
 }
 
-.stats__card.reveal--visible .stats__divider {
-    animation: dividerGrow 0.5s var(--ease-out) calc(var(--card-delay, 0ms) + 200ms) both;
+.stats__card[data-visible="true"] .stats__divider {
+    animation: dividerGrow 0.5s var(--ease-out) calc(var(--card-i, 0) * 90ms + 200ms) both;
 }
 
 .stats__card:hover .stats__divider {
@@ -213,12 +213,12 @@
     transition:
         opacity 0.5s var(--ease-out),
         transform 0.5s var(--ease-out);
-    transition-delay: calc(var(--card-delay, 0ms) + 280ms);
 }
 
-.stats__card.reveal--visible .stats__desc {
+.stats__card[data-visible="true"] .stats__desc {
     opacity: 1;
     transform: translateY(0);
+    transition-delay: calc(var(--card-i, 0) * 90ms + 280ms);
 }
 
 /* Responsive */
@@ -239,11 +239,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .stats__card,
-    .stats__card.reveal--visible,
-    .stats__card.reveal--visible .stats__number,
-    .stats__card.reveal--visible .stats__divider,
-    .stats__desc {
+    .stats__card[data-visible="true"],
+    .stats__card[data-visible="true"] .stats__number,
+    .stats__card[data-visible="true"] .stats__divider,
+    .stats__card[data-visible="true"] .stats__desc {
         animation: none !important;
         transition: none !important;
         opacity: 1;

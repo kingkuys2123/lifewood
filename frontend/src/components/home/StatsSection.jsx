@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useReveal } from '../../hooks/useReveal';
 import './StatsSection.css';
 
 const STATS = [
@@ -34,16 +35,16 @@ function formatNum(n) {
 }
 
 /* Count-up hook — animates from 0 → target over `duration` ms */
-function useCountUp(target, duration = 1600, active = false) {
+function useCountUp(target, duration = 1400, active = false) {
     const [count, setCount] = useState(0);
     const rafRef = useRef(null);
 
     useEffect(() => {
         if (!active) return;
+        setCount(0);
         const start = performance.now();
         const step = (now) => {
-            const elapsed = now - start;
-            const progress = Math.min(elapsed / duration, 1);
+            const progress = Math.min((now - start) / duration, 1);
             // Ease-out quart
             const eased = 1 - Math.pow(1 - progress, 4);
             setCount(Math.round(eased * target));
@@ -57,9 +58,10 @@ function useCountUp(target, duration = 1600, active = false) {
 }
 
 /* Individual stat card with its own count-up trigger */
-function StatCard({ stat, delay }) {
+function StatCard({ stat, index }) {
     const cardRef = useRef(null);
-    const [active, setActive] = useState(false);
+    const [visible, setVisible] = useState(false);
+    const count = useCountUp(stat.raw, 1400, visible);
 
     useEffect(() => {
         const el = cardRef.current;
@@ -67,23 +69,22 @@ function StatCard({ stat, delay }) {
         const obs = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    setActive(true);
+                    setVisible(true);
                     obs.unobserve(el);
                 }
             },
-            { threshold: 0.25 }
+            { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
         );
         obs.observe(el);
         return () => obs.disconnect();
     }, []);
 
-    const count = useCountUp(stat.raw, 1400, active);
-
     return (
         <div
             ref={cardRef}
-            className={`stats__card reveal reveal-delay-${delay}`}
-            style={{ '--card-delay': `${delay * 80}ms` }}
+            className="stats__card"
+            data-visible={visible}
+            style={{ '--card-i': index }}
         >
             <div className="stats__number">
                 {formatNum(count)}{stat.suffix}
@@ -97,19 +98,7 @@ function StatCard({ stat, delay }) {
 
 export default function StatsSection() {
     const sectionRef = useRef(null);
-
-    useEffect(() => {
-        const els = sectionRef.current?.querySelectorAll('.reveal') ?? [];
-        if (!els.length) return;
-        const obs = new IntersectionObserver(
-            (entries) => entries.forEach(e => {
-                if (e.isIntersecting) { e.target.classList.add('reveal--visible'); obs.unobserve(e.target); }
-            }),
-            { threshold: 0.1 }
-        );
-        els.forEach(el => obs.observe(el));
-        return () => obs.disconnect();
-    }, []);
+    useReveal(sectionRef);
 
     return (
         <section className="stats" id="stats" ref={sectionRef}>
@@ -117,7 +106,9 @@ export default function StatsSection() {
 
                 {/* Header */}
                 <div className="stats__header reveal">
-                    <span className="section-eyebrow"><span className="section-dot" /> Transforming</span>
+                    <span className="section-eyebrow">
+                        <span className="section-dot" /> Transforming
+                    </span>
                     <p className="stats__sub">
                         By connecting local expertise with our global AI data infrastructure, we create
                         opportunities, empower communities, and drive inclusive growth worldwide.
@@ -127,7 +118,7 @@ export default function StatsSection() {
                 {/* Cards */}
                 <div className="stats__grid">
                     {STATS.map((s, i) => (
-                        <StatCard key={s.label} stat={s} delay={i + 1} />
+                        <StatCard key={s.label} stat={s} index={i} />
                     ))}
                 </div>
 

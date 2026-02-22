@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
+import { useReveal } from '../../hooks/useReveal';
 import './ServicesSection.css';
 
 const SERVICES = [
@@ -52,19 +53,7 @@ const SERVICES = [
 
 export default function ServicesSection() {
     const sectionRef = useRef(null);
-
-    useEffect(() => {
-        const els = sectionRef.current?.querySelectorAll('.reveal') ?? [];
-        if (!els.length) return;
-        const obs = new IntersectionObserver(
-            (entries) => entries.forEach(e => {
-                if (e.isIntersecting) { e.target.classList.add('reveal--visible'); obs.unobserve(e.target); }
-            }),
-            { threshold: 0.1 }
-        );
-        els.forEach(el => obs.observe(el));
-        return () => obs.disconnect();
-    }, []);
+    useReveal(sectionRef);
 
     return (
         <section className="services" id="services" ref={sectionRef}>

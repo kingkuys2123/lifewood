@@ -2,22 +2,24 @@
 
 .footer {
     background: var(--c-forest);
-    /* Dark Serpent #133020 */
     color: rgba(255, 255, 255, 0.6);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-    /* Subtle separation */
 }
 
-/* Top */
-.footer__top {
+/* ── Main row ────────────────────────────────────────────── */
+.footer__main {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer__main-inner {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    text-align: center;
-    gap: var(--s-32);
-    padding-block: var(--s-64) var(--s-24);
+    justify-content: space-between;
+    gap: var(--s-40);
+    padding-block: var(--s-48);
 }
 
+/* ── Brand col (left) ────────────────────────────────────── */
 .footer__brand-col {
     display: flex;
     flex-direction: column;
@@ -26,21 +28,20 @@
 
 .footer__logo {
     font-family: var(--font-display);
-    font-size: var(--t-32);
-    /* Slightly larger for presence */
+    font-size: var(--t-24);
     font-weight: var(--fw-black);
     color: var(--c-white);
     letter-spacing: -0.03em;
     user-select: none;
     display: flex;
     align-items: center;
-    justify-content: center;
 }
 
 .footer-brand-icon {
     height: 1.1em;
     width: auto;
     margin-right: 5px;
+    flex-shrink: 0;
 }
 
 .footer__logo em {
@@ -49,24 +50,21 @@
     opacity: 0.9;
 }
 
-
 .footer__mission {
-    font-size: var(--t-15);
+    font-size: var(--t-14);
     line-height: 1.8;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.45);
     letter-spacing: 0.01em;
+    max-width: 36ch;
 }
 
-/* Social band */
+/* ── Social band (right) ─────────────────────────────────── */
 .footer__social-band {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--s-16);
-    padding-block: var(--s-32);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    align-items: flex-end;
+    gap: var(--s-12);
+    flex-shrink: 0;
 }
 
 .footer__find-us {
@@ -81,20 +79,20 @@
     display: flex;
     gap: var(--s-8);
     flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .footer__social {
     display: inline-flex;
     align-items: center;
     gap: var(--s-10);
-    padding: 10px 20px;
+    padding: 9px 18px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--r-full);
     font-size: var(--t-12);
     font-weight: var(--fw-medium);
     color: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(8px);
     transition:
         background var(--dur-fast),
         border-color var(--dur-fast),
@@ -115,9 +113,9 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* Bottom */
+/* ── Bottom bar ──────────────────────────────────────────── */
 .footer__bottom {
-    padding-block: var(--s-24);
+    padding-block: var(--s-20);
 }
 
 .footer__bottom-inner {
@@ -151,14 +149,30 @@
     transform: translateY(-1px);
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+/* ── Responsive ──────────────────────────────────────────── */
+
+/* Tablet — stack brand above socials, socials back to left-aligned */
+@media (max-width: 768px) {
+    .footer__main-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--s-32);
+        padding-block: var(--s-40);
+    }
+
+    .footer__social-band {
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .footer__socials {
+        justify-content: flex-start;
+    }
+
     .footer__mission {
         max-width: 100%;
     }
-}
 
-@media (max-width: 768px) {
     .footer__bottom-inner {
         flex-direction: column;
         align-items: center;

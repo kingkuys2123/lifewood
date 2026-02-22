@@ -144,10 +144,15 @@ function DropdownItem({ item, closeMobileMenu }) {
     );
 }
 
+/** Routes where the hero is white — navbar must always be solid */
+const ALWAYS_SOLID_PATHS = ['/privacy-policy', '/cookie-policy', '/terms-and-conditions'];
+
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
+
+    const isForcedSolid = ALWAYS_SOLID_PATHS.includes(location.pathname);
 
     const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
 
@@ -187,7 +192,7 @@ export default function Navbar() {
                 />
             )}
 
-            <header className={`navbar${scrolled ? ' navbar--solid' : ''}${mobileOpen ? ' navbar--menu-open' : ''}`}>
+            <header className={`navbar${(scrolled || isForcedSolid) ? ' navbar--solid' : ''}${mobileOpen ? ' navbar--menu-open' : ''}`}>
                 <div className="navbar__wrap">
 
                     {/* Brand — left-most */}

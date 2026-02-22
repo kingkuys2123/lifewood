@@ -45,8 +45,13 @@ export default function AboutSection() {
                             transformative power of AI: bringing big data to life; launching new
                             ways of thinking, learning and doing; for the good of humankind.
                         </p>
-                        <div className="about__footer reveal reveal-delay-2">
-                            <Link to="/our-company/about" className="btn btn-dark about__btn">
+                        <p className="about__sub reveal reveal-delay-2">
+                            Headquartered in Asia with a global footprint, we blend deep domain
+                            expertise with cutting-edge machine learning to turn raw information
+                            into strategic advantage.
+                        </p>
+                        <div className="about__footer reveal reveal-delay-3">
+                            <Link to="/our-company/about" className="btn btn-forest about__btn">
                                 Know Us Better
                                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
                                     <path d="M3.5 8h9M9 4.5 12.5 8 9 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

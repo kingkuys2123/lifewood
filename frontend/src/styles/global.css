@@ -250,6 +250,17 @@ button {
   transform: translateY(-2px);
 }
 
+.btn-forest {
+  background: var(--c-forest);
+  color: var(--c-white);
+}
+
+.btn-forest:hover {
+  background: #0d2218;
+  box-shadow: 0 4px 20px rgba(19, 48, 32, 0.32);
+  transform: translateY(-2px);
+}
+
 /* ── Scroll Reveal ─────────────────────────────────────────  */
 .reveal {
   opacity: 0;

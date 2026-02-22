@@ -145,7 +145,7 @@ function DropdownItem({ item, closeMobileMenu }) {
 }
 
 /** Routes where the hero is white — navbar must always be solid */
-const ALWAYS_SOLID_PATHS = ['/privacy-policy', '/cookie-policy', '/terms-and-conditions', '/contact'];
+const ALWAYS_SOLID_PATHS = ['/privacy-policy', '/cookie-policy', '/terms-and-conditions', '/contact', '/apply'];
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);

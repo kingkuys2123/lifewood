@@ -8,6 +8,7 @@ import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import CookiePolicy from './pages/policies/CookiePolicy';
 import TermsConditions from './pages/policies/TermsConditions';
 import ContactUs from './pages/landing-page/contact-us/ContactUs';
+import ApplyNow from './pages/landing-page/apply/ApplyNow';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/terms-and-conditions" element={<TermsConditions />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/apply" element={<ApplyNow />} />
         </Routes>
       </main>
       <Footer />

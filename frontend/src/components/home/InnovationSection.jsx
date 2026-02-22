@@ -40,24 +40,6 @@ export default function InnovationSection() {
                         No matter the industry, size, or the type of data involved, our solutions
                         are capable of satisfying any AI-data processing requirement.
                     </p>
-
-                    {/* Subtle stat strip */}
-                    <div className="innov-stats reveal reveal-delay-3">
-                        <div className="innov-stat">
-                            <span className="innov-stat-value">50+</span>
-                            <span className="innov-stat-label">Languages</span>
-                        </div>
-                        <div className="innov-stat-divider" aria-hidden />
-                        <div className="innov-stat">
-                            <span className="innov-stat-value">40+</span>
-                            <span className="innov-stat-label">Delivery Centres</span>
-                        </div>
-                        <div className="innov-stat-divider" aria-hidden />
-                        <div className="innov-stat">
-                            <span className="innov-stat-value">24/7</span>
-                            <span className="innov-stat-label">Operations</span>
-                        </div>
-                    </div>
                 </div>
 
                 {/* ── Video card column ── */}

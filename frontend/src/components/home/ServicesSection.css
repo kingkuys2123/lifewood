@@ -1,0 +1,184 @@
+/* ── SERVICES SECTION ───────────────────────────────────── */
+
+.services {
+    background: var(--c-white);
+    padding-block: var(--s-120);
+}
+
+.services__inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-64);
+}
+
+/* Header */
+.services__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-20);
+}
+
+.services__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-36), 4vw, var(--t-56));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--c-charcoal);
+}
+
+.services__sub {
+    font-size: var(--t-17);
+    line-height: 1.7;
+    color: var(--c-steel);
+    max-width: 560px;
+}
+
+/* Cards grid */
+.services__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--s-20);
+}
+
+/* ── Glassmorphism card ─────────────────────────────────── */
+.svc-card {
+    position: relative;
+    height: 320px;
+    border-radius: var(--r-24);
+    overflow: hidden;
+    cursor: default;
+    /* Glass base */
+    background: rgba(255, 255, 255, 0.60);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transition:
+        transform var(--dur-base) var(--ease-spring),
+        box-shadow var(--dur-base) var(--ease-out);
+}
+
+.svc-card:hover {
+    transform: translateY(-6px);
+    box-shadow:
+        0 20px 60px rgba(19, 48, 32, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Front face — default state */
+.svc-card__front {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-16);
+    padding: var(--s-32);
+    transition:
+        opacity var(--dur-base) var(--ease-out),
+        transform var(--dur-base) var(--ease-out);
+}
+
+.svc-card:hover .svc-card__front {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+}
+
+.svc-card__icon {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-20);
+    background: var(--c-ice);
+    color: var(--c-charcoal);
+    transition: background var(--dur-base), color var(--dur-base);
+}
+
+.svc-card__label {
+    font-family: var(--font-display);
+    font-size: var(--t-20);
+    font-weight: var(--fw-bold);
+    color: var(--c-charcoal);
+    letter-spacing: -0.01em;
+}
+
+/* Back face — hover reveal */
+.svc-card__back {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: var(--s-12);
+    padding: var(--s-32);
+    background: linear-gradient(135deg,
+            rgba(19, 48, 32, 0.92) 0%,
+            rgba(19, 48, 32, 0.80) 100%);
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+        opacity var(--dur-base) var(--ease-out),
+        transform var(--dur-base) var(--ease-out);
+    pointer-events: none;
+}
+
+.svc-card:hover .svc-card__back {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.svc-card__back-icon {
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: auto;
+}
+
+.svc-card__back-label {
+    font-family: var(--font-display);
+    font-size: var(--t-13);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-saffron);
+}
+
+.svc-card__desc {
+    font-size: var(--t-15);
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+/* Responsive */
+@media (max-width: 1000px) {
+    .services__grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .svc-card {
+        height: 280px;
+    }
+}
+
+@media (max-width: 600px) {
+    .services {
+        padding-block: var(--s-80);
+    }
+
+    .services__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .svc-card {
+        height: 240px;
+    }
+}

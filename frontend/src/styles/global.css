@@ -1,0 +1,293 @@
+/* ================================================================
+   GLOBAL.CSS — Lifewood Design System (Apple-esque)
+   ================================================================ */
+
+/* ── Google Fonts ──────────────────────────────────────────  */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+/* ── Design Tokens ─────────────────────────────────────────  */
+:root {
+
+  /* Color palette */
+  --c-white: #FFFFFF;
+  --c-snow: #FAFAFA;
+  --c-ice: #F5F5F7;
+  --c-mist: #E8E8ED;
+  --c-steel: #86868B;
+  --c-charcoal: #1D1D1F;
+  --c-dark: #0A0A0A;
+  --c-forest: #133020;
+  --c-saffron: #F5A623;
+  --c-saffron-soft: rgba(245, 166, 35, 0.12);
+
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --c-border: rgba(0, 0, 0, 0.10);
+
+  /* Typography */
+  --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 800;
+
+  /* Type scale */
+  --t-11: 0.6875rem;
+  --t-12: 0.75rem;
+  --t-13: 0.8125rem;
+  --t-14: 0.875rem;
+  --t-15: 0.9375rem;
+  --t-16: 1rem;
+  --t-17: 1.0625rem;
+  --t-18: 1.125rem;
+  --t-20: 1.25rem;
+  --t-22: 1.375rem;
+  --t-24: 1.5rem;
+  --t-28: 1.75rem;
+  --t-32: 2rem;
+  --t-36: 2.25rem;
+  --t-42: 2.625rem;
+  --t-48: 3rem;
+  --t-56: 3.5rem;
+  --t-64: 4rem;
+  --t-72: 4.5rem;
+  --t-80: 5rem;
+  --t-96: 6rem;
+
+  /* Spacing */
+  --s-4: 0.25rem;
+  --s-8: 0.5rem;
+  --s-10: 0.625rem;
+  --s-12: 0.75rem;
+  --s-16: 1rem;
+  --s-20: 1.25rem;
+  --s-24: 1.5rem;
+  --s-28: 1.75rem;
+  --s-32: 2rem;
+  --s-40: 2.5rem;
+  --s-48: 3rem;
+  --s-56: 3.5rem;
+  --s-64: 4rem;
+  --s-80: 5rem;
+  --s-96: 6rem;
+  --s-120: 7.5rem;
+  --s-160: 10rem;
+
+  /* Layout */
+  --max-w: 1200px;
+  --max-w-narrow: 760px;
+  --max-w-wide: 1440px;
+  --navbar-h: 64px;
+  --page-px: clamp(var(--s-20), 5vw, var(--s-80));
+
+  /* Radius */
+  --r-4: 4px;
+  --r-8: 8px;
+  --r-12: 12px;
+  --r-16: 16px;
+  --r-20: 20px;
+  --r-24: 24px;
+  --r-32: 32px;
+  --r-full: 9999px;
+
+  /* Shadows */
+  --sh-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --sh-sm: 0 2px 8px rgba(0, 0, 0, 0.07);
+  --sh-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --sh-lg: 0 8px 40px rgba(0, 0, 0, 0.10);
+  --sh-xl: 0 24px 80px rgba(0, 0, 0, 0.14);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+  --dur-slow: 400ms;
+  --dur-xslow: 700ms;
+}
+
+/* ── Reset ─────────────────────────────────────────────────  */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--t-16);
+  font-weight: var(--fw-regular);
+  color: var(--c-charcoal);
+  background: var(--c-white);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  line-height: inherit;
+}
+
+/* ── Utility Classes ───────────────────────────────────────  */
+
+.wrap {
+  width: 100%;
+  max-width: var(--max-w);
+  margin-inline: auto;
+  padding-inline: var(--page-px);
+}
+
+/* Section eyebrow label */
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-8);
+  font-family: var(--font-display);
+  font-size: var(--t-12);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c-forest);
+  /* Dark Serpent #133020 */
+}
+
+.section-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c-forest);
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-8);
+  padding: 12px 24px;
+  border-radius: var(--r-full);
+  font-family: var(--font-display);
+  font-size: var(--t-14);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.01em;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast),
+    transform var(--dur-base) var(--ease-spring),
+    box-shadow var(--dur-base);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-dark {
+  background: var(--c-charcoal);
+  color: var(--c-white);
+}
+
+.btn-dark:hover {
+  background: var(--c-dark);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.24);
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--c-charcoal);
+  border: 1.5px solid var(--c-mist);
+}
+
+.btn-ghost:hover {
+  background: var(--c-ice);
+  border-color: var(--c-steel);
+}
+
+.btn-saffron {
+  background: var(--c-saffron);
+  color: #fff;
+}
+
+.btn-saffron:hover {
+  background: #e8950f;
+  box-shadow: 0 4px 20px rgba(245, 166, 35, 0.35);
+  transform: translateY(-2px);
+}
+
+/* ── Scroll Reveal ─────────────────────────────────────────  */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+}
+
+.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered delays */
+.reveal-delay-1 {
+  transition-delay: 80ms;
+}
+
+.reveal-delay-2 {
+  transition-delay: 160ms;
+}
+
+.reveal-delay-3 {
+  transition-delay: 240ms;
+}
+
+.reveal-delay-4 {
+  transition-delay: 320ms;
+}
+
+.reveal-delay-5 {
+  transition-delay: 400ms;
+}
+
+/* ── Shared keyframes ───────────────────────────────────────  */
+@keyframes arrowNudge {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}

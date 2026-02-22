@@ -1,0 +1,94 @@
+/* ── CLIENTS SECTION ─────────────────────────────────────── */
+
+.clients {
+    background: var(--c-white);
+    padding-block: var(--s-120);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-56);
+    overflow: hidden;
+}
+
+.clients__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-24);
+}
+
+.clients__body {
+    font-size: var(--t-18);
+    line-height: 1.7;
+    color: var(--c-steel);
+    max-width: 640px;
+}
+
+/* ── Infinite ticker ─────────────────────────────────────── */
+.clients__ticker-wrap {
+    position: relative;
+    width: 100%;
+    /* Fade-out mask on both edges */
+    -webkit-mask-image: linear-gradient(to right,
+            transparent 0%,
+            black 12%,
+            black 88%,
+            transparent 100%);
+    mask-image: linear-gradient(to right,
+            transparent 0%,
+            black 12%,
+            black 88%,
+            transparent 100%);
+}
+
+.clients__ticker {
+    display: flex;
+    align-items: center;
+    gap: var(--s-16);
+    width: max-content;
+    animation: ticker 32s linear infinite;
+}
+
+.clients__ticker:hover {
+    animation-play-state: paused;
+}
+
+@keyframes ticker {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+.clients__pill {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--s-12) var(--s-24);
+    border-radius: 100px;
+    border: 1.5px solid var(--c-border);
+    font-family: var(--font-display);
+    font-size: var(--t-13);
+    font-weight: var(--fw-semibold);
+    color: var(--c-steel);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    transition:
+        border-color var(--dur-fast),
+        color var(--dur-fast),
+        background var(--dur-fast);
+    cursor: default;
+}
+
+.clients__pill:hover {
+    border-color: var(--c-forest);
+    color: var(--c-forest);
+    background: rgba(19, 48, 32, 0.04);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .clients {
+        padding-block: var(--s-80);
+    }
+}

@@ -1,0 +1,106 @@
+/* ── INNOVATION SECTION ──────────────────────────────────── */
+
+.innov {
+    background: var(--c-ice);
+    padding-block: var(--s-120);
+}
+
+.innov__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-80);
+    align-items: center;
+}
+
+/* Text column */
+.innov__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-28);
+}
+
+.innov__heading {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: var(--fw-black);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: var(--c-charcoal);
+}
+
+.innov__heading-em {
+    background: linear-gradient(135deg, var(--c-forest) 0%, #2a6048 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.innov__body {
+    font-size: var(--t-18);
+    line-height: 1.7;
+    color: var(--c-steel);
+    max-width: 480px;
+}
+
+/* Video card column */
+.innov__card {
+    position: relative;
+    border-radius: var(--r-24);
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    box-shadow: 0 24px 72px rgba(0, 0, 0, 0.14);
+}
+
+.innov__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.innov__card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top,
+            rgba(0, 0, 0, 0.55) 0%,
+            transparent 55%);
+}
+
+.innov__card-badge {
+    position: absolute;
+    bottom: var(--s-24);
+    left: var(--s-24);
+    display: flex;
+    align-items: center;
+    gap: var(--s-8);
+    font-family: var(--font-display);
+    font-size: var(--t-12);
+    font-weight: var(--fw-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.innov__card-badge-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--c-saffron);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .innov__inner {
+        grid-template-columns: 1fr;
+    }
+
+    .innov__card {
+        aspect-ratio: 16 / 9;
+    }
+}
+
+@media (max-width: 600px) {
+    .innov {
+        padding-block: var(--s-80);
+    }
+}

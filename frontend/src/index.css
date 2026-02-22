@@ -1,0 +1,4 @@
+/* Base scroll offset for fixed navbar */
+html {
+    scroll-padding-top: var(--navbar-h);
+}

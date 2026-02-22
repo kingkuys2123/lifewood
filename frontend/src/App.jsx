@@ -7,6 +7,7 @@ import Home from './pages/landing-page/home/Home';
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import CookiePolicy from './pages/policies/CookiePolicy';
 import TermsConditions from './pages/policies/TermsConditions';
+import ContactUs from './pages/landing-page/contact-us/ContactUs';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/terms-and-conditions" element={<TermsConditions />} />
+          <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </main>
       <Footer />

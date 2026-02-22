@@ -1,0 +1,149 @@
+/* ── CONTACT HERO ────────────────────────────────────────── */
+
+@keyframes contact-rule-grow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+@keyframes contact-fade-up {
+    0%   { opacity: 0; transform: translateY(22px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.contact-hero {
+    background: var(--c-white);
+    padding-block: calc(var(--navbar-h) + var(--s-80)) var(--s-64);
+    position: relative;
+    border-bottom: 1px solid var(--border-subtle);
+    overflow: hidden;
+}
+
+/* Top accent bar — forest → saffron */
+.contact-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--c-forest) 0%, var(--c-saffron) 60%, transparent 100%);
+    transform-origin: left;
+    animation: contact-rule-grow 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+/* Ambient geometry wash */
+.contact-hero::after {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -120px;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(19, 48, 32, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.contact-hero__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+    animation: contact-fade-up 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+}
+
+/* Eyebrow */
+.contact-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-8);
+    font-family: var(--font-display);
+    font-size: var(--t-11);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-forest);
+}
+
+.contact-hero__dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--c-saffron);
+    flex-shrink: 0;
+}
+
+/* Heading */
+.contact-hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: var(--fw-black);
+    letter-spacing: -0.04em;
+    line-height: 1.06;
+    color: var(--c-charcoal);
+    max-width: 640px;
+}
+
+/* Subtitle */
+.contact-hero__sub {
+    font-size: var(--t-16);
+    line-height: 1.75;
+    color: var(--c-steel);
+    max-width: 520px;
+    letter-spacing: 0.005em;
+}
+
+/* Meta row */
+.contact-hero__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--s-24);
+    flex-wrap: wrap;
+    padding-top: var(--s-16);
+    margin-top: var(--s-4);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.contact-hero__meta-item {
+    display: flex;
+    align-items: center;
+    gap: var(--s-8);
+    font-size: var(--t-13);
+    color: var(--c-steel);
+    font-weight: var(--fw-medium);
+}
+
+.contact-hero__meta-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--c-saffron);
+    flex-shrink: 0;
+}
+
+.contact-hero__meta-link {
+    color: var(--c-forest);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(19, 48, 32, 0.25);
+    transition: text-decoration-color 0.15s ease, color 0.15s ease;
+    font-weight: var(--fw-medium);
+}
+
+.contact-hero__meta-link:hover {
+    color: var(--c-charcoal);
+    text-decoration-color: var(--c-forest);
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+    .contact-hero {
+        padding-block: calc(var(--navbar-h) + var(--s-48)) var(--s-48);
+    }
+    .contact-hero__meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--s-12);
+    }
+}
+

@@ -43,12 +43,6 @@ export default function NotFound() {
                 <div className="nf-actions">
                     <Link to="/" className="nf-btn-primary">
                         Go to Homepage
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" strokeWidth="2"
-                            strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <path d="M3 12L12 3l9 9" />
-                            <path d="M9 21V12h6v9" />
-                        </svg>
                     </Link>
 
                     <Link to="/contact" className="nf-btn-secondary">

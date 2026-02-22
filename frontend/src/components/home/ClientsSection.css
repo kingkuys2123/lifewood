@@ -1,94 +1,162 @@
-/* ── CLIENTS SECTION ─────────────────────────────────────── */
+/* ── CLIENTS / PARTNERS SECTION ──────────────────────────── */
 
+/* Logo entrance stagger */
+@keyframes logoIn {
+    0%   { opacity: 0; transform: translateY(16px) scale(0.96); }
+    100% { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+/* Continuous gentle float on hover */
+@keyframes logoFloat {
+    0%,  100% { transform: translateY(0)    scale(1.07); }
+    50%        { transform: translateY(-7px) scale(1.07); }
+}
+
+/* Hairline grow-in */
+@keyframes ruleIn {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+/* ── Section shell ───────────────────────────────────────── */
 .clients {
     background: var(--c-white);
     padding-block: var(--s-120);
-    display: flex;
-    flex-direction: column;
-    gap: var(--s-56);
-    overflow: hidden;
+    border-bottom: 1px solid var(--border-subtle);
 }
 
-.clients__header {
+.clients__inner {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    text-align: center;
     gap: var(--s-24);
 }
 
-.clients__body {
-    font-size: var(--t-18);
-    line-height: 1.7;
-    color: var(--c-steel);
+/* ── Eyebrow ─────────────────────────────────────────────── */
+.clients__eyebrow {
+    display: flex;
+    justify-content: center;
+}
+
+/* ── Heading ─────────────────────────────────────────────── */
+.clients__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-28), 3.2vw, var(--t-48));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+    color: var(--c-charcoal);
     max-width: 640px;
 }
 
-/* ── Infinite ticker ─────────────────────────────────────── */
-.clients__ticker-wrap {
-    position: relative;
-    width: 100%;
-    /* Fade-out mask on both edges */
-    -webkit-mask-image: linear-gradient(to right,
-            transparent 0%,
-            black 12%,
-            black 88%,
-            transparent 100%);
-    mask-image: linear-gradient(to right,
-            transparent 0%,
-            black 12%,
-            black 88%,
-            transparent 100%);
+/* ── Body copy ───────────────────────────────────────────── */
+.clients__body {
+    font-size: clamp(var(--t-15), 1.4vw, var(--t-17));
+    line-height: 1.8;
+    color: var(--c-steel);
+    max-width: 580px;
+    font-weight: var(--fw-regular);
+    margin-top: var(--s-4);
 }
 
-.clients__ticker {
+/* ── Hairline rule ───────────────────────────────────────── */
+.clients__rule {
+    width: 48px;
+    height: 2px;
+    background: var(--c-saffron);
+    border-radius: var(--r-full);
+    transform-origin: center;
+    margin-block: var(--s-16);
+}
+
+.clients__rule.reveal--visible {
+    animation: ruleIn 0.5s var(--ease-out) 0.3s both;
+}
+
+/* ── Logo row ────────────────────────────────────────────── */
+.clients__logos {
     display: flex;
     align-items: center;
-    gap: var(--s-16);
-    width: max-content;
-    animation: ticker 32s linear infinite;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: clamp(var(--s-40), 7vw, var(--s-96));
+    margin-top: var(--s-16);
+    width: 100%;
 }
 
-.clients__ticker:hover {
-    animation-play-state: paused;
-}
-
-@keyframes ticker {
-    from {
-        transform: translateX(0);
-    }
-
-    to {
-        transform: translateX(-50%);
-    }
-}
-
-.clients__pill {
-    display: inline-flex;
+/* ── Individual logo wrapper ─────────────────────────────── */
+.clients__logo-item {
+    display: flex;
     align-items: center;
-    padding: var(--s-12) var(--s-24);
-    border-radius: 100px;
-    border: 1.5px solid var(--c-border);
-    font-family: var(--font-display);
-    font-size: var(--t-13);
-    font-weight: var(--fw-semibold);
-    color: var(--c-steel);
-    white-space: nowrap;
-    letter-spacing: 0.02em;
+    justify-content: center;
+    opacity: 0;
+}
+
+/* Staggered entrance when parent gets reveal--visible */
+.clients__logos.reveal--visible .clients__logo-item {
+    animation: logoIn 0.55s var(--ease-out) calc(0.2s + var(--logo-i, 0) * 0.1s) both;
+}
+
+/* ── Logo image ──────────────────────────────────────────── */
+.clients__logo {
+    height: clamp(64px, 8vw, 100px);
+    width: auto;
+    max-width: 280px;
+    object-fit: contain;
+    display: block;
+    /* Greyscale resting — colour on hover */
+    filter: grayscale(1) opacity(0.5);
+    transform: scale(1);
     transition:
-        border-color var(--dur-fast),
-        color var(--dur-fast),
-        background var(--dur-fast);
+        filter    0.4s  var(--ease-out),
+        transform 0.4s  var(--ease-spring);
     cursor: default;
+    will-change: transform, filter;
 }
 
-.clients__pill:hover {
-    border-color: var(--c-forest);
-    color: var(--c-forest);
-    background: rgba(19, 48, 32, 0.04);
+.clients__logo-item:hover .clients__logo {
+    filter: grayscale(0) opacity(1);
+    animation: logoFloat 2.2s var(--ease-inout) infinite;
 }
 
-/* Responsive */
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 600px) {
     .clients {
         padding-block: var(--s-80);
+    }
+
+    .clients__inner {
+        gap: var(--s-20);
+    }
+
+    .clients__logos {
+        gap: var(--s-40);
+    }
+
+    .clients__br {
+        display: none;
+    }
+
+    .clients__logo {
+        height: 56px;
+    }
+}
+
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .clients__logos.reveal--visible .clients__logo-item {
+        animation: none !important;
+        opacity: 1;
+    }
+
+    .clients__logo-item:hover .clients__logo {
+        animation: none !important;
+        transform: scale(1.04);
+    }
+
+    .clients__rule.reveal--visible {
+        animation: none !important;
+        transform: none;
     }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import heroVideo from '../../assets/videos/light-and-shadows-on-folded-papers.mp4';
 import './HeroSection.css';
 
 export default function HeroSection() {
@@ -18,7 +19,6 @@ export default function HeroSection() {
 
     return (
         <section className="hero" id="hero">
-            {/* Pexels video 10922866 */}
             <div className="hero__media">
                 <video
                     ref={videoRef}
@@ -27,17 +27,8 @@ export default function HeroSection() {
                     muted
                     loop
                     playsInline
-                    poster="https://images.pexels.com/videos/10922866/pictures/preview-0.jpg"
-                >
-                    <source
-                        src="https://videos.pexels.com/video-files/10922866/10922866-uhd_2560_1440_25fps.mp4"
-                        type="video/mp4"
-                    />
-                    <source
-                        src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-                        type="video/mp4"
-                    />
-                </video>
+                    src={heroVideo}
+                />
                 <div className="hero__overlay" />
             </div>
 

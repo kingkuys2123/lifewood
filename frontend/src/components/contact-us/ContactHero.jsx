@@ -5,11 +5,6 @@ export default function ContactHero() {
         <section className="contact-hero">
             <div className="contact-hero__inner wrap">
 
-                <span className="contact-hero__eyebrow">
-                    <span className="contact-hero__dot" />
-                    Get in Touch
-                </span>
-
                 <h1 className="contact-hero__title">
                     Contact Us
                 </h1>

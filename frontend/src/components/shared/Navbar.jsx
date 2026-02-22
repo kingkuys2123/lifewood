@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import brandIcon from '../../assets/branding/lifewood-icon.png';
 import './Navbar.css';
 
@@ -68,16 +68,23 @@ function DropdownItem({ item, closeMobileMenu }) {
     if (!item.children) {
         return (
             <li className="nav__item">
-                <Link
+                <NavLink
                     to={item.to}
-                    className="nav__link"
+                    end
+                    className={({ isActive }) =>
+                        `nav__link${isActive ? ' nav__link--active' : ''}`
+                    }
                     onClick={closeMobileMenu}
                 >
                     {item.label}
-                </Link>
+                </NavLink>
             </li>
         );
     }
+
+    const location = useLocation();
+    // Highlight the parent button when any child route is currently active
+    const isParentActive = item.children?.some(c => location.pathname === c.to);
 
     const handleDesktopEnter = () => { if (!isMobile) setOpen(true); };
     const handleDesktopLeave = () => { if (!isMobile) setOpen(false); };
@@ -97,7 +104,7 @@ function DropdownItem({ item, closeMobileMenu }) {
             onMouseLeave={handleDesktopLeave}
         >
             <button
-                className="nav__link nav__link--parent"
+                className={`nav__link nav__link--parent${isParentActive ? ' nav__link--active' : ''}`}
                 aria-expanded={open}
                 aria-haspopup="true"
                 onClick={handleMobileToggle}
@@ -118,14 +125,17 @@ function DropdownItem({ item, closeMobileMenu }) {
                 <ul className="nav__drop-list">
                     {item.children.map((c) => (
                         <li key={c.label}>
-                            <Link
+                            <NavLink
                                 to={c.to}
-                                className="nav__drop-link"
+                                end
+                                className={({ isActive }) =>
+                                    `nav__drop-link${isActive ? ' nav__drop-link--active' : ''}`
+                                }
                                 role="menuitem"
                                 onClick={closeMobileMenu}
                             >
                                 {c.label}
-                            </Link>
+                            </NavLink>
                         </li>
                     ))}
                 </ul>

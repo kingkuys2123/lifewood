@@ -118,6 +118,7 @@ a.navbar__brand em {
     letter-spacing: 0.01em;
     white-space: nowrap;
     transition: background var(--dur-fast), color var(--dur-fast);
+    position: relative;
 }
 
 .nav__link:hover,
@@ -128,6 +129,47 @@ a.navbar__brand em {
 
 .nav__link--parent {
     cursor: default;
+}
+
+/* ── Active link highlight ─────────────────────────────── */
+
+/* Desktop top-level: colour shift only — no background fill */
+.nav__link--active {
+    color: #FFB347;
+    font-weight: var(--fw-semibold);
+}
+
+/* Suppress the default hover background so active links stay clean */
+.nav__link--active:hover,
+.nav__item--open > .nav__link--active {
+    color: #FFB347;
+    background: transparent;
+}
+
+/* Thin underline beneath the label — replaces the dot */
+.nav__link--active::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    border-radius: var(--r-full);
+    background: #FFB347;
+    opacity: 0.8;
+}
+
+/* Dropdown child: colour + left-border accent, no background */
+.nav__drop-link--active {
+    color: #FFB347;
+    font-weight: var(--fw-semibold);
+    border-left: 2px solid #FFB347;
+    padding-left: 12px;
+}
+
+.nav__drop-link--active:hover {
+    color: #FFB347;
+    background: rgba(255, 179, 71, 0.06);
 }
 
 .nav__caret {
@@ -375,5 +417,28 @@ a.navbar__brand em {
         color: var(--c-dark);
         padding-left: 18px;
         border-left-color: var(--c-forest, #133020);
+    }
+
+    /* Hide underline indicator — drawer layout uses left-border instead */
+    .nav__link--active::after {
+        display: none;
+    }
+
+    /* Mobile active top-level: colour + left accent strip */
+    .nav__link--active,
+    .nav__link--active:hover,
+    .nav__item--open > .nav__link--active {
+        color: #FFB347;
+        background: transparent;
+        border-left: 2px solid #FFB347;
+        padding-left: 12px;
+    }
+
+    /* Mobile active dropdown child */
+    .nav__drop-link--active,
+    .nav__drop-link--active:hover {
+        color: #FFB347;
+        background: transparent;
+        border-left-color: #FFB347;
     }
 }

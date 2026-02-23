@@ -1,0 +1,103 @@
+/* ── PHILANTHROPY HERO ───────────────────────────────────── */
+.ph-hero {
+    background: var(--c-white);
+    padding-block: calc(var(--navbar-h) + var(--s-80)) var(--s-80);
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Ambient blobs */
+.ph-hero__blob-tr {
+    position:absolute; top:-140px; right:-160px;
+    width:560px; height:560px; border-radius:50%;
+    background:radial-gradient(circle,rgba(245,166,35,.05) 0%,transparent 65%);
+    pointer-events:none;
+}
+.ph-hero__blob-bl {
+    position:absolute; bottom:-100px; left:-120px;
+    width:480px; height:480px; border-radius:50%;
+    background:radial-gradient(circle,rgba(19,48,32,.04) 0%,transparent 65%);
+    pointer-events:none;
+}
+
+/* Fine grid texture */
+.ph-hero__grid {
+    position:absolute; inset:0;
+    background-image:
+        linear-gradient(rgba(0,0,0,.022) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,0,0,.022) 1px,transparent 1px);
+    background-size:64px 64px;
+    pointer-events:none; opacity:.55;
+}
+
+.ph-hero__inner {
+    position:relative; z-index:1;
+    display:flex; flex-direction:column; align-items:center; gap:var(--s-20);
+    animation:ph-fade-up .75s cubic-bezier(.16,1,.3,1) .15s both;
+    max-width:760px; margin-inline:auto;
+}
+
+.ph-hero__eyebrow {
+    display:inline-flex; align-items:center; gap:var(--s-8);
+    font-family:var(--font-display); font-size:var(--t-11);
+    font-weight:var(--fw-bold); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--c-forest);
+}
+.ph-hero__dot {
+    width:5px; height:5px; border-radius:50%;
+    background:var(--c-saffron);
+    animation:ph-dot-pulse 2.8s ease-in-out infinite;
+}
+
+.ph-hero__title {
+    font-family:var(--font-display);
+    font-size:clamp(2.4rem,5.5vw,4.2rem);
+    font-weight:var(--fw-black);
+    letter-spacing:-.04em; line-height:1.05;
+    color:var(--c-charcoal);
+}
+.ph-hero__title em { font-style:normal; color:var(--c-forest); }
+
+.ph-hero__accent {
+    width:44px; height:3px;
+    background:var(--c-saffron); border-radius:var(--r-full);
+    transform-origin:center;
+}
+
+.ph-hero__para {
+    font-size:clamp(var(--t-16),1.7vw,var(--t-18));
+    line-height:1.85; color:var(--c-steel);
+    max-width:58ch; letter-spacing:.005em;
+}
+
+.ph-hero__badges {
+    display:flex; gap:var(--s-10); flex-wrap:wrap; justify-content:center;
+    padding-top:var(--s-8);
+}
+.ph-hero__badge {
+    display:inline-flex; align-items:center; gap:var(--s-6);
+    padding:6px 16px; background:var(--c-ice);
+    border:1px solid var(--border-subtle); border-radius:var(--r-full);
+    font-family:var(--font-display); font-size:var(--t-12);
+    font-weight:var(--fw-semibold); color:var(--c-charcoal);
+    letter-spacing:.01em;
+    animation:ph-float 4s ease-in-out infinite;
+}
+.ph-hero__badge:nth-child(2){ animation-delay:.6s; }
+.ph-hero__badge:nth-child(3){ animation-delay:1.2s; }
+.ph-hero__badge-dot {
+    width:5px; height:5px; border-radius:50%;
+    background:var(--c-saffron); flex-shrink:0;
+}
+
+@media(max-width:640px){
+    .ph-hero { padding-block:calc(var(--navbar-h) + var(--s-48)) var(--s-56); text-align:left; }
+    .ph-hero__inner{ align-items:flex-start; }
+    .ph-hero__badges{ justify-content:flex-start; }
+}
+@media(prefers-reduced-motion:reduce){
+    .ph-hero__inner,.ph-hero__dot,.ph-hero__badge{ animation:none!important; opacity:1!important; transform:none!important; }
+}
+

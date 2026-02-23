@@ -10,6 +10,7 @@ import TermsConditions from './pages/policies/TermsConditions';
 import ContactUs from './pages/landing-page/contact-us/ContactUs';
 import ApplyNow from './pages/landing-page/apply/ApplyNow';
 import Careers from './pages/landing-page/careers/Careers';
+import InternalNews from './pages/landing-page/internal-news/InternalNews';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -25,7 +26,8 @@ export default function App() {
           <Route path="/terms-and-conditions" element={<TermsConditions />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/apply"   element={<ApplyNow />} />
-          <Route path="/careers" element={<Careers />} />
+          <Route path="/careers"       element={<Careers />} />
+          <Route path="/internal-news"  element={<InternalNews />} />
           {/* Catch-all — must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>

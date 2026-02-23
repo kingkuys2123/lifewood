@@ -1,12 +1,25 @@
 /* ═══════════════════════════════════════════════════════════
-   CAREERS IMAGE SECTION  (parallax meeting image)
+   CAREERS IMAGE SECTION  — enhanced parallax & reveal
    ═══════════════════════════════════════════════════════════ */
 
+@keyframes ci-scale-in {
+    from { transform: scale(1.06); filter: brightness(0.4) saturate(0.7); }
+    to   { transform: scale(1);    filter: brightness(0.55) saturate(0.85); }
+}
+
+@keyframes ci-rule-grow {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
 .careers-image {
     position: relative;
     background: var(--c-charcoal);
     overflow: hidden;
     height: clamp(360px, 56vw, 640px);
+    /* isolation keeps z-index scope */
+    isolation: isolate;
 }
 
 /* Parallax image */
@@ -20,14 +33,15 @@
     will-change: transform;
     transition: transform 0.08s linear;
     filter: brightness(0.55) saturate(0.85);
+    animation: ci-scale-in 1.2s cubic-bezier(0.16,1,0.3,1) both;
 }
 
 /* Gradient overlays for depth */
 .careers-image__grad-top {
     position: absolute;
     inset: 0 0 auto 0;
-    height: 35%;
-    background: linear-gradient(to bottom, var(--c-forest), transparent);
+    height: 40%;
+    background: linear-gradient(to bottom, var(--c-forest) 0%, transparent 100%);
     pointer-events: none;
     z-index: 1;
 }
@@ -35,8 +49,19 @@
 .careers-image__grad-bot {
     position: absolute;
     inset: auto 0 0 0;
-    height: 45%;
+    height: 48%;
     background: linear-gradient(to top, var(--c-white) 0%, rgba(255,255,255,0) 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Vignette side edges */
+.careers-image__vignette {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 0% 50%,   rgba(0,0,0,0.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 100% 50%, rgba(0,0,0,0.25) 0%, transparent 50%);
     pointer-events: none;
     z-index: 1;
 }
@@ -47,7 +72,7 @@
     z-index: 2;
     bottom: clamp(var(--s-32), 5vw, var(--s-64));
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(24px);
     width: min(680px, 88vw);
     text-align: center;
     display: flex;
@@ -55,8 +80,9 @@
     align-items: center;
     gap: var(--s-12);
     opacity: 0;
-    transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
-    transform: translateX(-50%) translateY(18px);
+    transition:
+        opacity   0.75s cubic-bezier(0.16,1,0.3,1),
+        transform 0.75s cubic-bezier(0.16,1,0.3,1);
 }
 
 .careers-image__caption.ci-visible {
@@ -71,7 +97,7 @@
     letter-spacing: -0.03em;
     line-height: 1.2;
     color: var(--c-white);
-    text-shadow: 0 2px 24px rgba(0,0,0,0.4);
+    text-shadow: 0 2px 32px rgba(0,0,0,0.5);
 }
 
 .careers-image__quote em {
@@ -79,17 +105,33 @@
     color: var(--c-saffron);
 }
 
+/* Saffron rule — grows in after caption appears */
 .careers-image__rule {
     width: 40px;
     height: 2px;
     background: var(--c-saffron);
     border-radius: var(--r-full);
+    transform-origin: center;
+    transform: scaleX(0);
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1) 0.4s;
+}
+
+.careers-image__caption.ci-visible .careers-image__rule {
+    transform: scaleX(1);
 }
 
 .careers-image__sub {
     font-size: var(--t-14);
-    color: rgba(255,255,255,0.55);
-    letter-spacing: 0.02em;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.55s, letter-spacing 0.5s ease 0.55s;
+}
+
+.careers-image__caption.ci-visible .careers-image__sub {
+    opacity: 1;
+    letter-spacing: 0.16em;
 }
 
 /* ── Responsive ─────────────────────────────────────────── */
@@ -104,11 +146,19 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .careers-image__img { transition: none !important; }
-    .careers-image__caption {
+    .careers-image__img {
+        animation: none !important;
+        transition: none !important;
+    }
+    .careers-image__caption,
+    .careers-image__rule,
+    .careers-image__sub {
         opacity: 1 !important;
         transform: translateX(-50%) !important;
         transition: none !important;
+        letter-spacing: 0.16em !important;
+    }
+    .careers-image__caption.ci-visible .careers-image__rule {
+        transform: scaleX(1) !important;
     }
 }
-

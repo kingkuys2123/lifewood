@@ -1,11 +1,48 @@
 /* ═══════════════════════════════════════════════════════════
-   CAREERS CULTURE  (headline + culture-values brick grid)
+   CAREERS CULTURE  — enhanced animations & micro-interactions
    ═══════════════════════════════════════════════════════════ */
 
+@keyframes cc-line {
+    from { transform: scaleX(0); opacity: 0; }
+    to   { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes cc-shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position:  400px 0; }
+}
+
+@keyframes cc-section-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
 .careers-culture {
     background: var(--c-white);
     padding-block: var(--s-120);
     overflow: hidden;
+    position: relative;
+}
+
+/* Subtle background orb behind the values block */
+.careers-culture::before {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: -80px;
+    width: 480px; height: 480px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245,166,35,0.04) 0%, transparent 65%);
+    pointer-events: none;
+}
+.careers-culture::after {
+    content: '';
+    position: absolute;
+    top: -60px; left: -80px;
+    width: 380px; height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(19,48,32,0.04) 0%, transparent 65%);
+    pointer-events: none;
 }
 
 /* ── Inner layout ───────────────────────────────────────── */
@@ -13,6 +50,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--s-80);
+    position: relative;
+    z-index: 1;
 }
 
 /* ── Text block ─────────────────────────────────────────── */
@@ -31,6 +70,7 @@
     top: calc(var(--navbar-h) + var(--s-40));
 }
 
+/* Heading — characters animate via opacity+transform on reveal */
 .careers-culture__heading {
     font-family: var(--font-display);
     font-size: clamp(var(--t-28), 3.5vw, var(--t-48));
@@ -43,23 +83,38 @@
 .careers-culture__heading em {
     font-style: normal;
     color: var(--c-forest);
+    position: relative;
 }
 
+/* Animated underline on the em — triggers when left reveal fires */
+.careers-culture__heading em::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2.5px;
+    background: var(--c-saffron);
+    border-radius: 2px;
+    transform-origin: left;
+    transform: scaleX(0);
+    opacity: 0;
+}
+
+.careers-culture__left.reveal--visible .careers-culture__heading em::after {
+    animation: cc-line 0.65s cubic-bezier(0.16,1,0.3,1) 0.5s forwards;
+}
+
+/* Accent line */
 .careers-culture__accent {
     width: 40px; height: 3px;
     background: var(--c-saffron);
     border-radius: var(--r-full);
     transform-origin: left;
+    transform: scaleX(0);
+    opacity: 0;
 }
 
-/* Animate accent line when parent is revealed */
 .careers-culture__left.reveal--visible .careers-culture__accent {
     animation: cc-line 0.6s cubic-bezier(0.16,1,0.3,1) 0.3s both;
-}
-
-@keyframes cc-line {
-    from { transform: scaleX(0); opacity: 0; }
-    to   { transform: scaleX(1); opacity: 1; }
 }
 
 .careers-culture__right {
@@ -75,7 +130,7 @@
     letter-spacing: 0.005em;
 }
 
-/* ── Values brick grid ──────────────────────────────────── */
+/* ── Values label ───────────────────────────────────────── */
 .careers-culture__values-wrap {
     display: flex;
     flex-direction: column;
@@ -101,13 +156,14 @@
     flex-shrink: 0;
 }
 
+/* ── Bricks container ───────────────────────────────────── */
 .careers-culture__bricks {
     display: flex;
     flex-wrap: wrap;
     gap: var(--s-10);
 }
 
-/* Individual brick/pill */
+/* ── Individual brick/pill ──────────────────────────────── */
 .cc-brick {
     display: inline-flex;
     align-items: center;
@@ -121,15 +177,37 @@
     white-space: nowrap;
     cursor: default;
     border: 1.5px solid transparent;
-    transition:
-        background   0.22s ease,
-        border-color 0.22s ease,
-        color        0.22s ease,
-        transform    0.28s cubic-bezier(0.16,1,0.3,1),
-        box-shadow   0.28s ease;
-    /* Stagger in via reveal delay */
+    position: relative;
+    overflow: hidden;
+    /* Stagger entrance */
     opacity: 0;
-    transform: translateY(12px) scale(0.96);
+    transform: translateY(14px) scale(0.94);
+    transition:
+        background    0.25s ease,
+        border-color  0.25s ease,
+        color         0.25s ease,
+        transform     0.3s  cubic-bezier(0.16,1,0.3,1),
+        box-shadow    0.3s  ease;
+}
+
+/* Shimmer sweep layer */
+.cc-brick::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.18) 50%,
+        transparent 70%
+    );
+    transform: translateX(-100%);
+    transition: transform 0s; /* disabled by default */
+}
+
+.cc-brick:hover::before {
+    transform: translateX(100%);
+    transition: transform 0.45s ease;
 }
 
 .cc-brick.cb-visible {
@@ -137,60 +215,62 @@
     transform: translateY(0) scale(1);
 }
 
-/* Color variants */
+/* ── Color variants ─────────────────────────────────────── */
 .cc-brick--forest {
     background: rgba(19,48,32,0.06);
     color: var(--c-forest);
     border-color: rgba(19,48,32,0.10);
 }
-
 .cc-brick--forest:hover {
     background: var(--c-forest);
     color: var(--c-white);
     border-color: var(--c-forest);
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 8px 28px rgba(19,48,32,0.22);
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 10px 32px rgba(19,48,32,0.25), 0 2px 8px rgba(19,48,32,0.12);
 }
+.cc-brick--forest:active { transform: translateY(-1px) scale(1.01); }
 
 .cc-brick--saffron {
     background: rgba(245,166,35,0.08);
     color: #a86800;
     border-color: rgba(245,166,35,0.18);
 }
-
 .cc-brick--saffron:hover {
     background: var(--c-saffron);
     color: #fff;
     border-color: var(--c-saffron);
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 8px 28px rgba(245,166,35,0.3);
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 10px 32px rgba(245,166,35,0.35), 0 2px 8px rgba(245,166,35,0.15);
 }
+.cc-brick--saffron:active { transform: translateY(-1px) scale(1.01); }
 
 .cc-brick--charcoal {
     background: var(--c-ice);
     color: var(--c-charcoal);
     border-color: var(--border-subtle);
 }
-
 .cc-brick--charcoal:hover {
     background: var(--c-charcoal);
     color: var(--c-white);
     border-color: var(--c-charcoal);
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 10px 32px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1);
 }
+.cc-brick--charcoal:active { transform: translateY(-1px) scale(1.01); }
 
-/* Brick icon dot */
+/* Dot inside brick */
 .cc-brick__dot {
     width: 5px; height: 5px;
     border-radius: 50%;
     background: currentColor;
-    opacity: 0.45;
+    opacity: 0.4;
     flex-shrink: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
-.cc-brick:hover .cc-brick__dot { opacity: 0.8; }
+.cc-brick:hover .cc-brick__dot {
+    opacity: 1;
+    transform: scale(1.3);
+}
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 860px) {
@@ -198,25 +278,22 @@
         grid-template-columns: 1fr;
         gap: var(--s-32);
     }
-    .careers-culture__left {
-        position: static;
-    }
+    .careers-culture__left { position: static; }
 }
 
 @media (max-width: 640px) {
-    .careers-culture {
-        padding-block: var(--s-80);
-    }
+    .careers-culture { padding-block: var(--s-80); }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .cc-brick,
-    .careers-culture__accent {
+    .careers-culture__accent,
+    .careers-culture__heading em::after {
         animation: none !important;
-        transition: none !important;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease !important;
         opacity: 1 !important;
         transform: none !important;
     }
+    .cc-brick::before { display: none; }
     .cc-brick:hover { transform: none !important; }
 }
-

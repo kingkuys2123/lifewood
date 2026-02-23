@@ -1,7 +1,32 @@
 /* ═══════════════════════════════════════════════════════════
-   CAREERS CTA — closing call-to-action
+   CAREERS CTA — enhanced animations & immersive effects
    ═══════════════════════════════════════════════════════════ */
 
+@keyframes cta-dot-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.7); opacity: 0.5; }
+}
+
+@keyframes cta-float-tl {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    40%       { transform: translate(30px,-20px) scale(1.06); }
+    70%       { transform: translate(-15px,15px) scale(0.97); }
+}
+
+@keyframes cta-float-br {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    35%       { transform: translate(-25px,18px) scale(1.05); }
+    65%       { transform: translate(18px,-22px) scale(0.96); }
+}
+
+/* Dot particles */
+@keyframes cta-particle {
+    0%   { transform: translateY(0)  scale(1);   opacity: 0.12; }
+    50%  { transform: translateY(-20px) scale(1.2); opacity: 0.22; }
+    100% { transform: translateY(0)  scale(1);   opacity: 0.12; }
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
 .careers-cta {
     background: var(--c-forest);
     padding-block: var(--s-120);
@@ -9,26 +34,55 @@
     overflow: hidden;
 }
 
-/* Ambient blobs */
+/* ── Animated ambient blobs ─────────────────────────────── */
 .careers-cta__blob-tl {
     position: absolute;
     top: -100px; left: -100px;
-    width: 480px; height: 480px;
+    width: 500px; height: 500px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(245,166,35,0.09) 0%, transparent 65%);
     pointer-events: none;
+    animation: cta-float-tl 20s ease-in-out infinite;
+    will-change: transform;
 }
 
 .careers-cta__blob-br {
     position: absolute;
     bottom: -100px; right: -80px;
-    width: 420px; height: 420px;
+    width: 440px; height: 440px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 65%);
+    pointer-events: none;
+    animation: cta-float-br 16s ease-in-out infinite;
+    will-change: transform;
+}
+
+/* Decorative particle dots */
+.careers-cta__particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+.careers-cta__particle {
+    position: absolute;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: rgba(245,166,35,0.25);
+    animation: cta-particle var(--dur, 6s) ease-in-out var(--delay, 0s) infinite;
+}
+
+/* Static grid texture */
+.careers-cta__grid {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+    background-size: 80px 80px;
     pointer-events: none;
 }
 
-/* Inner */
+/* ── Inner ──────────────────────────────────────────────── */
 .careers-cta__inner {
     position: relative;
     z-index: 1;
@@ -36,7 +90,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: var(--s-32);
+    gap: var(--s-28);
     max-width: 760px;
     margin-inline: auto;
 }
@@ -59,9 +113,10 @@
     border-radius: 50%;
     background: var(--c-saffron);
     flex-shrink: 0;
+    animation: cta-dot-pulse 2.8s ease-in-out infinite;
 }
 
-/* Quote/pull text */
+/* Quote */
 .careers-cta__quote {
     font-family: var(--font-display);
     font-size: clamp(var(--t-22), 3.2vw, var(--t-36));
@@ -74,6 +129,25 @@
 .careers-cta__quote em {
     font-style: normal;
     color: var(--c-saffron);
+    position: relative;
+}
+
+.careers-cta__quote em::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 2px;
+    background: var(--c-saffron);
+    border-radius: 2px;
+    transform-origin: left;
+    transform: scaleX(0);
+    opacity: 0.45;
+}
+
+/* Trigger when the quote itself is revealed */
+.careers-cta__quote.reveal--visible em::after,
+.careers-cta__inner .reveal--visible ~ * .careers-cta__quote em::after {
+    animation: cc-line 0.7s cubic-bezier(0.16,1,0.3,1) 0.45s forwards;
 }
 
 /* Rule */
@@ -83,7 +157,7 @@
     border-radius: var(--r-full);
 }
 
-/* Body paragraph */
+/* Body */
 .careers-cta__body {
     font-size: clamp(var(--t-15), 1.5vw, var(--t-17));
     line-height: 1.85;
@@ -91,13 +165,13 @@
     letter-spacing: 0.005em;
 }
 
-/* Tag line */
+/* Tagline */
 .careers-cta__tagline {
     font-family: var(--font-display);
     font-size: var(--t-13);
     font-weight: var(--fw-semibold);
     letter-spacing: 0.05em;
-    color: rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.22);
     font-style: italic;
 }
 
@@ -131,40 +205,44 @@
     overflow: hidden;
     transition:
         background   0.22s ease,
-        box-shadow   0.3s cubic-bezier(0.16,1,0.3,1),
-        transform    0.3s cubic-bezier(0.16,1,0.3,1),
+        box-shadow   0.35s cubic-bezier(0.16,1,0.3,1),
+        transform    0.35s cubic-bezier(0.16,1,0.3,1),
         gap          0.2s ease;
 }
 
 .careers-cta__btn-primary::before {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
-    transform: translateX(-100%);
-    transition: transform 0.5s ease;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.15) 50%, transparent 65%);
+    transform: translateX(-120%);
+    transition: transform 0.55s ease;
 }
-
-.careers-cta__btn-primary:hover::before { transform: translateX(100%); }
+.careers-cta__btn-primary:hover::before { transform: translateX(120%); }
 
 .careers-cta__btn-primary:hover {
     background: #e8950f;
-    box-shadow: 0 10px 40px rgba(245,166,35,0.40);
-    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(245,166,35,0.45), 0 2px 8px rgba(245,166,35,0.2);
+    transform: translateY(-3px) scale(1.02);
     gap: var(--s-12);
 }
 
-.careers-cta__btn-primary svg {
-    transition: transform 0.2s cubic-bezier(0.16,1,0.3,1);
+.careers-cta__btn-primary:active {
+    transform: translateY(-1px) scale(0.99);
+    box-shadow: 0 4px 14px rgba(245,166,35,0.3);
 }
 
-.careers-cta__btn-primary:hover svg { transform: translateX(4px); }
+.careers-cta__btn-primary svg {
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    flex-shrink: 0;
+}
+.careers-cta__btn-primary:hover svg { transform: translateX(5px); }
 
 .careers-cta__btn-primary:focus-visible {
     outline: 2px solid var(--c-saffron);
     outline-offset: 3px;
 }
 
-/* Secondary — ghost white */
+/* Ghost */
 .careers-cta__btn-ghost {
     display: inline-flex;
     align-items: center;
@@ -180,18 +258,22 @@
     cursor: pointer;
     text-decoration: none;
     transition:
-        border-color 0.2s ease,
-        color        0.2s ease,
-        background   0.2s ease,
-        transform    0.3s cubic-bezier(0.16,1,0.3,1);
+        border-color 0.22s ease,
+        color        0.22s ease,
+        background   0.22s ease,
+        transform    0.35s cubic-bezier(0.16,1,0.3,1),
+        box-shadow   0.35s ease;
 }
 
 .careers-cta__btn-ghost:hover {
-    border-color: rgba(255,255,255,0.35);
+    border-color: rgba(255,255,255,0.38);
     color: var(--c-white);
-    background: rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.07);
     transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.22);
 }
+
+.careers-cta__btn-ghost:active { transform: translateY(0) scale(0.99); }
 
 .careers-cta__btn-ghost:focus-visible {
     outline: 2px solid rgba(255,255,255,0.4);
@@ -200,9 +282,7 @@
 
 /* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 640px) {
-    .careers-cta {
-        padding-block: var(--s-80);
-    }
+    .careers-cta { padding-block: var(--s-80); }
     .careers-cta__actions {
         flex-direction: column;
         width: 100%;
@@ -215,13 +295,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .careers-cta__blob-tl,
+    .careers-cta__blob-br,
+    .careers-cta__eyebrow-dot,
+    .careers-cta__particle {
+        animation: none !important;
+    }
     .careers-cta__btn-primary,
-    .careers-cta__btn-ghost {
-        transition: none !important;
-    }
+    .careers-cta__btn-ghost { transition: none !important; }
     .careers-cta__btn-primary:hover,
-    .careers-cta__btn-ghost:hover {
-        transform: none !important;
-    }
+    .careers-cta__btn-ghost:hover  { transform: none !important; }
 }
-

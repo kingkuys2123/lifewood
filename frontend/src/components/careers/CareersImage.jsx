@@ -43,8 +43,9 @@ export default function CareersImage() {
                 loading="lazy"
                 decoding="async"
             />
-            <div className="careers-image__grad-top" aria-hidden="true" />
-            <div className="careers-image__grad-bot" aria-hidden="true" />
+            <div className="careers-image__grad-top"  aria-hidden="true" />
+            <div className="careers-image__grad-bot"  aria-hidden="true" />
+            <div className="careers-image__vignette"  aria-hidden="true" />
 
             <div className="careers-image__caption" ref={captionRef}>
                 <p className="careers-image__quote">

@@ -174,7 +174,7 @@ export function PhImpact() {
         <section className="ph-impact" ref={ref} id="ph-impact">
             <div className="ph-impact__inner wrap">
                 <div className="ph-impact__section-head reveal">
-                    <span className="section-eyebrow"><span className="section-dot"/>Impact &amp; Partnership</span>
+                    <span className="section-eyebrow"><span className=""/>Impact &amp; Partnership</span>
                     <h2 className="ph-impact__section-title">
                         Stories of <em>Transformation</em>
                     </h2>
@@ -224,7 +224,6 @@ export function PhCTA() {
             <div className="ph-cta__blob-br" aria-hidden="true"/>
             <div className="ph-cta__inner wrap">
                 <span className="ph-cta__eyebrow reveal">
-                    <span className="ph-cta__eyebrow-dot" aria-hidden="true"/>
                     Join the Mission
                 </span>
                 <h2 className="ph-cta__heading reveal reveal-delay-1">

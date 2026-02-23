@@ -145,14 +145,26 @@ function DropdownItem({ item, closeMobileMenu }) {
 }
 
 /** Routes where the hero is white — navbar must always be solid */
-const ALWAYS_SOLID_PATHS = ['/privacy-policy', '/cookie-policy', '/terms-and-conditions', '/contact', '/apply', '/internal-news', '/philanthropy'];
+const ALWAYS_SOLID_PATHS = [
+    '/privacy-policy',
+    '/cookie-policy',
+    '/terms-and-conditions',
+    '/contact',
+    '/apply',
+    '/internal-news',
+    '/philanthropy',
+    '/careers',
+];
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
 
-    const isForcedSolid = ALWAYS_SOLID_PATHS.includes(location.pathname);
+    /* Match exact path OR any sub-path (e.g. /philanthropy/impact) */
+    const isForcedSolid = ALWAYS_SOLID_PATHS.some(
+        (p) => location.pathname === p || location.pathname.startsWith(p + '/')
+    );
 
     const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
 

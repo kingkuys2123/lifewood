@@ -52,13 +52,19 @@
     background:var(--c-snow);
     padding-block:var(--s-96);
     position:relative; overflow:hidden;
+    /* keep section BELOW the navbar z-stack */
+    isolation: isolate;
+    z-index: 0;
 }
 .ph-map-section__inner {
     display:flex; flex-direction:column; gap:var(--s-40);
+    position: relative;
+    z-index: 0;
 }
 .ph-map-section__header {
     display:flex; flex-direction:column; gap:var(--s-16);
     align-items:flex-start;
+    position: relative;
 }
 .ph-map-section__heading {
     font-family:var(--font-display);
@@ -67,6 +73,12 @@
     color:var(--c-charcoal);
 }
 .ph-map-section__heading em { font-style:normal; color:var(--c-forest); }
+
+/* Sub-text row: just the paragraph */
+.ph-map-section__sub-row {
+    display: flex;
+    align-items: center;
+}
 .ph-map-section__sub {
     font-size:var(--t-16); line-height:1.8; color:var(--c-steel);
     max-width:52ch;
@@ -75,9 +87,76 @@
     width:40px; height:3px; background:var(--c-saffron);
     border-radius:var(--r-full); transform-origin:left;
 }
-/* Animated when .reveal--visible fires on parent */
 .ph-map-section__header.reveal--visible .ph-map-section__accent {
     animation:ph-line-grow .55s cubic-bezier(.16,1,.3,1) .25s both;
+}
+
+/* ── Rotating circular "Be Amazed" badge ────────────────── */
+@keyframes ph-spin-cw  { from{transform:rotate(0deg)}   to{transform:rotate(360deg)}  }
+
+/* Absolute — sits in the top-right corner of .ph-map-card */
+.ph-be-amazed-circle {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 7;           /* above all leaflet layers (max z-index:6) */
+    width:  96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    /* Glassmorphism disc */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.13);
+}
+
+/* The SVG text path — rotates clockwise */
+.ph-be-amazed-circle__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    animation: ph-spin-cw 10s linear infinite;
+}
+
+.ph-be-amazed-circle__svg text {
+    font-family: var(--font-display);
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 2.6px;
+    text-transform: uppercase;
+    fill: var(--c-forest);
+}
+
+/* Center saffron dot — static */
+.ph-be-amazed-circle__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--c-saffron);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 3px rgba(245,166,35,.22);
+}
+
+@media(max-width:640px){
+    .ph-be-amazed-circle {
+        width: 76px;
+        height: 76px;
+        top: 10px;
+        right: 10px;
+    }
+    .ph-be-amazed-circle__svg text { font-size:6.5px; letter-spacing:2px; }
+}
+
+@media(prefers-reduced-motion:reduce){
+    .ph-be-amazed-circle__svg { animation:none!important; }
 }
 
 /* ── Map container ───────────────────────────────────────── */
@@ -87,18 +166,29 @@
     box-shadow:0 4px 24px rgba(0,0,0,.07);
     height:clamp(360px,48vw,560px);
     position:relative;
+    z-index: 0;          /* ← never above navbar */
     transition:box-shadow .3s ease,transform .3s cubic-bezier(.16,1,.3,1);
 }
 .ph-map-card:hover {
     box-shadow:0 12px 48px rgba(0,0,0,.12);
     transform:translateY(-3px);
 }
-/* fix leaflet z-index in modal stacks */
+/* Leaflet z-index — keep tiles + controls below navbar (z~100) */
 .ph-map-card .leaflet-container {
     width:100%; height:100%;
     font-family:var(--font-body);
     border-radius:var(--r-24);
+    z-index: 0 !important;
 }
+.ph-map-card .leaflet-pane          { z-index: 1 !important; }
+.ph-map-card .leaflet-tile-pane     { z-index: 1 !important; }
+.ph-map-card .leaflet-overlay-pane  { z-index: 2 !important; }
+.ph-map-card .leaflet-marker-pane   { z-index: 3 !important; }
+.ph-map-card .leaflet-tooltip-pane  { z-index: 4 !important; }
+.ph-map-card .leaflet-popup-pane    { z-index: 5 !important; }
+.ph-map-card .leaflet-control       { z-index: 6 !important; }
+.ph-map-card .leaflet-top,
+.ph-map-card .leaflet-bottom        { z-index: 6 !important; }
 
 /* Custom pin */
 .ph-pin-wrap {
@@ -119,28 +209,10 @@
 }
 .ph-pin-dot--hover { background:var(--c-saffron); }
 
-/* "Be Amazed" animated label */
-.ph-be-amazed {
-    position:absolute; top:var(--s-20); right:var(--s-24);
-    z-index:410; pointer-events:none;
-    display:flex; flex-direction:column; align-items:flex-end; gap:4px;
-}
-.ph-be-amazed__text {
-    font-family:var(--font-display);
-    font-size:var(--t-11); font-weight:var(--fw-bold);
-    letter-spacing:.18em; text-transform:uppercase;
-    color:var(--c-forest); opacity:.7;
-    animation:ph-float 4s ease-in-out infinite;
-}
-.ph-be-amazed__line {
-    width:28px; height:1.5px;
-    background:var(--c-saffron); border-radius:var(--r-full);
-}
-
-/* Country count badge */
+/* Country count badge — inside map */
 .ph-map-count {
     position:absolute; bottom:var(--s-20); left:var(--s-20);
-    z-index:410; pointer-events:none;
+    z-index:6; pointer-events:none;
     display:inline-flex; align-items:center; gap:var(--s-8);
     background:rgba(255,255,255,.92);
     backdrop-filter:blur(8px);

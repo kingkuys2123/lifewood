@@ -89,19 +89,38 @@ export function PhMap() {
                     <h2 className="ph-map-section__heading">
                         Transforming <em>Communities</em><br/>Worldwide
                     </h2>
-                    <p className="ph-map-section__sub reveal reveal-delay-1">
-                        Lifewood's impact spans {COUNTRIES.length} countries across Africa and Asia,
-                        delivering education and development programmes that create lasting change.
-                    </p>
+
+                    {/* Sub-text — plain paragraph, badge moved onto map */}
+                    <div className="ph-map-section__sub-row reveal reveal-delay-1">
+                        <p className="ph-map-section__sub">
+                            Lifewood's impact spans {COUNTRIES.length} countries across Africa and Asia,
+                            delivering education and development programmes that create lasting change.
+                        </p>
+                    </div>
+
                     <div className="ph-map-section__accent"/>
                 </div>
 
                 <div className="ph-map-card reveal reveal-delay-2">
-                    {/* "Be Amazed" floating label */}
-                    <div className="ph-be-amazed" aria-hidden="true">
-                        <span className="ph-be-amazed__text">be amazed</span>
-                        <span className="ph-be-amazed__line"/>
+
+                    {/* Rotating "Be Amazed" badge — top-right corner of map */}
+                    <div className="ph-be-amazed-circle" aria-hidden="true">
+                        <svg className="ph-be-amazed-circle__svg" viewBox="0 0 96 96">
+                            <defs>
+                                <path
+                                    id="ph-circle-path"
+                                    d="M 48,48 m -34,0 a 34,34 0 1,1 68,0 a 34,34 0 1,1 -68,0"
+                                />
+                            </defs>
+                            <text>
+                                <textPath href="#ph-circle-path" startOffset="0%">
+                                    BE AMAZED · BE AMAZED · BE AMAZED ·
+                                </textPath>
+                            </text>
+                        </svg>
+                        <span className="ph-be-amazed-circle__dot" />
                     </div>
+
 
                     {/* Country count badge */}
                     <div className="ph-map-count" aria-label={`${COUNTRIES.length} countries`}>

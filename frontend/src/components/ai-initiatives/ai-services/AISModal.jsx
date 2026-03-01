@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { useReveal } from '../../../hooks/useReveal';
 import './AIServices.css';
 
@@ -21,44 +21,26 @@ const CARDS = [
   },
 ];
 
-/* Simple drag-to-scroll */
-function useDragScroll(ref) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    let isDown = false, startX, scrollLeft;
-    const down  = e => { isDown = true; startX = e.pageX - el.offsetLeft; scrollLeft = el.scrollLeft; };
-    const up    = ()  => { isDown = false; };
-    const move  = e  => { if (!isDown) return; e.preventDefault(); el.scrollLeft = scrollLeft - (e.pageX - el.offsetLeft - startX); };
-    el.addEventListener('mousedown', down);
-    el.addEventListener('mouseleave', up);
-    el.addEventListener('mouseup', up);
-    el.addEventListener('mousemove', move);
-    return () => {
-      el.removeEventListener('mousedown', down);
-      el.removeEventListener('mouseleave', up);
-      el.removeEventListener('mouseup', up);
-      el.removeEventListener('mousemove', move);
-    };
-  }, [ref]);
-}
-
 export default function AISModal() {
   const sectionRef = useRef(null);
-  const trackRef   = useRef(null);
   useReveal(sectionRef, 0.1);
-  useDragScroll(trackRef);
+
+  /* Render two identical sets so the marquee loops seamlessly */
+  const allCards = [...CARDS, ...CARDS, ...CARDS, ...CARDS];
 
   return (
     <section className="ais-modal" ref={sectionRef}>
       <div className="ais-modal__track-wrap">
-        <div className="ais-modal__track" ref={trackRef}>
-          {[...CARDS, ...CARDS].map((c, i) => (
-            <article key={i} className="ais-modal__card">
-              <h3 className="ais-modal__card-title">{c.title}</h3>
-              <p className="ais-modal__card-body">{c.body}</p>
-            </article>
-          ))}
+        {/* aria-hidden on the duplicate strip so screen readers only see one set */}
+        <div className="ais-modal__marquee" aria-label="Modality services">
+          <div className="ais-modal__strip">
+            {allCards.map((c, i) => (
+              <article key={i} className="ais-modal__card" tabIndex={i < CARDS.length ? 0 : -1}>
+                <h3 className="ais-modal__card-title">{c.title}</h3>
+                <p className="ais-modal__card-body">{c.body}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
     </section>

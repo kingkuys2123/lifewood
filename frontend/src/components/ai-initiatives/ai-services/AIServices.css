@@ -162,49 +162,54 @@
   overflow: hidden;
 }
 
+/* Fade edges */
 .ais-modal__track-wrap::before,
 .ais-modal__track-wrap::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 80px;
+  width: 120px;
   z-index: 2;
   pointer-events: none;
 }
 
 .ais-modal__track-wrap::before {
   left: 0;
-  background: linear-gradient(to right, #fff, transparent);
+  background: linear-gradient(to right, #fff 10%, transparent);
 }
 
 .ais-modal__track-wrap::after {
   right: 0;
-  background: linear-gradient(to left, #fff, transparent);
+  background: linear-gradient(to left, #fff 10%, transparent);
 }
 
-.ais-modal__track {
+/* The scrolling belt */
+.ais-modal__marquee {
+  overflow: hidden;
+  padding: var(--s-16) 0;
+}
+
+.ais-modal__strip {
   display: flex;
   gap: var(--s-20);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding: var(--s-16) var(--s-80);
-  scrollbar-width: none;
-  cursor: grab;
+  width: max-content;
+  animation: ais-marquee-slide 32s linear infinite;
+  will-change: transform;
 }
 
-.ais-modal__track:active {
-  cursor: grabbing;
+/* Pause on hover anywhere in the section */
+.ais-modal:hover .ais-modal__strip {
+  animation-play-state: paused;
 }
 
-.ais-modal__track::-webkit-scrollbar {
-  display: none;
+@keyframes ais-marquee-slide {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .ais-modal__card {
   flex: 0 0 300px;
-  scroll-snap-align: start;
   background: var(--c-white);
   border: 1.5px solid var(--c-mist);
   border-radius: var(--r-20);
@@ -213,13 +218,14 @@
     box-shadow var(--dur-base),
     transform var(--dur-base) var(--ease-out),
     border-color var(--dur-base);
-  cursor: pointer;
+  cursor: default;
+  user-select: none;
 }
 
 .ais-modal__card:hover {
   box-shadow: var(--sh-lg);
   transform: translateY(-6px);
-  border-color: transparent;
+  border-color: rgba(0,0,0,0.06);
 }
 
 .ais-modal__card-title {
@@ -235,6 +241,15 @@
   font-size: var(--t-14);
   color: var(--c-steel);
   line-height: 1.65;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ais-modal__strip {
+    animation: none;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 0 var(--s-20);
+  }
 }
 
 /* ── §3 VIDEO ────────────────────────────────────────────── */

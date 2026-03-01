@@ -177,7 +177,18 @@ function AccordionItem({ project, isOpen, onToggle, index }) {
       </button>
       <div className="aip-acc__panel" id={`aip-panel-${project.id}`} role="region">
         <div className="aip-acc__panel-inner">
-          <p className="aip-acc__desc">{project.description}</p>
+          <div className="aip-acc__desc">
+            {project.description.split(/\n\n+/).map((para, pi) => (
+              <p key={pi} className="aip-acc__para">
+                {para.split('\n').map((line, li, arr) => (
+                  <span key={li}>
+                    {line}
+                    {li < arr.length - 1 && <br />}
+                  </span>
+                ))}
+              </p>
+            ))}
+          </div>
           <a href="/contact" className="aip-acc__cta">
             Learn more
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
@@ -192,10 +203,19 @@ function AccordionItem({ project, isOpen, onToggle, index }) {
 
 export default function AIPAccordion() {
   const [openId, setOpenId] = useState('2.1');
+  const [previewId, setPreviewId] = useState('2.1'); // never goes null
   const ref = useRef(null);
   useReveal(ref, 0.05);
-  const toggle = (id) => setOpenId(prev => prev === id ? null : id);
-  const active = PROJECTS.find(p => p.id === openId);
+
+  const toggle = (id) => {
+    setOpenId(prev => {
+      const next = prev === id ? null : id;
+      if (next !== null) setPreviewId(next); // only update preview when opening
+      return next;
+    });
+  };
+
+  const active = PROJECTS.find(p => p.id === previewId);
 
   return (
     <section className="aip-acc-section" ref={ref}>
@@ -219,7 +239,7 @@ export default function AIPAccordion() {
                   src={p.img}
                   alt={p.title}
                   loading="lazy"
-                  className={`aip-acc__preview-img${openId === p.id ? ' is-active' : ''}`}
+                  className={`aip-acc__preview-img${previewId === p.id ? ' is-active' : ''}`}
                 />
               ))}
               {active && (

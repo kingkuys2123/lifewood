@@ -23,19 +23,6 @@ export default function AIPHero() {
           is shaping the future with{' '}
           <em>innovation, integrity and a focus on people.</em>
         </p>
-        <div className="aip-hero__stats reveal reveal-delay-3">
-          {[
-            { value: '7+',  label: 'Active Projects' },
-            { value: '50+', label: 'Languages' },
-            { value: '20+', label: 'Countries' },
-            { value: '56k+', label: 'Contributors' },
-          ].map((s) => (
-            <div className="aip-hero__stat" key={s.label}>
-              <span className="aip-hero__stat-value">{s.value}</span>
-              <span className="aip-hero__stat-label">{s.label}</span>
-            </div>
-          ))}
-        </div>
       </div>
     </section>
   );

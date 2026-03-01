@@ -17,7 +17,7 @@ export default function AISVideo() {
           <div className="ais-video__embed">
             <iframe
               title="Lifewood Services 4k"
-              src="https://www.youtube.com/embed/AtyK1JY4m0E"
+              src="https://www.youtube.com/embed/g_JvAVL0WY4?si=2CXfkoMGP3mf95fh"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
               loading="lazy"

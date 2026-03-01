@@ -12,6 +12,7 @@ import ApplyNow from './pages/landing-page/apply/ApplyNow';
 import Careers from './pages/landing-page/careers/Careers';
 import InternalNews from './pages/landing-page/internal-news/InternalNews';
 import PhilanthropyImpact from './pages/landing-page/philanthropy-&-impact/PhilanthropyImpact';
+import AIServices from './pages/landing-page/ai-initiatives/ai-services/AIServices';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/careers"       element={<Careers />} />
           <Route path="/internal-news"  element={<InternalNews />} />
           <Route path="/philanthropy"   element={<PhilanthropyImpact />} />
+          <Route path="/ai-initiatives/services" element={<AIServices />} />
           {/* Catch-all — must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>

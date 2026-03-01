@@ -154,6 +154,7 @@ const ALWAYS_SOLID_PATHS = [
     '/internal-news',
     '/philanthropy',
     '/careers',
+    '/ai-initiatives',
 ];
 
 export default function Navbar() {

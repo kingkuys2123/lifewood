@@ -1,0 +1,274 @@
+/* ═══════════════════════════════════════════════════════════
+   ABOUT CORE VALUES — Section 3
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes au-val-slide-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes au-card-enter {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes au-badge-spin {
+    from { transform: rotate(-5deg) scale(0.9); opacity: 0; }
+    to   { transform: rotate(0deg)  scale(1);   opacity: 1; }
+}
+
+/* ── Shell ──────────────────────────────────────────────────── */
+.au-values {
+    position: relative;
+    background: var(--c-white);
+    padding-block: var(--s-96) var(--s-120);
+    overflow: hidden;
+}
+
+.au-values__stripe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--c-forest) 0%, var(--c-saffron) 50%, var(--c-forest) 100%);
+    background-size: 200% 100%;
+    animation: au-badge-spin 0s linear;
+}
+
+/* ── Inner layout ───────────────────────────────────────────── */
+.au-values__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-80);
+    align-items: start;
+}
+
+/* ── Left column ────────────────────────────────────────────── */
+.au-values__left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-28);
+    position: sticky;
+    top: calc(var(--navbar-h) + var(--s-40));
+}
+
+.au-values__eyebrow { margin-bottom: calc(-1 * var(--s-8)); }
+
+.au-values__title-block {}
+
+.au-values__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-48), 6vw, var(--t-72));
+    font-weight: var(--fw-black);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--c-charcoal);
+}
+
+.au-values__heading-highlight {
+    display: inline-block;
+    background: var(--c-saffron);
+    color: var(--c-white);
+    padding: 0 var(--s-12);
+    border-radius: var(--r-8);
+    font-style: italic;
+}
+
+.au-values__intro {
+    font-size: var(--t-16);
+    line-height: 1.75;
+    color: var(--c-steel);
+    max-width: 380px;
+}
+
+/* ── DCII acronym ───────────────────────────────────────────── */
+.au-values__acronym {
+    display: flex;
+    gap: var(--s-8);
+    margin-top: var(--s-8);
+}
+
+.au-values__acronym-letter {
+    font-family: var(--font-display);
+    font-size: var(--t-48);
+    font-weight: var(--fw-black);
+    color: var(--c-mist);
+    letter-spacing: -0.05em;
+    transition: color 0.3s var(--ease-out), transform 0.3s var(--ease-spring);
+}
+
+.au-values__acronym-letter--active {
+    color: var(--val-color);
+    transform: scale(1.18) translateY(-4px);
+}
+
+/* ── Cards column ───────────────────────────────────────────── */
+.au-values__cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+}
+
+/* ── Single card ────────────────────────────────────────────── */
+.au-values__card {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--c-white);
+    border: 1.5px solid var(--c-mist);
+    border-radius: var(--r-16);
+    overflow: hidden;
+    cursor: pointer;
+    animation: au-card-enter 0.6s var(--ease-out) both;
+    transition:
+        border-color 0.3s var(--ease-out),
+        box-shadow 0.4s var(--ease-out),
+        translate 0.35s var(--ease-spring);
+    outline: none;
+}
+
+.au-values__card--entry-1 { animation-delay: 0.08s; }
+.au-values__card--entry-2 { animation-delay: 0.16s; }
+.au-values__card--entry-3 { animation-delay: 0.24s; }
+.au-values__card--entry-4 { animation-delay: 0.32s; }
+
+.au-values__card:hover,
+.au-values__card--active {
+    border-color: var(--val-color);
+    box-shadow: 0 8px 32px var(--val-accent);
+    translate: 6px 0;
+}
+
+.au-values__card:focus-visible {
+    outline: 3px solid var(--val-color);
+    outline-offset: 2px;
+}
+
+/* ── Letter badge ───────────────────────────────────────────── */
+.au-values__badge {
+    width: 72px;
+    align-self: stretch;
+    background: var(--val-color, var(--c-forest));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: width 0.3s var(--ease-out);
+}
+
+.au-values__card--active .au-values__badge {
+    width: 80px;
+}
+
+.au-values__badge-letter {
+    font-family: var(--font-display);
+    font-size: var(--t-48);
+    font-weight: var(--fw-black);
+    color: var(--c-white);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    transition: transform 0.35s var(--ease-spring);
+}
+
+.au-values__card--active .au-values__badge-letter {
+    transform: scale(1.12);
+}
+
+/* ── Card content ───────────────────────────────────────────── */
+.au-values__card-content {
+    padding: var(--s-20) var(--s-24);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-12);
+    flex: 1;
+}
+
+.au-values__card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--s-10);
+}
+
+.au-values__card-icon {
+    color: var(--val-color);
+    opacity: 0.75;
+    transition: opacity 0.3s, transform 0.35s var(--ease-spring);
+    flex-shrink: 0;
+}
+
+.au-values__card--active .au-values__card-icon {
+    opacity: 1;
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.au-values__card-label {
+    font-family: var(--font-display);
+    font-size: var(--t-11);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.1em;
+    color: var(--val-color);
+    padding: 3px 8px;
+    background: var(--val-accent);
+    border-radius: var(--r-full);
+}
+
+.au-values__card-divider {
+    height: 1px;
+    background: var(--c-mist);
+    transition: background 0.3s;
+}
+
+.au-values__card--active .au-values__card-divider {
+    background: var(--val-color);
+    opacity: 0.2;
+}
+
+.au-values__card-body {
+    font-size: var(--t-14);
+    line-height: 1.75;
+    color: var(--c-steel);
+    transition: color 0.3s;
+}
+
+.au-values__card--active .au-values__card-body {
+    color: var(--c-charcoal);
+}
+
+/* ── Hover glow ─────────────────────────────────────────────── */
+.au-values__card-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(135deg, var(--val-accent) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+    border-radius: inherit;
+}
+
+.au-values__card--active .au-values__card-glow {
+    opacity: 1;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 960px) {
+    .au-values__inner {
+        grid-template-columns: 1fr;
+        gap: var(--s-56);
+    }
+
+    .au-values__left {
+        position: static;
+    }
+}
+
+@media (max-width: 480px) {
+    .au-values__badge {
+        width: 56px;
+    }
+    .au-values__badge-letter {
+        font-size: var(--t-36);
+    }
+}
+

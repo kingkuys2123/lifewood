@@ -1,0 +1,241 @@
+/* ═══════════════════════════════════════════════════════════
+   ABOUT HERO — Section 1
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes au-hero-fade-up {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes au-orb-1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    40%       { transform: translate(60px, -40px) scale(1.12); }
+    70%       { transform: translate(-20px, 30px) scale(0.94); }
+}
+@keyframes au-orb-2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    35%       { transform: translate(-50px, 30px) scale(1.08); }
+    65%       { transform: translate(30px, -20px) scale(0.97); }
+}
+@keyframes au-orb-3 {
+    0%, 100% { opacity: 0.10; transform: scale(1); }
+    50%       { opacity: 0.22; transform: scale(1.15); }
+}
+
+@keyframes au-grid-line {
+    from { transform: scaleY(0); opacity: 0; }
+    to   { transform: scaleY(1); opacity: 1; }
+}
+
+@keyframes au-scroll-bounce {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    50%       { transform: scaleY(1.4) translateY(4px); }
+}
+
+@keyframes au-dot-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.5); opacity: 0.6; }
+}
+
+/* ── Shell ──────────────────────────────────────────────────── */
+.au-hero {
+    position: relative;
+    min-height: 100svh;
+    background: var(--c-white);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding-block: calc(var(--navbar-h) + var(--s-80)) var(--s-80);
+}
+
+/* ── Grid lines ─────────────────────────────────────────────── */
+.au-hero__grid-lines {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.au-hero__grid-line {
+    display: block;
+    border-right: 1px solid rgba(19, 48, 32, 0.045);
+    height: 100%;
+    transform-origin: top center;
+    animation: au-grid-line 1.4s var(--ease-out) both;
+}
+
+/* ── Staggered entry animations for hero content ────────────── */
+.au-hero__anim {
+    opacity: 0;
+    animation: au-hero-fade-up 0.8s var(--ease-out) both;
+}
+
+.au-hero__anim--0 { animation-delay: 0.15s; }
+.au-hero__anim--1 { animation-delay: 0.30s; }
+.au-hero__anim--2 { animation-delay: 0.48s; }
+.au-hero__anim--3 { animation-delay: 0.62s; }
+.au-hero__anim--4 { animation-delay: 0.78s; }
+
+/* ── Floating orbs ──────────────────────────────────────────── */
+.au-hero__orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.au-hero__orb--1 {
+    width: 520px;
+    height: 520px;
+    top: -140px;
+    right: -120px;
+    background: radial-gradient(circle, rgba(19,48,32,0.06) 0%, transparent 70%);
+    animation: au-orb-1 18s ease-in-out infinite;
+}
+
+.au-hero__orb--2 {
+    width: 360px;
+    height: 360px;
+    bottom: -80px;
+    left: -80px;
+    background: radial-gradient(circle, rgba(245,166,35,0.08) 0%, transparent 70%);
+    animation: au-orb-2 22s ease-in-out infinite;
+}
+
+.au-hero__orb--3 {
+    width: 200px;
+    height: 200px;
+    top: 40%;
+    left: 42%;
+    background: radial-gradient(circle, rgba(19,48,32,0.05) 0%, transparent 70%);
+    animation: au-orb-3 12s ease-in-out infinite;
+}
+
+/* ── Inner wrapper ──────────────────────────────────────────── */
+.au-hero__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-32);
+    max-width: 860px;
+}
+
+/* ── Eyebrow row ────────────────────────────────────────────── */
+.au-hero__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--s-8);
+}
+
+.au-hero__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--c-charcoal);
+    flex-shrink: 0;
+    animation: au-dot-pulse 2.8s ease-in-out infinite;
+}
+
+.au-hero__dot--outline {
+    background: transparent;
+    border: 2px solid var(--c-charcoal);
+    animation-delay: 0.4s;
+}
+
+.au-hero__dash {
+    width: 52px;
+    height: 1.5px;
+    background: var(--c-mist);
+    flex-shrink: 0;
+}
+
+/* ── Heading ────────────────────────────────────────────────── */
+.au-hero__heading {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: var(--fw-black);
+    line-height: 1.0;
+    letter-spacing: -0.04em;
+    color: var(--c-charcoal);
+}
+
+.au-hero__heading-em {
+    display: inline-block;
+    color: var(--c-forest);
+}
+
+/* ── Body text ──────────────────────────────────────────────── */
+.au-hero__body {
+    font-family: var(--font-body);
+    font-size: clamp(var(--t-16), 1.8vw, var(--t-20));
+    line-height: 1.75;
+    color: var(--c-charcoal);
+    max-width: 720px;
+}
+
+.au-hero__body-accent {
+    color: var(--c-saffron);
+    font-weight: var(--fw-semibold);
+}
+
+.au-hero__body-forest {
+    color: var(--c-forest);
+    font-weight: var(--fw-medium);
+}
+
+/* ── Decorative rule ────────────────────────────────────────── */
+.au-hero__rule {
+    width: 80px;
+    height: 3px;
+    border-radius: var(--r-full);
+    background: linear-gradient(90deg, var(--c-forest), var(--c-saffron));
+}
+
+/* ── Scroll cue ─────────────────────────────────────────────── */
+.au-hero__scroll {
+    display: flex;
+    align-items: center;
+    gap: var(--s-12);
+    margin-top: var(--s-16);
+}
+
+.au-hero__scroll-label {
+    font-family: var(--font-display);
+    font-size: var(--t-11);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-steel);
+}
+
+.au-hero__scroll-line {
+    width: 48px;
+    height: 2px;
+    background: var(--c-mist);
+    border-radius: var(--r-full);
+    position: relative;
+    overflow: hidden;
+}
+
+.au-hero__scroll-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--c-forest), var(--c-saffron));
+    border-radius: var(--r-full);
+    transform-origin: left;
+    animation: au-scroll-bounce 2s ease-in-out infinite;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 600px) {
+    .au-hero__grid-lines { display: none; }
+    .au-hero__heading { letter-spacing: -0.025em; }
+    .au-hero__orb--1 { width: 280px; height: 280px; }
+    .au-hero__orb--2 { width: 200px; height: 200px; }
+}
+

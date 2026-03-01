@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════
+   ABOUT GALLERY — Section 5
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes au-gal-open {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes au-gal-backdrop {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ── Shell ──────────────────────────────────────────────────── */
+.au-gallery {
+    background: var(--c-ice);
+    padding-block: var(--s-96) var(--s-120);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+.au-gallery__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+    margin-bottom: var(--s-56);
+}
+
+.au-gallery__eyebrow { }
+
+.au-gallery__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-36), 4.5vw, var(--t-56));
+    font-weight: var(--fw-black);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: var(--c-charcoal);
+}
+
+.au-gallery__heading-em {
+    color: var(--c-saffron);
+}
+
+.au-gallery__sub {
+    font-size: var(--t-16);
+    color: var(--c-steel);
+    max-width: 480px;
+}
+
+/* ── Masonry grid ───────────────────────────────────────────── */
+.au-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: 200px;
+    gap: var(--s-12);
+}
+
+/* ── Item base ──────────────────────────────────────────────── */
+.au-gallery__item {
+    display: block;
+    position: relative;
+    border-radius: var(--r-16);
+    overflow: hidden;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    background: var(--c-mist);
+    transition:
+        transform 0.4s var(--ease-spring),
+        box-shadow 0.4s var(--ease-out);
+}
+
+.au-gallery__item:hover {
+    transform: scale(1.03);
+    box-shadow: var(--sh-xl);
+    z-index: 2;
+    opacity: 1;
+}
+
+.au-gallery__item:focus-visible {
+    outline: 3px solid var(--c-forest);
+    outline-offset: 3px;
+}
+
+/* Item size modifiers */
+.au-gallery__item--large {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.au-gallery__item--medium {
+    grid-column: span 1;
+    grid-row: span 2;
+}
+
+.au-gallery__item--small {
+    grid-column: span 1;
+    grid-row: span 1;
+}
+
+/* ── Image ──────────────────────────────────────────────────── */
+.au-gallery__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    transition: transform 0.6s var(--ease-out);
+}
+
+.au-gallery__item:hover .au-gallery__img {
+    transform: scale(1.06);
+}
+
+/* ── Overlay ────────────────────────────────────────────────── */
+.au-gallery__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 40%, rgba(19,48,32,0.78) 100%);
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out);
+    display: flex;
+    align-items: flex-end;
+    padding: var(--s-20);
+}
+
+.au-gallery__item:hover .au-gallery__overlay {
+    opacity: 1;
+}
+
+.au-gallery__overlay-content {
+    display: flex;
+    align-items: center;
+    gap: var(--s-10);
+    color: var(--c-white);
+    font-family: var(--font-display);
+    font-size: var(--t-13);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.03em;
+    transform: translateY(8px);
+    transition: transform 0.3s var(--ease-out);
+}
+
+.au-gallery__item:hover .au-gallery__overlay-content {
+    transform: translateY(0);
+}
+
+/* ── Lightbox backdrop ──────────────────────────────────────── */
+.au-gallery__lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 10, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--s-24);
+    animation: au-gal-backdrop 0.3s var(--ease-out) both;
+    cursor: zoom-out;
+}
+
+/* ── Lightbox inner ─────────────────────────────────────────── */
+.au-gallery__lightbox-inner {
+    position: relative;
+    max-width: 90vw;
+    max-height: 88vh;
+    border-radius: var(--r-20);
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    animation: au-gal-open 0.35s var(--ease-spring) both;
+    cursor: default;
+}
+
+/* ── Lightbox image ─────────────────────────────────────────── */
+.au-gallery__lightbox-img {
+    display: block;
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: var(--r-20);
+}
+
+/* ── Lightbox caption ───────────────────────────────────────── */
+.au-gallery__lightbox-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(10,10,10,0.7));
+    padding: var(--s-28) var(--s-24) var(--s-20);
+    color: var(--c-white);
+    font-family: var(--font-display);
+    font-size: var(--t-14);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* ── Close button ───────────────────────────────────────────── */
+.au-gallery__lightbox-close {
+    position: absolute;
+    top: var(--s-16);
+    right: var(--s-16);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.18);
+    color: var(--c-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s var(--ease-spring);
+    cursor: pointer;
+    border: none;
+    backdrop-filter: blur(6px);
+}
+
+.au-gallery__lightbox-close:hover {
+    background: rgba(255,255,255,0.32);
+    transform: scale(1.1);
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .au-gallery__grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: 180px;
+    }
+    .au-gallery__item--large { grid-column: span 2; grid-row: span 2; }
+    .au-gallery__item--medium { grid-column: span 1; grid-row: span 2; }
+}
+
+@media (max-width: 540px) {
+    .au-gallery__grid {
+        grid-template-columns: 1fr 1fr;
+        grid-auto-rows: 140px;
+        gap: var(--s-8);
+    }
+    .au-gallery__item--large { grid-column: span 2; }
+    .au-gallery__item--medium { grid-column: span 1; }
+}
+

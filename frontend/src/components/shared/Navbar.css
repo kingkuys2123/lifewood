@@ -121,6 +121,21 @@ a.navbar__brand em {
     position: relative;
 }
 
+.nav__link::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    border-radius: var(--r-full);
+    background: #FFB347;
+    transform: scaleX(0);
+    transform-origin: left center;
+    opacity: 0;
+    transition: transform 220ms var(--ease-out), opacity 220ms var(--ease-out);
+}
+
 .nav__link:hover,
 .nav__item--open>.nav__link {
     background: var(--c-ice);
@@ -146,16 +161,8 @@ a.navbar__brand em {
     background: transparent;
 }
 
-/* Thin underline beneath the label — replaces the dot */
 .nav__link--active::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 12px;
-    right: 12px;
-    height: 2px;
-    border-radius: var(--r-full);
-    background: #FFB347;
+    transform: scaleX(1);
     opacity: 0.8;
 }
 

@@ -514,265 +514,517 @@
   transform: translateX(4px);
 }
 
-/* ── §5 ECOSYSTEM GRID ───────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   §5  ECOSYSTEM  (prefix: eco-)
+   ══════════════════════════════════════════════════════════════ */
 .ais-eco {
   padding: var(--s-96) 0 var(--s-120);
   background: var(--c-white);
 }
 
-.ais-eco__grid {
+/* ── grid ── */
+.eco-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto;
-  gap: var(--s-20);
+  grid-template-columns: 340px 1fr 1fr;
+  grid-auto-rows: auto;
+  gap: 20px;
+  align-items: stretch;
 }
 
-/* Dark tall card — Data Validation */
-.ais-eco__card {
-  background: var(--c-white);
-  border: 1.5px solid var(--c-mist);
-  border-radius: var(--r-20);
-  padding: var(--s-32);
-  transition:
-    box-shadow var(--dur-base),
-    transform var(--dur-base) var(--ease-out),
-    border-color var(--dur-base);
-  overflow: hidden;
+/* ── base card ── */
+.eco-card {
+  border-radius: 24px;
+  padding: 32px;
+  overflow: visible;         /* must be visible so 3-D flip children aren't clipped */
   position: relative;
-}
-
-.ais-eco__card:hover {
-  box-shadow: var(--sh-lg);
-  transform: translateY(-4px);
-  border-color: rgba(0,0,0,0.1);
-}
-
-.ais-eco__card--dark {
-  background: var(--c-charcoal);
-  border-color: transparent;
-  grid-row: span 2;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
+.eco-card:hover { box-shadow: 0 16px 56px rgba(0,0,0,0.10); }
 
-.ais-eco__card--dark:hover {
-  background: #111;
-  border-color: transparent;
-}
+/* annotation overrides the base hover transform so they don't clash */
+.eco-card--annotation:hover { transform: none; box-shadow: none; }
 
-.ais-eco__card--dark .ais-eco__title {
-  color: #fff;
-}
-
-.ais-eco__card--dark .ais-eco__body {
-  color: rgba(255,255,255,0.65);
-}
-
-.ais-eco__card--dark .ais-eco__copy {
-  color: rgba(255,255,255,0.55);
-}
-
-.ais-eco__title {
+/* shared typography */
+.eco-card__title {
   font-family: var(--font-display);
   font-size: var(--t-20);
   font-weight: var(--fw-bold);
-  color: var(--c-charcoal);
-  margin-bottom: var(--s-12);
   line-height: 1.3;
+  margin-bottom: 10px;
 }
-
-.ais-eco__body {
-  font-size: var(--t-14);
-  color: var(--c-charcoal);
-  line-height: 1.7;
-  margin-bottom: var(--s-16);
-}
-
-.ais-eco__copy {
-  font-size: var(--t-13);
-  color: var(--c-steel);
-  line-height: 1.65;
-  margin-top: var(--s-16);
-}
-
-.ais-eco__image {
-  width: 100%;
-  border-radius: var(--r-12);
-  object-fit: cover;
-  margin-top: var(--s-20);
-}
-
-.ais-eco__image--dark {
-  border-radius: var(--r-12);
-  overflow: hidden;
-  margin-top: auto;
-}
-
-.ais-eco__image--dark img {
-  width: 100%;
-  object-fit: cover;
-}
-
-.ais-eco__copyright {
+.eco-card__body  { font-size: var(--t-14); line-height: 1.72; margin-bottom: 8px; }
+.eco-card__copy  { font-size: var(--t-13); color: var(--c-steel); line-height: 1.65; }
+.eco-card__copyright {
   font-family: var(--font-display);
-  font-size: var(--t-12);
+  font-size: var(--t-11);
   font-weight: var(--fw-semibold);
-  color: rgba(255,255,255,0.5);
-  margin-top: var(--s-32);
+  letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.3);
+  margin-top: auto;
+  padding-top: 16px;
 }
 
-/* Acquisition avatar cluster */
-.ais-eco__cluster {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s-8);
-  margin-top: var(--s-20);
-  align-items: center;
-  justify-items: center;
-}
+.eco-card--validation  { overflow: hidden; }
+.eco-card--collection  { overflow: hidden; }
+.eco-card--acquisition { overflow: visible; } /* orbit planets extend beyond boundary */
+.eco-card--curation    { overflow: hidden; }
 
-.ais-eco__cluster-logo {
-  font-family: var(--font-display);
-  font-size: var(--t-18);
-  font-weight: var(--fw-black);
-  color: var(--c-charcoal);
-  display: flex;
-  align-items: center;
-  gap: 4px;
+/* ══════════════════════════════════════════════════════════════
+   CARD 1 — DATA VALIDATION  (dark · spans 2 rows · terminal)
+   ══════════════════════════════════════════════════════════════ */
+.eco-card--validation {
+  background: #0c0f0d;
+  border: 1.5px solid rgba(255,255,255,0.06);
+  grid-row: span 2;
+  cursor: pointer;
 }
-
-.ais-eco__cluster-logo span {
-  color: var(--c-saffron);
+.eco-card--validation:hover {
+  border-color: rgba(74,222,128,0.2);
+  box-shadow: 0 0 0 1px rgba(74,222,128,0.12), 0 24px 64px rgba(0,0,0,0.4);
 }
+.eco-card--validation .eco-card__title { color: #fff; }
+.eco-card--validation .eco-card__body  { color: rgba(255,255,255,0.6); }
+.eco-card--validation .eco-card__copy  { color: rgba(255,255,255,0.38); }
 
-.ais-eco__avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--c-mist);
+
+.eco-val__text { margin-bottom: 20px; }
+
+/* terminal window */
+.eco-val__terminal {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
   overflow: hidden;
+  min-height: 140px;
+}
+.eco-val__scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(74,222,128,0.5), transparent);
+  animation: eco-scan 3.5s linear infinite;
+  pointer-events: none;
+}
+@keyframes eco-scan {
+  0%   { top: 0;    opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.eco-val__output { display: flex; flex-direction: column; gap: 8px; }
+.eco-val__line {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
 }
+.eco-val__line--ok    { color: #4ade80; font-weight: 700; }
+.eco-val__line--idle  { color: rgba(255,255,255,0.25); }
+.eco-val__prompt      { color: #4ade80; user-select: none; }
+.eco-val__cursor {
+  display: inline-block;
+  width: 7px; height: 13px;
+  background: #4ade80;
+  margin-left: 2px;
+  border-radius: 1px;
+  animation: eco-blink 1s step-end infinite;
+}
+@keyframes eco-blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-/* Dots grid — Data Curation */
-.ais-eco__dots {
+/* ══════════════════════════════════════════════════════════════
+   CARD 2 — DATA COLLECTION  (light · stacked folders)
+   ══════════════════════════════════════════════════════════════ */
+.eco-card--collection {
+  background: var(--c-snow);
+  border: 1.5px solid var(--c-mist);
+}
+.eco-card--collection .eco-card__title { color: var(--c-charcoal); }
+
+.eco-col__folders {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: var(--s-24);
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 20px;
+  align-items: flex-end;
 }
 
-.ais-eco__dot {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: transform var(--dur-base) var(--ease-spring);
+.eco-col__folder {
+  flex: 1;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px 10px 8px 8px;
+  background: transparent;
+  padding: 0;
+  position: relative;
+  transform-origin: bottom center;
+  transform: scaleY(0.88) translateY(4px);
+  transition: transform 0.25s var(--ease-spring), filter 0.2s;
+  filter: saturate(0.6) brightness(0.9);
+}
+.eco-col__folder.is-open {
+  transform: scaleY(1) translateY(0) translateY(-6px);
+  filter: saturate(1) brightness(1);
+  z-index: 2;
+}
+.eco-col__folder:hover {
+  filter: saturate(1) brightness(1.05);
 }
 
-.ais-eco__card:hover .ais-eco__dot {
-  transform: scale(1.12);
+/* folder tab */
+.eco-col__folder-tab {
+  display: block;
+  height: 8px;
+  width: 55%;
+  border-radius: 5px 5px 0 0;
+  background: var(--fc, #F5A623);
+  margin-left: 8px;
+  opacity: 0.85;
 }
-
-.ais-eco__dot--saffron { background: var(--c-saffron); }
-.ais-eco__dot--forest  { background: var(--c-forest); }
-
-/* Annotation badge */
-.ais-eco__badge {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: var(--s-10);
-  background: var(--c-charcoal);
-  color: #fff;
-  border-radius: var(--r-full);
-  padding: 10px 18px;
-  font-size: var(--t-13);
-  line-height: 1.5;
-  margin-top: var(--s-20);
-  max-width: 280px;
-}
-
-.ais-eco__badge-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--c-saffron);
-  flex-shrink: 0;
+/* folder body */
+.eco-col__folder-body {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  gap: 5px;
+  background: var(--fc, #F5A623);
+  border-radius: 0 8px 8px 8px;
+  padding: 14px 8px 10px;
+  min-height: 72px;
+  opacity: 0.82;
+  transition: opacity 0.2s;
 }
-
-/* ── Section head shared ─────────────────────────────────── */
-.ais-head {
-  margin-bottom: var(--s-56);
-}
-
-.ais-head__title {
+.eco-col__folder.is-open .eco-col__folder-body { opacity: 1; }
+.eco-col__folder-icon  { font-size: 1.4rem; line-height: 1; }
+.eco-col__folder-label {
   font-family: var(--font-display);
-  font-size: clamp(var(--t-32), 4vw, var(--t-48));
-  font-weight: var(--fw-black);
-  color: var(--c-charcoal);
-  line-height: 1.12;
-  letter-spacing: -0.025em;
-  margin-bottom: var(--s-16);
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.ais-head__sub {
-  font-size: var(--t-17);
+/* ══════════════════════════════════════════════════════════════
+   CARD 3 — DATA ACQUISITION  (spinning orbit + real logo)
+   ══════════════════════════════════════════════════════════════ */
+.eco-card--acquisition {
+  background: var(--c-white);
+  border: 1.5px solid var(--c-mist);
+}
+.eco-card--acquisition .eco-card__title { color: var(--c-charcoal); }
+
+.eco-acq__stage {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 20px auto 0;
+  flex-shrink: 0;
+}
+
+/* rings */
+.eco-acq__ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.eco-acq__ring--outer {
+  inset: 0;
+  border: 1.5px dashed rgba(0,0,0,0.12);
+  transition: border-color 0.3s;
+}
+.eco-acq__ring--inner {
+  inset: 30px;
+  border: 1.5px solid rgba(245,166,35,0.25);
+}
+
+/* animations */
+.eco-acq__ring--outer.is-spinning         { animation: eco-spin-cw  10s linear infinite; }
+.eco-acq__ring--inner.is-spinning-reverse { animation: eco-spin-ccw 14s linear infinite; }
+@keyframes eco-spin-cw  { to { transform: rotate(360deg); } }
+@keyframes eco-spin-ccw { to { transform: rotate(-360deg); } }
+
+.eco-card--acquisition:hover .eco-acq__ring--outer {
+  border-color: rgba(245,166,35,0.4);
+  border-style: solid;
+}
+
+/* planets sit at the N/E/S/W of the outer ring */
+.eco-acq__planet {
+  position: absolute;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--c-mist);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  /* counter-rotate so images stay upright */
+  animation: eco-spin-ccw 10s linear infinite;
+}
+.eco-acq__planet-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.eco-acq__planet:nth-child(1) { top: -20px;  left: calc(50% - 20px); }
+.eco-acq__planet:nth-child(2) { right: -20px; top:  calc(50% - 20px); }
+.eco-acq__planet:nth-child(3) { bottom: -20px; left: calc(50% - 20px); }
+.eco-acq__planet:nth-child(4) { left: -20px;  top:  calc(50% - 20px); }
+
+/* pause counter-rotate when ring stops */
+.eco-acq__ring--outer:not(.is-spinning) .eco-acq__planet {
+  animation: none;
+}
+
+/* hub */
+.eco-acq__hub {
+  position: absolute;
+  inset: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--c-mist);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transition: box-shadow 0.3s;
+  z-index: 2;
+}
+.eco-card--acquisition:hover .eco-acq__hub {
+  box-shadow: 0 0 0 4px rgba(245,166,35,0.15), 0 8px 24px rgba(0,0,0,0.1);
+}
+.eco-acq__logo {
+  width: 64px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARD 4 — DATA CURATION  (dot constellation + SVG lines)
+   ══════════════════════════════════════════════════════════════ */
+.eco-card--curation {
+  background: var(--c-white);
+  border: 1.5px solid var(--c-mist);
+}
+.eco-card--curation .eco-card__title { color: var(--c-charcoal); }
+
+.eco-cur__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+  margin-top: auto;
+  padding-top: 20px;
+  overflow: visible;
+}
+
+.eco-cur__dot {
+  width: var(--ds, 32px);
+  height: var(--ds, 32px);
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: transform 0.35s var(--ease-spring), box-shadow 0.3s;
+  animation: eco-dot-breathe calc(1.6s + var(--di, 0) * 0.18s) ease-in-out infinite alternate;
+}
+@keyframes eco-dot-breathe {
+  from { transform: scale(0.82); opacity: 0.65; }
+  to   { transform: scale(1.0);  opacity: 1;    }
+}
+.eco-cur__field.is-excited .eco-cur__dot {
+  animation-duration: 0.4s;
+}
+.eco-cur__field.is-excited .eco-cur__dot--saffron {
+  box-shadow: 0 0 14px rgba(245,166,35,0.55);
+}
+.eco-cur__field.is-excited .eco-cur__dot--forest {
+  box-shadow: 0 0 14px rgba(26,107,60,0.45);
+}
+.eco-cur__dot--saffron { background: var(--c-saffron); }
+.eco-cur__dot--forest  { background: var(--c-forest); }
+
+/* SVG connector lines */
+.eco-cur__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+.eco-cur__line {
+  fill: none;
+  stroke: rgba(0,0,0,0.07);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+.eco-cur__line--alt {
+  stroke: rgba(245,166,35,0.18);
+  stroke-dasharray: none;
+}
+.eco-cur__field.is-excited .eco-cur__line     { stroke: rgba(0,0,0,0.12); }
+.eco-cur__field.is-excited .eco-cur__line--alt { stroke: rgba(245,166,35,0.4); }
+
+/* ══════════════════════════════════════════════════════════════
+   CARD 5 — DATA ANNOTATION  (3-D flip card)
+   ══════════════════════════════════════════════════════════════ */
+
+/* outer reveal wrapper fills the grid cell */
+.eco-ann__wrapper {
+  display: contents; /* participates in grid as if it's not there */
+}
+
+.eco-card--annotation {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  perspective: 900px;
+  min-height: 320px;
+  overflow: visible;
+  /* remove base hover lift — flip handles the interaction */
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.eco-ann__flipper {
+  position: relative;
+  width: 100%;
+  min-height: 320px;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+  border-radius: 24px;
+}
+.eco-card--annotation.is-flipped .eco-ann__flipper {
+  transform: rotateY(180deg);
+}
+
+.eco-ann__face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 24px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* front */
+.eco-ann__front {
+  background: var(--c-white);
+  border: 1.5px solid var(--c-mist);
+}
+.eco-ann__front .eco-card__title { color: var(--c-charcoal); }
+.eco-ann__front .eco-card__body  { color: var(--c-charcoal); }
+
+/* spinning tag */
+.eco-ann__tag-wrap {
+  margin-top: auto;
+  padding-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.eco-ann__tag-icon {
+  font-size: 2.4rem;
+  display: inline-block;
+  animation: eco-tag-spin 4s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes eco-tag-spin {
+  0%,100% { transform: rotate(-12deg) scale(1);   }
+  50%      { transform: rotate( 12deg) scale(1.12); }
+}
+.eco-ann__hint {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: var(--fw-medium);
   color: var(--c-steel);
+  letter-spacing: 0.04em;
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
+/* back */
+.eco-ann__back {
+  background: #0c0f0d;
+  border: 1.5px solid rgba(255,255,255,0.06);
+  transform: rotateY(180deg);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.eco-ann__back-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.eco-ann__icon-ring {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(245,166,35,0.3);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 28px rgba(245,166,35,0.18);
+  animation: eco-ring-pulse 3s ease-in-out infinite alternate;
+}
+@keyframes eco-ring-pulse {
+  from { box-shadow: 0 0 16px rgba(245,166,35,0.12); }
+  to   { box-shadow: 0 0 36px rgba(245,166,35,0.32); }
+}
+.eco-ann__back-logo {
+  width: 68px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+.eco-ann__back-text {
+  font-size: var(--t-13);
+  color: rgba(255,255,255,0.68);
   line-height: 1.7;
-  max-width: 580px;
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .ais-eco__grid {
+@media (max-width: 1000px) {
+  .eco-grid {
     grid-template-columns: 1fr 1fr;
   }
-
-  .ais-eco__card--dark {
+  .eco-card--validation {
     grid-column: span 2;
     grid-row: span 1;
   }
+  .eco-ann__flipper { min-height: 300px; }
 }
-
 @media (max-width: 600px) {
-  .ais-eco__grid {
-    grid-template-columns: 1fr;
-  }
-
-  .ais-eco__card--dark {
-    grid-column: span 1;
-  }
-
-  .ais-modal__card {
-    flex: 0 0 80vw;
-  }
-
-  .ais-hero__h1 {
-    font-size: var(--t-42);
-  }
-
-  .ais-break__h2 {
-    font-size: var(--t-42);
-  }
+  .eco-grid { grid-template-columns: 1fr; }
+  .eco-card--validation { grid-column: span 1; }
+  .eco-ann__flipper { min-height: 280px; }
+  .eco-card--annotation { min-height: 280px; }
+  .ais-modal__card  { flex: 0 0 80vw; }
+  .ais-break__h2    { font-size: var(--t-42); }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .ais-hero__kicker-line::after {
-    animation: none;
-    transform: translateX(0);
-  }
-
-  .reveal {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-  }
+  .eco-val__scan-line,
+  .eco-val__cursor,
+  .eco-acq__ring,
+  .eco-acq__planet,
+  .eco-cur__dot,
+  .eco-ann__tag-icon,
+  .eco-ann__icon-ring { animation: none !important; }
+  .eco-ann__flipper   { transition: none; }
+  .eco-col__folder    { transform: none; transition: none; }
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .ais-hero__kicker-line::after { animation: none; transform: translateX(0); }
 }

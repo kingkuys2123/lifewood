@@ -15,6 +15,7 @@ import PhilanthropyImpact from './pages/landing-page/philanthropy-&-impact/Phila
 import AIServices from './pages/landing-page/ai-initiatives/ai-services/AIServices';
 import AIProject from './pages/landing-page/ai-initiatives/ai-projects/AIProject';
 import AboutUs from './pages/landing-page/our-company/about-us/AboutUs';
+import Offices from './pages/landing-page/our-company/offices/Offices';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/ai-initiatives/services" element={<AIServices />} />
           <Route path="/ai-initiatives/projects" element={<AIProject />} />
           <Route path="/our-company/about" element={<AboutUs />} />
+          <Route path="/our-company/offices" element={<Offices />} />
           {/* Catch-all — must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>

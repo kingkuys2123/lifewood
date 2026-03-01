@@ -1,0 +1,51 @@
+/* ═══════════════════════════════════════════════════════════
+   OFFICES MAP SECTION
+   ═══════════════════════════════════════════════════════════ */
+
+.of-mapsec {
+    background: var(--c-white);
+    padding-block: var(--s-80) var(--s-120);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle background texture */
+.of-mapsec::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 70% 50% at 50% 80%, rgba(19,48,32,0.03) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.of-mapsec__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-32);
+}
+
+.of-mapsec__eyebrow { margin-bottom: calc(-1 * var(--s-16)); }
+
+.of-mapsec__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-24), 3vw, var(--t-36));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.03em;
+    color: var(--c-charcoal);
+}
+
+/* ── Map + panel row ────────────────────────────────────── */
+.of-mapsec__body {
+    display: flex;
+    align-items: stretch;
+    gap: var(--s-20);
+}
+
+@media (max-width: 900px) {
+    .of-mapsec__body {
+        flex-direction: column;
+    }
+}

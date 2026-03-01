@@ -189,7 +189,7 @@ a.navbar__brand em {
 /* ── Dropdown ──────────────────────────────────────────── */
 .nav__dropdown {
     position: absolute;
-    top: calc(100% + 6px);
+    top: 100%;
     left: 0;
     min-width: 220px;
     background: rgba(255, 255, 255, 0.96);
@@ -206,6 +206,16 @@ a.navbar__brand em {
     transition:
         opacity var(--dur-base) var(--ease-out),
         transform var(--dur-base) var(--ease-out);
+}
+
+/* Buffer strip removes hover gap between trigger and dropdown */
+.nav__dropdown::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
 }
 
 .nav__item--open .nav__dropdown {

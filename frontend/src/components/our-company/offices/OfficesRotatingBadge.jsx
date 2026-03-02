@@ -2,11 +2,11 @@ import './OfficesRotatingBadge.css';
 
 /**
  * OfficesRotatingBadge
- * Animated circular text: ". be . amazed . be . amazed"
+ * Animated circular text: 4× "· BE AMAZED" evenly spaced around a full circle
  * with a glowing saffron dot in the centre.
  */
 export default function OfficesRotatingBadge() {
-    const text = '. be . amazed . be . amazed ';
+    const segment = '\u00B7 BE AMAZED ';
 
     return (
         <div className="of-badge" aria-label="Be amazed" role="img">
@@ -24,9 +24,10 @@ export default function OfficesRotatingBadge() {
                     />
                 </defs>
                 <text className="of-badge__text">
-                    <textPath href="#of-badge-circle" startOffset="0%">
-                        {text}
-                    </textPath>
+                    <textPath href="#of-badge-circle" startOffset="0%">{segment}</textPath>
+                    <textPath href="#of-badge-circle" startOffset="25%">{segment}</textPath>
+                    <textPath href="#of-badge-circle" startOffset="50%">{segment}</textPath>
+                    <textPath href="#of-badge-circle" startOffset="75%">{segment}</textPath>
                 </text>
             </svg>
 

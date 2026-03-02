@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { useReveal } from '../../../hooks/useReveal';
 import OfficesRotatingBadge from './OfficesRotatingBadge';
+import OfficesGlobe from './OfficesGlobe';
 import './OfficesHero.css';
 
 export default function OfficesHero() {
@@ -48,9 +49,12 @@ export default function OfficesHero() {
                     <div className="of-hero__rule reveal reveal-delay-3" aria-hidden="true" />
                 </div>
 
-                {/* Rotating badge */}
-                <div className="of-hero__badge-wrap reveal reveal-delay-2">
-                    <OfficesRotatingBadge />
+                {/* Right visual: globe + badge */}
+                <div className="of-hero__visual reveal reveal-delay-2">
+                    <OfficesGlobe />
+                    <div className="of-hero__badge-wrap">
+                        <OfficesRotatingBadge />
+                    </div>
                 </div>
             </div>
         </section>

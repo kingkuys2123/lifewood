@@ -15,7 +15,7 @@
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse 70% 50% at 50% 80%, rgba(19,48,32,0.03) 0%, transparent 70%);
+        radial-gradient(ellipse 70% 50% at 50% 80%, rgba(4,98,65,0.03) 0%, transparent 70%);
     pointer-events: none;
 }
 
@@ -37,15 +37,7 @@
     color: var(--c-charcoal);
 }
 
-/* ── Map + panel row ────────────────────────────────────── */
+/* ── Map wrapper ────────────────────────────────────────── */
 .of-mapsec__body {
-    display: flex;
-    align-items: stretch;
-    gap: var(--s-20);
-}
-
-@media (max-width: 900px) {
-    .of-mapsec__body {
-        flex-direction: column;
-    }
+    width: 100%;
 }

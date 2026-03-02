@@ -1,0 +1,209 @@
+/* ═══════════════════════════════════════════════════════════
+   OFFICES PARALLAX BANNER
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes of-pb-float-a {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    33%       { transform: translate(12px, -18px) rotate(6deg); }
+    66%       { transform: translate(-8px, 10px) rotate(-4deg); }
+}
+@keyframes of-pb-float-b {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    40%       { transform: translate(-14px, 12px) rotate(-8deg); }
+    75%       { transform: translate(10px, -8px) rotate(5deg); }
+}
+@keyframes of-pb-float-c {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50%       { transform: translate(8px, -22px) rotate(12deg); }
+}
+@keyframes of-pb-scan {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100vw);  }
+}
+@keyframes of-pb-pulse-ring {
+    0%   { transform: scale(1);   opacity: 0.6; }
+    100% { transform: scale(2.8); opacity: 0;   }
+}
+@keyframes of-pb-fade-in {
+    from { opacity: 0; transform: scaleX(0.6); }
+    to   { opacity: 1; transform: scaleX(1);   }
+}
+
+/* ── Section ──────────────────────────────────────────────── */
+.of-pb {
+    position: relative;
+    height: 280px;
+    background: var(--c-forest);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Scanline sweep */
+.of-pb::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,179,71,0.07), transparent);
+    animation: of-pb-scan 4s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ── Depth layers (moved by JS on mouse) ─────────────────── */
+.of-pb__layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    will-change: transform;
+    transition: transform 0.08s linear;
+}
+
+/* ── Floating shapes ──────────────────────────────────────── */
+.of-pb__shape {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    will-change: transform;
+}
+
+/* Saffron large orb */
+.of-pb__shape--orb-1 {
+    width: 320px; height: 320px;
+    top: -100px; left: -60px;
+    background: radial-gradient(circle, rgba(255,255,255,0.07) 0%, transparent 65%);
+    animation: of-pb-float-a 11s ease-in-out infinite;
+}
+.of-pb__shape--orb-2 {
+    width: 240px; height: 240px;
+    bottom: -80px; right: -40px;
+    background: radial-gradient(circle, rgba(255,179,71,0.10) 0%, transparent 65%);
+    animation: of-pb-float-b 14s ease-in-out infinite;
+}
+
+/* Geometric squares */
+.of-pb__shape--sq {
+    border-radius: var(--r-12);
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.12);
+}
+.of-pb__shape--sq-1 {
+    width: 60px; height: 60px;
+    top: 20%; left: 15%;
+    animation: of-pb-float-a 9s ease-in-out infinite 1s;
+}
+.of-pb__shape--sq-2 {
+    width: 36px; height: 36px;
+    bottom: 22%; right: 18%;
+    border-color: rgba(255,179,71,0.20);
+    animation: of-pb-float-b 13s ease-in-out infinite 2s;
+}
+.of-pb__shape--sq-3 {
+    width: 20px; height: 20px;
+    top: 55%; left: 55%;
+    border-color: rgba(255,255,255,0.18);
+    animation: of-pb-float-c 7s ease-in-out infinite;
+}
+
+/* Dot cluster */
+.of-pb__shape--dot {
+    width: 8px; height: 8px;
+    background: var(--c-saffron);
+}
+.of-pb__shape--dot-1 { top: 30%; left: 42%; animation: of-pb-float-c 8s ease-in-out infinite 0.5s; }
+.of-pb__shape--dot-2 { top: 60%; left: 68%; opacity: 0.5; animation: of-pb-float-a 10s ease-in-out infinite 1.2s; }
+.of-pb__shape--dot-3 { top: 20%; right: 30%; opacity: 0.4; animation: of-pb-float-b 12s ease-in-out infinite; }
+
+/* Pulse rings */
+.of-pb__ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,179,71,0.40);
+    pointer-events: none;
+}
+.of-pb__ring--a {
+    width: 40px; height: 40px;
+    top: 40%; left: 35%;
+    transform-origin: center;
+    animation: of-pb-pulse-ring 3s ease-out infinite;
+}
+.of-pb__ring--b {
+    width: 40px; height: 40px;
+    top: 40%; left: 35%;
+    animation: of-pb-pulse-ring 3s ease-out infinite 1s;
+}
+.of-pb__ring--c {
+    width: 28px; height: 28px;
+    bottom: 25%; right: 28%;
+    animation: of-pb-pulse-ring 2.5s ease-out infinite 0.6s;
+}
+
+/* Horizontal rule lines */
+.of-pb__line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.08) 30%, rgba(255,255,255,0.08) 70%, transparent 95%);
+    animation: of-pb-fade-in 1s var(--ease-out) both;
+}
+.of-pb__line--1 { top: 30%; animation-delay: 0.2s; }
+.of-pb__line--2 { top: 70%; animation-delay: 0.5s; }
+
+/* ── Centre content ───────────────────────────────────────── */
+.of-pb__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: var(--s-32);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.of-pb__divider {
+    width: 1px;
+    height: 48px;
+    background: rgba(255,255,255,0.20);
+    flex-shrink: 0;
+}
+
+.of-pb__metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-4);
+    text-align: center;
+}
+
+.of-pb__metric-num {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-28), 3.5vw, var(--t-48));
+    font-weight: var(--fw-black);
+    color: var(--c-white);
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.of-pb__metric-num span {
+    color: var(--c-saffron);
+}
+
+.of-pb__metric-label {
+    font-family: var(--font-body);
+    font-size: var(--t-12);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+}
+
+@media (max-width: 640px) {
+    .of-pb { height: auto; padding-block: var(--s-56); }
+    .of-pb__divider { display: none; }
+    .of-pb__content { gap: var(--s-28); }
+}
+

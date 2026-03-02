@@ -1,0 +1,245 @@
+/* ═══════════════════════════════════════════════════════════
+   OFFICES REGION CARDS
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes of-cards-line {
+    from { stroke-dashoffset: 600; }
+    to   { stroke-dashoffset: 0; }
+}
+@keyframes of-cards-shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+}
+
+/* ── Section wrapper ──────────────────────────────────────── */
+.of-regions {
+    position: relative;
+    padding-block: var(--s-80) var(--s-120);
+    background: var(--c-white);
+    overflow: hidden;
+}
+
+/* Subtle top border rule */
+.of-regions::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--page-px);
+    right: var(--page-px);
+    height: 1px;
+    background: var(--c-mist);
+    pointer-events: none;
+}
+
+/* Faint radial tint — green, very subtle */
+.of-regions::after {
+    content: '';
+    position: absolute;
+    bottom: -20%;
+    right: -10%;
+    width: 60vw;
+    height: 60vw;
+    max-width: 700px;
+    max-height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(4,98,65,0.04) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.of-regions__inner {
+    position: relative;
+    z-index: 1;
+}
+
+/* ── SVG connector network ────────────────────────────────── */
+.of-regions__net {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.07;
+}
+.of-regions__net-line {
+    stroke: var(--c-forest);
+    stroke-width: 1;
+    fill: none;
+    stroke-dasharray: 600;
+    animation: of-cards-line 3s var(--ease-out) forwards;
+}
+
+/* ── Grid ─────────────────────────────────────────────────── */
+.of-regions__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--s-16);
+    margin-top: var(--s-48);
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.of-rcard {
+    background: var(--c-white);
+    border: 1px solid var(--c-mist);
+    border-radius: var(--r-20);
+    padding: var(--s-32) var(--s-28);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    transition:
+        border-color 0.28s var(--ease-out),
+        box-shadow 0.28s var(--ease-out),
+        transform 0.35s var(--ease-spring);
+    will-change: transform;
+}
+
+/* Shimmer sweep on hover */
+.of-rcard::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        105deg,
+        transparent 40%,
+        rgba(4,98,65,0.04) 50%,
+        transparent 60%
+    );
+    background-size: 400px 100%;
+    background-repeat: no-repeat;
+    background-position: -400px 0;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.of-rcard:hover::before {
+    animation: of-cards-shimmer 0.65s var(--ease-out) forwards;
+}
+
+.of-rcard:hover {
+    border-color: rgba(4,98,65,0.22);
+    box-shadow: 0 12px 40px rgba(4,98,65,0.08), 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.of-rcard:active {
+    transform: translateY(-2px) scale(1.005);
+}
+
+/* ── Card icon box ────────────────────────────────────────── */
+.of-rcard__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-12);
+    background: rgba(4,98,65,0.07);
+    border: 1px solid rgba(4,98,65,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--s-20);
+    flex-shrink: 0;
+    transition: background 0.28s, border-color 0.28s, transform 0.35s var(--ease-spring);
+}
+
+.of-rcard__icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--c-forest);
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+    transition: stroke 0.28s;
+}
+
+.of-rcard:hover .of-rcard__icon {
+    background: var(--c-forest);
+    border-color: var(--c-forest);
+    transform: rotate(6deg) scale(1.08);
+}
+
+.of-rcard:hover .of-rcard__icon svg {
+    stroke: var(--c-white);
+}
+
+/* ── Card region name ─────────────────────────────────────── */
+.of-rcard__region {
+    font-family: var(--font-display);
+    font-size: var(--t-17);
+    font-weight: var(--fw-bold);
+    color: var(--c-charcoal);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--s-8);
+}
+
+/* ── Country tags ─────────────────────────────────────────── */
+.of-rcard__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-4);
+    margin-top: var(--s-12);
+}
+
+.of-rcard__tag {
+    font-family: var(--font-display);
+    font-size: var(--t-11);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--c-steel);
+    background: var(--c-ice);
+    border: 1px solid var(--c-mist);
+    border-radius: var(--r-full);
+    padding: 3px 9px;
+    transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.of-rcard:hover .of-rcard__tag {
+    color: var(--c-forest);
+    background: rgba(4,98,65,0.07);
+    border-color: rgba(4,98,65,0.18);
+}
+
+/* ── Bottom accent bar ────────────────────────────────────── */
+.of-rcard__bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--c-forest), var(--c-saffron));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s var(--ease-out);
+}
+
+.of-rcard:hover .of-rcard__bar {
+    transform: scaleX(1);
+}
+
+/* ── Section eyebrow / heading ────────────────────────────── */
+.of-regions .section-eyebrow {
+    color: var(--c-forest);
+}
+.of-regions .section-dot {
+    background: var(--c-forest);
+}
+.of-regions__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-24), 3vw, var(--t-36));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.03em;
+    color: var(--c-charcoal);
+    margin-top: var(--s-16);
+}
+
+@media (max-width: 600px) {
+    .of-regions__grid { grid-template-columns: 1fr 1fr; gap: var(--s-12); }
+    .of-rcard { padding: var(--s-20) var(--s-16); }
+}
+@media (max-width: 380px) {
+    .of-regions__grid { grid-template-columns: 1fr; }
+}
+

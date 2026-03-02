@@ -1,0 +1,121 @@
+/* ═══════════════════════════════════════════════════════════
+   OFFICES GLOBE — animated SVG sphere
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes of-globe-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+@keyframes of-globe-spin-rev {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(-360deg); }
+}
+@keyframes of-globe-dot-pulse {
+    0%, 100% { transform: scale(1);   opacity: 0.7; }
+    50%       { transform: scale(1.6); opacity: 1;   }
+}
+@keyframes of-globe-float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-14px); }
+}
+@keyframes of-globe-glow {
+    0%, 100% { opacity: 0.18; }
+    50%       { opacity: 0.32; }
+}
+
+.of-globe {
+    position: relative;
+    width: 340px;
+    height: 340px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Outer ambient glow */
+.of-globe::before {
+    content: '';
+    position: absolute;
+    inset: -32px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,179,71,0.13) 0%, transparent 65%);
+    animation: of-globe-glow 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.of-globe__svg {
+    animation: of-globe-float 7s ease-in-out infinite;
+    overflow: visible;
+}
+
+/* Latitude / longitude grid lines */
+.of-globe__grid {
+    stroke: rgba(4, 98, 65, 0.10);
+    stroke-width: 0.8;
+    fill: none;
+}
+
+/* Outer ring */
+.of-globe__rim {
+    fill: none;
+    stroke: rgba(4, 98, 65, 0.18);
+    stroke-width: 1.5;
+}
+
+/* Orbiting arcs */
+.of-globe__orbit {
+    fill: none;
+    stroke-width: 1.2;
+    stroke-linecap: round;
+}
+.of-globe__orbit--1 {
+    stroke: rgba(255, 179, 71, 0.55);
+    transform-origin: 170px 170px;
+    animation: of-globe-spin 12s linear infinite;
+}
+.of-globe__orbit--2 {
+    stroke: rgba(4, 98, 65, 0.30);
+    transform-origin: 170px 170px;
+    animation: of-globe-spin-rev 18s linear infinite;
+}
+.of-globe__orbit--3 {
+    stroke: rgba(255, 179, 71, 0.22);
+    transform-origin: 170px 170px;
+    animation: of-globe-spin 28s linear infinite;
+}
+
+/* Sphere fill */
+.of-globe__sphere {
+    fill: url(#of-globe-grad);
+}
+
+/* Hot-spot dots */
+.of-globe__dot {
+    fill: var(--c-saffron);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: of-globe-dot-pulse 2.4s ease-in-out infinite;
+}
+.of-globe__dot--forest {
+    fill: var(--c-forest);
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: of-globe-dot-pulse 3s ease-in-out infinite 0.8s;
+}
+
+/* Connector lines between dots */
+.of-globe__connector {
+    stroke: rgba(255,179,71,0.22);
+    stroke-width: 0.9;
+    stroke-dasharray: 4 4;
+    fill: none;
+}
+
+@media (max-width: 900px) {
+    .of-globe { width: 240px; height: 240px; }
+}
+@media (max-width: 540px) {
+    .of-globe { width: 200px; height: 200px; }
+}
+

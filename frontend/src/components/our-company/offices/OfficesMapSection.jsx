@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { useReveal } from '../../../hooks/useReveal';
 import OfficesMap from './OfficesMap';
-import OfficesDataPanel from './OfficesDataPanel';
 import './OfficesMapSection.css';
 
 export default function OfficesMapSection() {
@@ -32,10 +31,9 @@ export default function OfficesMapSection() {
                     Where we operate
                 </h2>
 
-                {/* Map + Panel row */}
+                {/* Map */}
                 <div className="of-mapsec__body reveal reveal-delay-2">
                     <OfficesMap />
-                    <OfficesDataPanel />
                 </div>
             </div>
         </section>

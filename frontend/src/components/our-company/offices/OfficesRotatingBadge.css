@@ -68,11 +68,3 @@
     animation: of-badge-pulse 2.4s ease-out infinite;
 }
 
-.of-badge__arrow {
-    position: absolute;
-    bottom: -28px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: var(--c-saffron);
-    animation: of-badge-pulse 2.4s ease-in-out infinite;
-}

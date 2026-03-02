@@ -1,0 +1,98 @@
+/* ═══════════════════════════════════════════════════════════
+   MARQUEE SECTION
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes mq-scroll-left {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+@keyframes mq-scroll-right {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
+}
+
+.mq {
+    background: var(--c-white);
+    padding-block: var(--s-64);
+    overflow: hidden;
+    position: relative;
+    border-top: 1px solid var(--c-mist);
+    border-bottom: 1px solid var(--c-mist);
+}
+
+/* Fade masks on left/right edges */
+.mq::before,
+.mq::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 120px;
+    z-index: 2;
+    pointer-events: none;
+}
+.mq::before {
+    left: 0;
+    background: linear-gradient(to right, var(--c-white), transparent);
+}
+.mq::after {
+    right: 0;
+    background: linear-gradient(to left, var(--c-white), transparent);
+}
+
+/* ── Rows ──────────────────────────────────────────────── */
+.mq__row {
+    display: flex;
+    align-items: center;
+    width: max-content;
+    gap: 0;
+    user-select: none;
+}
+
+.mq__row--fwd {
+    animation: mq-scroll-left 36s linear infinite;
+    margin-bottom: var(--s-16);
+}
+.mq__row--rev {
+    animation: mq-scroll-right 28s linear infinite;
+}
+
+/* Pause on hover */
+.mq:hover .mq__row--fwd { animation-play-state: paused; }
+.mq:hover .mq__row--rev { animation-play-state: paused; }
+
+/* ── Individual item ──────────────────────────────────── */
+.mq__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-16);
+    padding-inline: var(--s-28);
+    white-space: nowrap;
+}
+
+.mq__word {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-18), 2vw, var(--t-24));
+    font-weight: var(--fw-bold);
+    letter-spacing: -0.02em;
+    color: var(--c-charcoal);
+    transition: color 0.2s;
+}
+
+.mq__word--accent {
+    color: var(--c-forest);
+}
+
+/* Diamond separator */
+.mq__sep {
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--c-saffron);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+}
+
+/* Hover: whole row items get a subtle colour lift */
+.mq__row:hover .mq__word { color: var(--c-steel); }
+.mq__row:hover .mq__word:hover { color: var(--c-forest); }
+

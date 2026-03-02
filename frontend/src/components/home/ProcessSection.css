@@ -1,0 +1,244 @@
+/* ═══════════════════════════════════════════════════════════
+   PROCESS SECTION — interactive vertical timeline
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes ps-line-draw {
+    from { stroke-dashoffset: 1; }
+    to   { stroke-dashoffset: 0; }
+}
+@keyframes ps-node-pop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    70%  { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes ps-bar-expand {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+}
+
+.ps {
+    background: var(--c-white);
+    padding-block: var(--s-96) var(--s-120);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Faint dot grid backdrop */
+.ps::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(4,98,65,0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ps__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-64) var(--s-80);
+    align-items: start;
+}
+
+/* ── Left: sticky header ─────────────────────────────────── */
+.ps__header {
+    position: sticky;
+    top: calc(var(--navbar-h) + var(--s-48));
+}
+
+.ps__eyebrow {
+    margin-bottom: var(--s-20);
+}
+
+.ps__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-28), 3.5vw, var(--t-48));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: var(--c-charcoal);
+}
+
+.ps__heading-em {
+    color: var(--c-forest);
+}
+
+/* Animated accent rule under heading */
+.ps__rule {
+    margin-top: var(--s-32);
+    height: 3px;
+    width: 56px;
+    border-radius: var(--r-full);
+    background: linear-gradient(90deg, var(--c-forest), var(--c-saffron));
+    transform-origin: left;
+    animation: ps-bar-expand 0.7s var(--ease-out) 0.3s both;
+}
+
+/* ── Right: step list ────────────────────────────────────── */
+.ps__steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+}
+
+/* SVG connector track */
+.ps__track {
+    position: absolute;
+    left: 19px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.ps__track-line {
+    stroke: var(--c-mist);
+    stroke-width: 2;
+    fill: none;
+}
+
+.ps__track-progress {
+    stroke: var(--c-forest);
+    stroke-width: 2;
+    fill: none;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s var(--ease-out);
+}
+
+/* ── Step ────────────────────────────────────────────────── */
+.ps__step {
+    display: flex;
+    gap: var(--s-28);
+    padding-block: var(--s-32);
+    cursor: pointer;
+    position: relative;
+}
+
+.ps__step:first-child { padding-top: 0; }
+.ps__step:last-child  { padding-bottom: 0; }
+
+/* Node circle */
+.ps__node {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--c-mist);
+    background: var(--c-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+
+.ps__node-num {
+    font-family: var(--font-display);
+    font-size: var(--t-12);
+    font-weight: var(--fw-black);
+    color: var(--c-steel);
+    transition: color 0.25s;
+}
+
+.ps__step--active .ps__node,
+.ps__step:hover   .ps__node {
+    border-color: var(--c-forest);
+    background: var(--c-forest);
+    box-shadow: 0 0 0 6px rgba(4,98,65,0.10);
+}
+
+.ps__step--active .ps__node-num,
+.ps__step:hover   .ps__node-num {
+    color: var(--c-white);
+}
+
+/* Content */
+.ps__content {
+    flex: 1;
+    padding-top: var(--s-8);
+}
+
+.ps__step-title {
+    font-family: var(--font-display);
+    font-size: var(--t-18);
+    font-weight: var(--fw-bold);
+    color: var(--c-charcoal);
+    letter-spacing: -0.02em;
+    transition: color 0.25s;
+}
+
+.ps__step--active .ps__step-title,
+.ps__step:hover   .ps__step-title {
+    color: var(--c-forest);
+}
+
+/* Expandable body */
+.ps__step-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s var(--ease-out);
+    margin-top: 0;
+    overflow: hidden;
+}
+
+.ps__step--active .ps__step-body {
+    grid-template-rows: 1fr;
+    margin-top: var(--s-12);
+}
+
+.ps__step-body-inner {
+    overflow: hidden;
+}
+
+/* Tag pills inside each step */
+.ps__step-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-8);
+    padding-top: var(--s-4);
+}
+
+.ps__step-tag {
+    font-family: var(--font-display);
+    font-size: var(--t-11);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-forest);
+    background: rgba(4,98,65,0.07);
+    border: 1px solid rgba(4,98,65,0.14);
+    border-radius: var(--r-full);
+    padding: 4px 12px;
+}
+
+/* Bottom accent bar on active step */
+.ps__step-bar {
+    height: 2px;
+    background: linear-gradient(90deg, var(--c-forest), var(--c-saffron));
+    border-radius: var(--r-full);
+    margin-top: var(--s-20);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease-out);
+}
+
+.ps__step--active .ps__step-bar {
+    transform: scaleX(1);
+}
+
+@media (max-width: 860px) {
+    .ps__inner {
+        grid-template-columns: 1fr;
+        gap: var(--s-48);
+    }
+    .ps__header { position: static; }
+}
+

@@ -1,0 +1,239 @@
+/* ═══════════════════════════════════════════════════════════
+   CAPABILITIES SECTION
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes cap-pulse-ring {
+    0%   { transform: scale(1);    opacity: 0.7; }
+    100% { transform: scale(2.88); opacity: 0;   }
+}
+@keyframes cap-dash-flow {
+    from { stroke-dashoffset: 40; }
+    to   { stroke-dashoffset: 0;  }
+}
+@keyframes cap-node-glow {
+    0%, 100% { opacity: 0.5; }
+    50%       { opacity: 1;   }
+}
+@keyframes cap-count-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.cap {
+    background: var(--c-forest);
+    padding-block: var(--s-96) var(--s-120);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle noise texture */
+.cap::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.5;
+}
+
+.cap__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-64) var(--s-80);
+    align-items: center;
+}
+
+/* ── Left: metric grid ───────────────────────────────────── */
+.cap__metrics {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-48);
+}
+
+.cap__eyebrow-row {
+    display: flex;
+    align-items: center;
+    gap: var(--s-8);
+}
+
+.cap__eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--c-saffron);
+    flex-shrink: 0;
+}
+
+.cap__eyebrow-text {
+    font-family: var(--font-display);
+    font-size: var(--t-12);
+    font-weight: var(--fw-bold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+}
+
+.cap__heading {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-28), 3.5vw, var(--t-48));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: var(--c-white);
+}
+
+.cap__heading-em {
+    color: var(--c-saffron);
+}
+
+/* 2×2 metric grid */
+.cap__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+}
+
+.cap__metric-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--r-16);
+    padding: var(--s-28) var(--s-24);
+    transition: background 0.3s, border-color 0.3s, transform 0.3s var(--ease-spring);
+    cursor: default;
+}
+
+.cap__metric-card:hover {
+    background: rgba(255,255,255,0.10);
+    border-color: rgba(255,179,71,0.30);
+    transform: translateY(-4px);
+}
+
+.cap__metric-num {
+    font-family: var(--font-display);
+    font-size: clamp(var(--t-32), 3vw, var(--t-48));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.04em;
+    color: var(--c-white);
+    line-height: 1;
+    animation: cap-count-in 0.6s var(--ease-out) both;
+}
+
+.cap__metric-num[data-visible='true'] {
+    animation: cap-count-in 0.6s var(--ease-out) both;
+}
+
+.cap__metric-suf {
+    color: var(--c-saffron);
+}
+
+.cap__metric-label {
+    font-family: var(--font-display);
+    font-size: var(--t-12);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-top: var(--s-8);
+}
+
+/* ── Right: SVG signal diagram ───────────────────────────── */
+.cap__diagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cap__svg {
+    width: 100%;
+    max-width: 460px;
+    overflow: visible;
+}
+
+/* Pulsing rings around central node */
+.cap__pulse-ring {
+    fill: none;
+    stroke: var(--c-saffron);
+    stroke-width: 1;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: cap-pulse-ring 3s ease-out infinite;
+}
+.cap__pulse-ring--2 { animation-delay: 1s; }
+.cap__pulse-ring--3 { animation-delay: 2s; }
+
+/* Flowing dashed connection lines */
+.cap__conn {
+    stroke: rgba(255,255,255,0.15);
+    stroke-width: 1;
+    fill: none;
+    stroke-dasharray: 6 4;
+    animation: cap-dash-flow 2s linear infinite;
+}
+.cap__conn--saffron {
+    stroke: rgba(255,179,71,0.35);
+    animation-duration: 1.5s;
+}
+
+/* Outer node circles */
+.cap__node-outer {
+    fill: rgba(255,255,255,0.06);
+    stroke: rgba(255,255,255,0.12);
+    stroke-width: 1;
+    transition: fill 0.2s, stroke 0.2s;
+    cursor: default;
+}
+.cap__node-outer:hover {
+    fill: rgba(255,179,71,0.14);
+    stroke: rgba(255,179,71,0.40);
+}
+
+/* Outer node dot */
+.cap__node-dot {
+    fill: rgba(255,255,255,0.50);
+    animation: cap-node-glow 3s ease-in-out infinite;
+}
+.cap__node-dot--saffron {
+    fill: var(--c-saffron);
+    animation-delay: 0.5s;
+}
+
+/* Center node */
+.cap__center-ring {
+    fill: none;
+    stroke: rgba(255,179,71,0.25);
+    stroke-width: 1.5;
+}
+.cap__center-core {
+    fill: var(--c-saffron);
+}
+
+/* Node labels */
+.cap__node-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    fill: rgba(255,255,255,0.55);
+    text-anchor: middle;
+    dominant-baseline: middle;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+@media (max-width: 860px) {
+    .cap__inner {
+        grid-template-columns: 1fr;
+        gap: var(--s-48);
+    }
+    .cap__diagram { order: -1; }
+    .cap__svg { max-width: 320px; }
+}
+
+@media (max-width: 480px) {
+    .cap__grid { grid-template-columns: 1fr 1fr; }
+    .cap__metric-num { font-size: var(--t-28); }
+}
+

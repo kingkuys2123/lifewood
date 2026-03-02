@@ -28,19 +28,30 @@ const PINS = [
     { id: 'indonesia',  label: 'Indonesia',        lat: -0.79,  lng: 113.92  },
 ];
 
-/* ── Custom saffron drop-pin icon factory ─────────────────── */
-function makePinIcon(active = false) {
-    return L.divIcon({
-        className: '',
-        html: `<div class="of-map-pin${active ? ' of-map-pin--active' : ''}">
-                 <div class="of-map-pin__head"></div>
-                 <div class="of-map-pin__tail"></div>
-               </div>`,
-        iconSize: [28, 36],
-        iconAnchor: [14, 36],
-        tooltipAnchor: [0, -38],
-    });
-}
+/* ── Custom saffron drop-pin icon — stable module-level singletons ─── */
+// Created once so Leaflet never receives a new object reference on re-render,
+// which would cause it to destroy/recreate all marker DOM nodes (the "flash").
+const PIN_ICON_DEFAULT = L.divIcon({
+    className: '',
+    html: `<div class="of-map-pin">
+             <div class="of-map-pin__head"></div>
+             <div class="of-map-pin__tail"></div>
+           </div>`,
+    iconSize: [28, 36],
+    iconAnchor: [14, 36],
+    tooltipAnchor: [0, -38],
+});
+
+const PIN_ICON_ACTIVE = L.divIcon({
+    className: '',
+    html: `<div class="of-map-pin of-map-pin--active">
+             <div class="of-map-pin__head"></div>
+             <div class="of-map-pin__tail"></div>
+           </div>`,
+    iconSize: [28, 36],
+    iconAnchor: [14, 36],
+    tooltipAnchor: [0, -38],
+});
 
 /* ── Fit-world helper ─────────────────────────────────────── */
 function FitWorld() {
@@ -79,7 +90,7 @@ export default function OfficesMap() {
                     <Marker
                         key={pin.id}
                         position={[pin.lat, pin.lng]}
-                        icon={makePinIcon(activeId === pin.id)}
+                        icon={activeId === pin.id ? PIN_ICON_ACTIVE : PIN_ICON_DEFAULT}
                         eventHandlers={{
                             mouseover: () => setActiveId(pin.id),
                             mouseout:  () => setActiveId(null),

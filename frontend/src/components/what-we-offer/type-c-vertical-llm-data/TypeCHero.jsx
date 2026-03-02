@@ -83,11 +83,6 @@ export default function TypeCHero() {
 
           {/* ── Left ── */}
           <div className="tyc-hero__left">
-            <div className="tyc-hero__kicker" aria-label="Section label">
-              <span className="tyc-hero__kicker-bracket">[</span>
-              <span className="tyc-hero__kicker-label">What We Offer</span>
-              <span className="tyc-hero__kicker-bracket">]</span>
-            </div>
 
             <h1 className="tyc-hero__h1">
               <span className="tyc-hero__h1-sub">Type C –</span>
@@ -111,15 +106,6 @@ export default function TypeCHero() {
                 </li>
               ))}
             </ul>
-
-            <div className="tyc-hero__actions">
-              <Link to="/contact" className="tyc-hero__btn tyc-hero__btn--primary">
-                Contact Us
-              </Link>
-              <Link to="/contact" className="tyc-hero__btn tyc-hero__btn--outline">
-                Contact Us
-              </Link>
-            </div>
           </div>
 
           {/* ── Right ── */}

@@ -88,12 +88,6 @@ export default function TypeAHero() {
 
           {/* ── Left content ── */}
           <div className="tya-hero__left">
-            <div className="tya-hero__kicker reveal">
-              <span className="tya-hero__kicker-dot" />
-              <span className="tya-hero__kicker-line" />
-              <span className="tya-hero__kicker-label">What We Offer</span>
-            </div>
-
             <h1 className="tya-hero__h1 reveal reveal-delay-1">
               <span className="tya-hero__h1-sub">Type A –</span>
               <span className="tya-hero__h1-main">Data<br />Servicing</span>
@@ -110,16 +104,6 @@ export default function TypeAHero() {
               {PILLS.map((p, i) => (
                 <span key={p} className="tya-hero__pill" style={{ '--pi': i }}>{p}</span>
               ))}
-            </div>
-
-            <div className="tya-hero__actions reveal reveal-delay-3">
-              <Link to="/contact" className="btn btn-saffron tya-hero__cta">
-                Contact Us
-                <span className="tya-hero__cta-arrow" aria-hidden="true">→</span>
-              </Link>
-              <Link to="/contact" className="tya-hero__cta-ghost">
-                Learn More
-              </Link>
             </div>
           </div>
 

@@ -103,10 +103,6 @@ export default function TypeBHero() {
 
           {/* ── Left ── */}
           <div className="tyb-hero__left">
-            <div className="tyb-hero__kicker reveal">
-              <span className="tyb-hero__kicker-bar" />
-              <span className="tyb-hero__kicker-label">What We Offer</span>
-            </div>
 
             <h1 className="tyb-hero__h1">
               <span className="tyb-hero__h1-pre reveal">Type B —</span>
@@ -122,15 +118,6 @@ export default function TypeBHero() {
               data collection and annotation to model testing. Creating multimodal
               datasets for deep learning, large language models.
             </p>
-
-            <div className="tyb-hero__actions reveal reveal-delay-3">
-              <Link to="/contact" className="btn btn-forest tyb-hero__btn">
-                Contact Us
-              </Link>
-              <Link to="/contact" className="btn btn-saffron tyb-hero__btn">
-                Contact Us
-              </Link>
-            </div>
           </div>
 
           {/* ── Right: waveform + chips ── */}
@@ -151,17 +138,6 @@ export default function TypeBHero() {
             </div>
           </div>
 
-        </div>
-      </div>
-
-      {/* Tag marquee */}
-      <div className="tyb-hero__marquee-wrap" aria-hidden="true">
-        <div className="tyb-hero__marquee">
-          <div className="tyb-hero__marquee-track">
-            {[...TAGS, ...TAGS].map((t, i) => (
-              <span key={i} className="tyb-hero__tag">{t}</span>
-            ))}
-          </div>
         </div>
       </div>
     </section>

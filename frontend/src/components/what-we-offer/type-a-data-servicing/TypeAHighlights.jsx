@@ -31,9 +31,6 @@ export default function TypeAHighlights() {
       <div className="wrap">
         <div className="tya-highlights__header reveal">
           <p className="tya-highlights__eyebrow">Featured Projects</p>
-          <h2 className="tya-highlights__h2 reveal reveal-delay-1">
-            Real-World<br />Impact
-          </h2>
         </div>
 
         <div className="tya-highlights__grid">
@@ -54,14 +51,6 @@ export default function TypeAHighlights() {
               </Link>
             </article>
           ))}
-        </div>
-
-        {/* Second Contact Us CTA */}
-        <div className="tya-highlights__cta reveal reveal-delay-2">
-          <Link to="/contact" className="btn btn-saffron tya-highlights__btn">
-            Contact Us
-            <span aria-hidden="true">→</span>
-          </Link>
         </div>
       </div>
     </section>

@@ -17,6 +17,7 @@ import AIProject from './pages/landing-page/ai-initiatives/ai-projects/AIProject
 import AboutUs from './pages/landing-page/our-company/about-us/AboutUs';
 import Offices from './pages/landing-page/our-company/offices/Offices';
 import TypeADataServicing from './pages/landing-page/what-we-offer/type-a-data-servicing/TypeADataServicing';
+import TypeBHorizontalLLMData from './pages/landing-page/what-we-offer/type-b-horizontal-llm-data/TypeBHorizontalLLMData';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="/our-company/about" element={<AboutUs />} />
           <Route path="/our-company/offices" element={<Offices />} />
           <Route path="/offer/type-a" element={<TypeADataServicing />} />
+          <Route path="/offer/type-b" element={<TypeBHorizontalLLMData />} />
           {/* Catch-all — must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>

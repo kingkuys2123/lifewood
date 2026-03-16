@@ -75,6 +75,16 @@ const PROJECTS = [
   },
   {
     id: '2.7',
+    title: 'Daily Head Count Monitoring',
+    icon: 'db',
+    summary: 'Real-time workforce data visualization powered by Google Drive Excel uploads.',
+    description:
+        "DataViz is an intelligent data visualization system that connects directly to Google Drive, automatically reads uploaded Excel files, and transforms raw workforce data into dynamic charts, tables, and graphs in real time. Designed to eliminate manual reporting, the system's AI agent instantly processes each uploaded file and renders the data through clear, interactive visuals — giving managers instant insight into daily head counts across all teams and locations.",
+    color: '#133020',
+    img: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&q=75',
+  },
+  {
+    id: '2.8',
     title: 'Genealogy',
     icon: 'tree',
     summary: 'Structured genealogical AI datasets across generations.',

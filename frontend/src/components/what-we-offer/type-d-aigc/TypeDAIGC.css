@@ -1,0 +1,499 @@
+/* =============================================================
+   TYPE D – AIGC  (prefix: tyd-)
+   ============================================================= */
+
+/* ── Gradient text utility ──────────────────────────────────── */
+.tyd-gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--c-charcoal)  0%,
+    var(--c-forest)   38%,
+    var(--c-saffron)  72%,
+    var(--c-forest)  100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--c-charcoal); /* plain-text fallback */
+}
+
+/* ============================================================
+   §1  HERO
+   ============================================================ */
+.tyd-hero {
+  position: relative;
+  min-height: 90svh;
+  background: var(--c-white);
+  padding-top: calc(var(--navbar-h) + var(--s-64));
+  padding-bottom: var(--s-96);
+  overflow: hidden;
+}
+
+.tyd-hero__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 12% 20%, rgba(19,48,32,0.07) 0%, transparent 42%),
+    radial-gradient(ellipse at 90% 8%,  rgba(245,166,35,0.12) 0%, transparent 36%);
+  pointer-events: none;
+}
+
+.tyd-hero__inner {
+  position: relative;
+  z-index: 1;
+  max-width: 860px;
+}
+
+.tyd-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-8);
+  font-family: var(--font-display);
+  font-size: var(--t-12);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-steel);
+  margin-bottom: var(--s-20);
+}
+
+.tyd-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-42), 7.5vw, var(--t-80));
+  line-height: 0.94;
+  letter-spacing: -0.035em;
+  color: var(--c-charcoal);
+  margin-bottom: var(--s-28);
+}
+
+.tyd-hero__copy {
+  max-width: 720px;
+  color: var(--c-steel);
+  font-size: clamp(var(--t-16), 2vw, var(--t-20));
+  line-height: 1.85;
+  margin-bottom: var(--s-36);
+}
+
+.tyd-hero__actions { display: flex; gap: var(--s-12); flex-wrap: wrap; }
+
+/* ============================================================
+   §2  VIDEO
+   ============================================================ */
+.tyd-video {
+  background: #fff;
+  padding-bottom: var(--s-120);
+}
+
+.tyd-video__frame {
+  position: relative;
+  border: 1px solid var(--c-mist);
+  border-radius: var(--r-24);
+  padding: var(--s-28);
+  background: linear-gradient(170deg, #fff, var(--c-snow));
+  box-shadow: var(--sh-sm);
+  overflow: hidden;
+}
+
+.tyd-video__title {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-24), 3.5vw, var(--t-36));
+  letter-spacing: -0.02em;
+  margin-bottom: var(--s-20);
+}
+
+.tyd-video__media {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--r-16);
+  background: var(--c-dark);
+  display: block;
+}
+
+.tyd-video__toggle {
+  position: absolute;
+  bottom: var(--s-40);
+  right: var(--s-40);
+  padding: 10px 20px;
+  border-radius: var(--r-full);
+  color: #fff;
+  background: rgba(19,48,32,0.88);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-display);
+  font-size: var(--t-13);
+  font-weight: var(--fw-semibold);
+  transition: transform var(--dur-base) var(--ease-spring), background var(--dur-fast);
+}
+.tyd-video__toggle:hover {
+  transform: translateY(-2px);
+  background: rgba(8,22,14,0.96);
+}
+
+/* ============================================================
+   §3  OUR APPROACH — scattered fan cards
+   ============================================================ */
+.tyd-approach {
+  padding: var(--s-80) 0 var(--s-120);
+  background: #fff;
+  overflow: hidden;
+}
+
+.tyd-approach__layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-56);
+  align-items: center;
+  min-height: 520px;
+}
+
+.tyd-approach__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tyd-approach__title {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-32), 4.2vw, var(--t-56));
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--c-charcoal);
+  margin-bottom: var(--s-20);
+}
+
+.tyd-approach__copy {
+  font-size: clamp(var(--t-15), 1.6vw, var(--t-18));
+  line-height: 1.9;
+  max-width: 460px;
+  /* gradient text applied via .tyd-gradient-text */
+}
+
+/* ── Fan stack ───────────────────────────────────────────────── */
+.tyd-approach__fan {
+  position: relative;
+  height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tyd-approach__fan-card {
+  position: absolute;
+  width: 250px;
+  height: 330px;
+  top: 50%;
+  left: 50%;
+  /* individual offsets applied per modifier */
+  border-radius: var(--r-16);
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.16);
+  cursor: pointer;
+  transition:
+    transform 0.55s var(--ease-spring),
+    box-shadow 0.35s,
+    z-index 0s;
+  will-change: transform;
+}
+
+.tyd-approach__fan-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.55s ease;
+  pointer-events: none;
+  display: block;
+}
+
+/* back card */
+.tyd-approach__fan-card--c {
+  transform: translate(-50%, -50%) rotate(-14deg) translate(-55px, -12px);
+  z-index: 1;
+}
+/* mid card */
+.tyd-approach__fan-card--b {
+  transform: translate(-50%, -50%) rotate(-4deg) translate(0px, 4px);
+  z-index: 2;
+}
+/* front card */
+.tyd-approach__fan-card--a {
+  transform: translate(-50%, -50%) rotate(6deg) translate(60px, 18px);
+  z-index: 3;
+}
+
+/* fan spread on container hover */
+.tyd-approach__fan:hover .tyd-approach__fan-card--c {
+  transform: translate(-50%, -50%) rotate(-22deg) translate(-90px, -22px);
+}
+.tyd-approach__fan:hover .tyd-approach__fan-card--b {
+  transform: translate(-50%, -50%) rotate(-3deg) translate(-5px, 2px);
+}
+.tyd-approach__fan:hover .tyd-approach__fan-card--a {
+  transform: translate(-50%, -50%) rotate(14deg) translate(95px, 28px);
+}
+
+/* individual card hover — straighten + lift */
+.tyd-approach__fan-card:hover {
+  z-index: 10 !important;
+  transform: translate(-50%, -50%) rotate(0deg) scale(1.04) !important;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.26);
+}
+.tyd-approach__fan-card:hover img {
+  transform: scale(1.06);
+}
+
+/* ============================================================
+   §4  REACH — two-col + 12-column bento grid
+   ============================================================ */
+.tyd-reach {
+  padding: 0 0 var(--s-120);
+  background: #fff;
+}
+
+.tyd-reach__outer {
+  display: grid;
+  grid-template-columns: 5fr 12fr;
+  gap: var(--s-48);
+  align-items: start;
+}
+
+/* Text block */
+.tyd-reach__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-16);
+  padding-top: var(--s-8);
+}
+
+.tyd-reach__symbol {
+  font-size: var(--t-28);
+  color: var(--c-steel);
+  font-weight: var(--fw-thin);
+  line-height: 1;
+  display: block;
+}
+
+.tyd-reach__body {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-16), 1.8vw, var(--t-20));
+  line-height: 1.75;
+  color: var(--c-charcoal);
+  font-weight: var(--fw-medium);
+}
+
+.tyd-reach__rule {
+  border: none;
+  border-top: 1px solid var(--c-mist);
+  width: 100%;
+}
+
+/* Bento grid — 12 equal columns, 2 rows */
+.tyd-reach__bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: 180px 320px;
+  gap: var(--s-10);
+}
+
+.tyd-reach__cell {
+  border-radius: var(--r-12);
+  overflow: hidden;
+  position: relative;
+}
+
+.tyd-reach__cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s ease;
+}
+.tyd-reach__cell:hover img { transform: scale(1.04); }
+
+/* Row 1 – three equal 4-col spans */
+.tyd-reach__cell--r1a { grid-column: 1 / 5;  grid-row: 1; }
+.tyd-reach__cell--r1b { grid-column: 5 / 9;  grid-row: 1; }
+.tyd-reach__cell--r1c { grid-column: 9 / 13; grid-row: 1; }
+
+/* Row 2 – large (7 cols) | mic (3 cols) | stat (2 cols) */
+.tyd-reach__cell--large { grid-column: 1 / 8;  grid-row: 2; }
+.tyd-reach__cell--mic   { grid-column: 8 / 11; grid-row: 2; }
+.tyd-reach__cell--stat  {
+  grid-column: 11 / 13;
+  grid-row: 2;
+  background: var(--c-ice);
+  border: 1px solid var(--c-mist);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--s-16);
+  gap: var(--s-4);
+}
+.tyd-reach__cell--stat:hover img { transform: none; } /* no img here */
+
+/* Caption overlay on large image */
+.tyd-reach__caption {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.60) 0%, transparent 55%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--s-20) var(--s-20) var(--s-24);
+  gap: var(--s-6);
+  pointer-events: none;
+}
+.tyd-reach__caption-em {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-13), 1.4vw, var(--t-16));
+  font-weight: var(--fw-bold);
+  color: #fff;
+  display: block;
+}
+.tyd-reach__caption-body {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-13), 1.4vw, var(--t-16));
+  font-weight: var(--fw-semibold);
+  color: rgba(255,255,255,0.84);
+  line-height: 1.5;
+  display: block;
+}
+
+/* Label overlay on mic image */
+.tyd-reach__mic-lbl {
+  position: absolute;
+  bottom: var(--s-16);
+  left: var(--s-14);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-12), 1.2vw, var(--t-15));
+  font-weight: var(--fw-semibold);
+  line-height: 1.3;
+  pointer-events: none;
+}
+
+/* Stat numbers */
+.tyd-reach__stat-num {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-32), 3.5vw, var(--t-48));
+  font-weight: var(--fw-black);
+  color: var(--c-charcoal);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.tyd-reach__stat-num span { color: var(--c-saffron); }
+.tyd-reach__stat-lbl {
+  font-size: var(--t-12);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-steel);
+}
+
+/* ============================================================
+   §5  SIGNATURE — centered editorial quote
+   ============================================================ */
+.tyd-signature {
+  padding: var(--s-64) 0 var(--s-120);
+  background: #fff;
+}
+
+.tyd-signature__block {
+  max-width: 860px;
+  margin: 0 auto;
+  text-align: center;
+  padding: var(--s-48) var(--s-20);
+}
+
+.tyd-signature__text {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-18), 2.6vw, var(--t-28));
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  margin-bottom: var(--s-28);
+  /* gradient applied via .tyd-gradient-text */
+}
+
+.tyd-signature__cite {
+  display: inline-block;
+  font-style: normal;
+  font-size: var(--t-13);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--c-steel);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .tyd-approach__fan-card { width: 220px; height: 290px; }
+  .tyd-reach__bento {
+    grid-template-rows: 150px 280px;
+  }
+}
+
+@media (max-width: 900px) {
+  .tyd-approach__layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .tyd-approach__fan { height: 360px; }
+  .tyd-approach__copy { max-width: none; }
+
+  .tyd-reach__outer {
+    grid-template-columns: 1fr;
+    gap: var(--s-32);
+  }
+
+  .tyd-reach__bento {
+    grid-template-rows: 140px 240px;
+  }
+}
+
+@media (max-width: 640px) {
+  .tyd-video__toggle { bottom: var(--s-20); right: var(--s-20); }
+  .tyd-video__frame  { padding: var(--s-16); }
+
+  /* On mobile collapse bento to simple stack */
+  .tyd-reach__bento {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 160px 160px 280px 180px;
+    gap: var(--s-8);
+  }
+  .tyd-reach__cell--r1a { grid-column: 1 / 2; grid-row: 1; }
+  .tyd-reach__cell--r1b { grid-column: 2 / 3; grid-row: 1; }
+  .tyd-reach__cell--r1c { grid-column: 1 / 3; grid-row: 2; }
+  .tyd-reach__cell--large { grid-column: 1 / 3; grid-row: 3; }
+  .tyd-reach__cell--mic   { grid-column: 1 / 2; grid-row: 4; }
+  .tyd-reach__cell--stat  { grid-column: 2 / 3; grid-row: 4; }
+
+  /* Hide fan on very small screens, show static stack */
+  .tyd-approach__fan-card--c,
+  .tyd-approach__fan-card--b { display: none; }
+  .tyd-approach__fan-card--a {
+    transform: translate(-50%, -50%) rotate(0deg) !important;
+    z-index: 1;
+    width: 240px;
+    height: 300px;
+  }
+}
+
+/* ── Reduced-motion overrides ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .tyd-approach__fan-card,
+  .tyd-approach__fan-card img,
+  .tyd-reach__cell img,
+  .tyd-video__toggle {
+    transition: none;
+  }
+  .tyd-approach__fan:hover .tyd-approach__fan-card--c,
+  .tyd-approach__fan:hover .tyd-approach__fan-card--b,
+  .tyd-approach__fan:hover .tyd-approach__fan-card--a {
+    transform: translate(-50%, -50%) rotate(-14deg) translate(-55px, -12px);
+  }
+  .tyd-approach__fan:hover .tyd-approach__fan-card--b {
+    transform: translate(-50%, -50%) rotate(-4deg);
+  }
+  .tyd-approach__fan:hover .tyd-approach__fan-card--a {
+    transform: translate(-50%, -50%) rotate(6deg) translate(60px, 18px);
+  }
+}

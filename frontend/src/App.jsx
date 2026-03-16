@@ -19,6 +19,7 @@ import Offices from './pages/landing-page/our-company/offices/Offices';
 import TypeADataServicing from './pages/landing-page/what-we-offer/type-a-data-servicing/TypeADataServicing';
 import TypeBHorizontalLLMData from './pages/landing-page/what-we-offer/type-b-horizontal-llm-data/TypeBHorizontalLLMData';
 import TypeCVerticalLLMData from './pages/landing-page/what-we-offer/type-c-vertical-llm-data/TypeCVerticalLLMData';
+import TypeDAIGC from './pages/landing-page/what-we-offer/type-d-aigc/TypeDAIGC';
 import NotFound from './pages/NotFound';
 
 export default function App() {
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/offer/type-a" element={<TypeADataServicing />} />
           <Route path="/offer/type-b" element={<TypeBHorizontalLLMData />} />
           <Route path="/offer/type-c" element={<TypeCVerticalLLMData />} />
+          <Route path="/offer/type-d" element={<TypeDAIGC />} />
           {/* Catch-all — must be last */}
           <Route path="*" element={<NotFound />} />
         </Routes>

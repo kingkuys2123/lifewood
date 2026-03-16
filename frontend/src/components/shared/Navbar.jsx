@@ -24,9 +24,10 @@ export const NAV_ITEMS = [
     {
         label: 'What We Offer',
         children: [
-            { label: 'Type A – Data Servicing', to: '/offer/type-a' },
-            { label: 'Type B – Horizontal LLM Data', to: '/offer/type-b' },
-            { label: 'Type C – Vertical LLM Data', to: '/offer/type-c' },
+            { label: 'Type A - Data Servicing', to: '/offer/type-a' },
+            { label: 'Type B - Horizontal LLM Data', to: '/offer/type-b' },
+            { label: 'Type C - Vertical LLM Data', to: '/offer/type-c' },
+            { label: 'Type D - AIGC', to: '/offer/type-d' },
         ],
     },
     { label: 'Careers', to: '/careers' },
@@ -155,6 +156,7 @@ const ALWAYS_SOLID_PATHS = [
     '/philanthropy',
     '/careers',
     '/ai-initiatives',
+    '/offer',
 ];
 
 export default function Navbar() {

@@ -1,22 +1,64 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useReveal } from '../../hooks/useReveal';
+import ancestryImg from '../../assets/partners/ancestry.avif';
+import appleImg    from '../../assets/partners/apple.avif';
 import googleImg from '../../assets/partners/google.avif';
 import byuImg    from '../../assets/partners/byu-pathway-worldwide.avif';
+import familySearchImg from '../../assets/partners/family-search.avif';
+import microsoftImg from '../../assets/partners/microsoft.avif';
 import mooreImg  from '../../assets/partners/moore-foundation.avif';
 import './ClientsSection.css';
 
 const PARTNERS = [
+    { id: 'apple',   name: 'Apple',            img: appleImg },
+    { id: 'microsoft', name: 'Microsoft',      img: microsoftImg },
     { id: 'google', name: 'Google',           img: googleImg },
+    { id: 'ancestry', name: 'Ancestry',        img: ancestryImg },
+    { id: 'family-search', name: 'FamilySearch', img: familySearchImg },
     { id: 'byu',    name: 'BYU Pathway',      img: byuImg    },
     { id: 'moore',  name: 'Moore Foundation', img: mooreImg  },
 ];
 
 export default function ClientsSection() {
     const sectionRef = useRef(null);
+    const pointerRafRef = useRef(null);
     useReveal(sectionRef);
 
+    useEffect(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+        section.style.setProperty('--mx', '50%');
+        section.style.setProperty('--my', '50%');
+    }, []);
+
+    const handlePointerMove = (event) => {
+        if (pointerRafRef.current) return;
+        const { clientX, clientY } = event;
+        pointerRafRef.current = window.requestAnimationFrame(() => {
+            const section = sectionRef.current;
+            if (!section) return;
+            const rect = section.getBoundingClientRect();
+            section.style.setProperty('--mx', `${Math.round(clientX - rect.left)}px`);
+            section.style.setProperty('--my', `${Math.round(clientY - rect.top)}px`);
+            pointerRafRef.current = null;
+        });
+    };
+
+    const handlePointerLeave = () => {
+        const section = sectionRef.current;
+        if (!section) return;
+        section.style.setProperty('--mx', '50%');
+        section.style.setProperty('--my', '50%');
+    };
+
     return (
-        <section className="clients" id="clients" ref={sectionRef}>
+        <section
+            className="clients"
+            id="clients"
+            ref={sectionRef}
+            onPointerMove={handlePointerMove}
+            onPointerLeave={handlePointerLeave}
+        >
             <div className="clients__inner wrap">
 
                 {/* ── Left-aligned text block ── */}
@@ -43,22 +85,30 @@ export default function ClientsSection() {
                     <div className="clients__rule reveal reveal-delay-3" aria-hidden />
                 </div>
 
-                {/* ── Centered logo row ── */}
-                <div className="clients__logos" aria-label="Client logos">
-                    {PARTNERS.map((p, i) => (
-                        <div
-                            key={p.id}
-                            className="clients__logo-item reveal"
-                            style={{ '--logo-i': i }}
-                        >
-                            <img
-                                src={p.img}
-                                alt={p.name}
-                                className="clients__logo"
-                                draggable="false"
-                            />
+                {/* ── Marquee logo rail ── */}
+                <div className="clients__logos reveal" aria-label="Client logos">
+                    <div className="clients__marquee">
+                        <div className="clients__track">
+                            {[...PARTNERS, ...PARTNERS].map((p, i) => {
+                                const clone = i >= PARTNERS.length;
+                                return (
+                                    <div
+                                        key={`${p.id}-${clone ? 'clone' : 'base'}`}
+                                        className="clients__logo-item"
+                                        style={{ '--logo-i': i }}
+                                        aria-hidden={clone ? 'true' : undefined}
+                                    >
+                                        <img
+                                            src={p.img}
+                                            alt={clone ? '' : p.name}
+                                            className="clients__logo"
+                                            draggable="false"
+                                        />
+                                    </div>
+                                );
+                            })}
                         </div>
-                    ))}
+                    </div>
                 </div>
 
             </div>

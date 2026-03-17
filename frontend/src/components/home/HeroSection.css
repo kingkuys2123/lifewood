@@ -3,6 +3,8 @@
 .hero {
     --mx: 50%;
     --my: 50%;
+    --px: 0px;
+    --py: 0px;
     position: relative;
     width: 100%;
     min-height: max(640px, calc(100svh - var(--navbar-h)));
@@ -54,6 +56,8 @@
 .hero__particles {
     position: absolute;
     inset: 0;
+    transform: translate3d(calc(var(--px) * 0.34), calc(var(--py) * 0.34), 0);
+    transition: transform 180ms var(--ease-out);
 }
 
 .hero__particle {
@@ -61,6 +65,10 @@
     --y: 50%;
     --s: 8px;
     --d: 0s;
+    --dur: 6s;
+    --dx: 0px;
+    --dy: 10px;
+    --o: 0.3;
     position: absolute;
     left: var(--x);
     top: var(--y);
@@ -68,10 +76,34 @@
     aspect-ratio: 1;
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, rgba(245, 166, 35, 0.85), rgba(245, 166, 35, 0.18));
-    animation: particleFloat 6s var(--ease-inout) infinite;
+    animation:
+        particleFloat var(--dur) var(--ease-inout) infinite,
+        particleTwinkle calc(var(--dur) * 0.8) ease-in-out infinite;
     animation-delay: var(--d);
-    opacity: 0.42;
+    opacity: var(--o);
     filter: blur(0.2px);
+}
+
+.hero__particle::after {
+    content: '';
+    position: absolute;
+    inset: -80%;
+    background: radial-gradient(circle, rgba(245, 166, 35, 0.28), transparent 70%);
+    opacity: 0.45;
+    transform: translate3d(calc(var(--px) * -0.06), calc(var(--py) * -0.06), 0);
+}
+
+.hero__particle--near {
+    filter: blur(0.1px);
+}
+
+.hero__particle--mid {
+    filter: blur(0.25px);
+}
+
+.hero__particle--far {
+    filter: blur(0.45px);
+    opacity: calc(var(--o) * 0.78);
 }
 
 .hero__ripple {
@@ -250,11 +282,22 @@
 @keyframes particleFloat {
     0%,
     100% {
-        transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0) scale(1);
     }
 
     50% {
-        transform: translate3d(0, -12px, 0);
+        transform: translate3d(var(--dx), calc(var(--dy) * -1), 0) scale(1.05);
+    }
+}
+
+@keyframes particleTwinkle {
+    0%,
+    100% {
+        opacity: calc(var(--o) * 0.68);
+    }
+
+    50% {
+        opacity: calc(var(--o) * 1.1);
     }
 }
 
@@ -294,6 +337,10 @@
         backdrop-filter: blur(8px);
         -webkit-backdrop-filter: blur(8px);
     }
+
+    .hero__particle:nth-child(n + 15) {
+        display: none;
+    }
 }
 
 @media (max-width: 700px) {
@@ -315,6 +362,10 @@
 
     .hero__lead {
         font-size: var(--t-16);
+    }
+
+    .hero__particle:nth-child(n + 11) {
+        display: none;
     }
 
     .hero__scroll {
@@ -340,7 +391,16 @@
     }
 
     .hero__particles {
+        transform: none;
+    }
+
+    .hero__particle:nth-child(n + 9) {
         display: none;
+    }
+
+    .hero__particle {
+        animation-duration: 9s;
+        opacity: calc(var(--o) * 0.74);
     }
 }
 
@@ -362,6 +422,10 @@
     .hero__cta:hover svg,
     .hero__content {
         animation: none !important;
+    }
+
+    .hero__particles {
+        transform: none;
     }
 
     .hero__mesh {

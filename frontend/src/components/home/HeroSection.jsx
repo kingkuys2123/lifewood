@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './HeroSection.css';
 
@@ -9,10 +9,40 @@ export default function HeroSection() {
     const rafRef = useRef(null);
     const timeoutIdsRef = useRef(new Set());
     const pointerRef = useRef({ x: null, y: null });
+    const parallaxRef = useRef({ x: 0, y: 0 });
     const [interactiveEnabled, setInteractiveEnabled] = useState(false);
     const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
     const [showScrollCue, setShowScrollCue] = useState(true);
     const [ripples, setRipples] = useState([]);
+    const particles = useMemo(
+        () => Array.from({ length: 20 }, (_, idx) => {
+            const depth = idx % 3 === 0 ? 'near' : idx % 3 === 1 ? 'mid' : 'far';
+            const x = 5 + ((idx * 19) % 90);
+            const y = 8 + ((idx * 23) % 78);
+            const size = 5 + (idx % 5) * 1.7;
+            const delay = (idx % 8) * 0.32;
+            const duration = 5.5 + (idx % 6) * 0.8;
+            const driftX = ((idx % 7) - 3) * 2.8;
+            const driftY = 8 + (idx % 4) * 3;
+            const opacity = 0.2 + (idx % 4) * 0.08;
+
+            return {
+                id: `p-${idx}`,
+                depth,
+                style: {
+                    '--x': `${x}%`,
+                    '--y': `${y}%`,
+                    '--s': `${size.toFixed(1)}px`,
+                    '--d': `${delay.toFixed(2)}s`,
+                    '--dur': `${duration.toFixed(2)}s`,
+                    '--dx': `${driftX.toFixed(1)}px`,
+                    '--dy': `${driftY.toFixed(1)}px`,
+                    '--o': opacity.toFixed(2),
+                },
+            };
+        }),
+        []
+    );
 
     const trackHeroEvent = (eventName, meta = {}) => {
         const payload = {
@@ -98,6 +128,17 @@ export default function HeroSection() {
         pointerRef.current = { x: nextX, y: nextY };
         hero.style.setProperty('--mx', `${x}px`);
         hero.style.setProperty('--my', `${y}px`);
+
+        const parallaxX = Number((((nextX / rect.width) - 0.5) * 24).toFixed(2));
+        const parallaxY = Number((((nextY / rect.height) - 0.5) * 20).toFixed(2));
+        if (parallaxX !== parallaxRef.current.x) {
+            parallaxRef.current.x = parallaxX;
+            hero.style.setProperty('--px', `${parallaxX}px`);
+        }
+        if (parallaxY !== parallaxRef.current.y) {
+            parallaxRef.current.y = parallaxY;
+            hero.style.setProperty('--py', `${parallaxY}px`);
+        }
     };
 
     const createRipple = (clientX, clientY, source = 'pointer') => {
@@ -135,8 +176,11 @@ export default function HeroSection() {
         const hero = heroRef.current;
         if (!hero) return;
         pointerRef.current = { x: null, y: null };
+        parallaxRef.current = { x: 0, y: 0 };
         hero.style.setProperty('--mx', '50%');
         hero.style.setProperty('--my', '50%');
+        hero.style.setProperty('--px', '0px');
+        hero.style.setProperty('--py', '0px');
     };
 
     const handleClick = (event) => {
@@ -193,14 +237,13 @@ export default function HeroSection() {
                 <div className="hero__aurora" />
                 <div className="hero__mesh" />
                 <div className="hero__particles">
-                    <span className="hero__particle" style={{ '--x': '8%', '--y': '22%', '--d': '0s', '--s': '10px' }} />
-                    <span className="hero__particle" style={{ '--x': '18%', '--y': '68%', '--d': '0.4s', '--s': '6px' }} />
-                    <span className="hero__particle" style={{ '--x': '30%', '--y': '42%', '--d': '0.9s', '--s': '8px' }} />
-                    <span className="hero__particle" style={{ '--x': '46%', '--y': '18%', '--d': '0.2s', '--s': '7px' }} />
-                    <span className="hero__particle" style={{ '--x': '62%', '--y': '72%', '--d': '1.2s', '--s': '9px' }} />
-                    <span className="hero__particle" style={{ '--x': '73%', '--y': '31%', '--d': '0.6s', '--s': '7px' }} />
-                    <span className="hero__particle" style={{ '--x': '84%', '--y': '53%', '--d': '1.6s', '--s': '6px' }} />
-                    <span className="hero__particle" style={{ '--x': '92%', '--y': '27%', '--d': '0.8s', '--s': '10px' }} />
+                    {particles.map((particle) => (
+                        <span
+                            key={particle.id}
+                            className={`hero__particle hero__particle--${particle.depth}`}
+                            style={particle.style}
+                        />
+                    ))}
                 </div>
                 {ripples.map((ripple) => (
                     <span

@@ -4,6 +4,7 @@
     background: var(--c-white);
     padding-block: var(--s-120);
     border-bottom: 1px solid var(--border-subtle);
+    overflow: hidden;
 }
 
 .about__inner {
@@ -16,7 +17,7 @@
     display: flex;
 }
 
-/* Two-column grid */
+/* ── Two-column grid ─────────────────────────────────────── */
 .about__grid {
     display: grid;
     grid-template-columns: 5fr 7fr;
@@ -24,7 +25,7 @@
     align-items: start;
 }
 
-/* Left — sticky heading */
+/* ── Left column ─────────────────────────────────────────── */
 .about__left {
     display: flex;
     flex-direction: column;
@@ -33,8 +34,9 @@
     top: calc(var(--navbar-h) + var(--s-40));
 }
 
+/* ── Heading word-clip reveal ────────────────────────────── */
 .about__heading {
-    font-family: var(--font-display);
+    font-family: var(--font-display), sans-serif;
     font-size: clamp(var(--t-32), 3.5vw, var(--t-48));
     font-weight: var(--fw-black);
     letter-spacing: -0.03em;
@@ -42,7 +44,34 @@
     color: var(--c-charcoal);
 }
 
+/* Each word is wrapped in a clip container that masks the slide */
+.about__word-clip {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    margin-right: 0.22em;
+}
+
+.about__word-clip:last-child {
+    margin-right: 0;
+}
+
+.about__heading-word {
+    --wi: 0;
+    display: inline-block;
+    transform: translateY(110%);
+    transition: transform 0.62s var(--ease-out);
+    transition-delay: calc(0.12s + var(--wi) * 0.11s);
+}
+
+/* Fire the word slide-up once the parent gains reveal--visible */
+.about__left.reveal--visible .about__heading-word {
+    transform: translateY(0);
+}
+
+/* ── Accent line + shimmer ───────────────────────────────── */
 .about__accent-line {
+    position: relative;
     width: 40px;
     height: 3px;
     background: var(--c-saffron);
@@ -50,6 +79,21 @@
     transform-origin: left;
     transform: scaleX(0);
     opacity: 0;
+    overflow: hidden;
+}
+
+/* Shimmer sweep runs across the bar after it expands */
+.about__accent-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.74) 50%,
+        transparent 100%
+    );
+    transform: translateX(-100%);
 }
 
 @keyframes expandLine {
@@ -57,20 +101,126 @@
     to   { transform: scaleX(1); opacity: 1; }
 }
 
-/* Only play when the parent .about__left has been revealed */
-.about__left.reveal--visible .about__accent-line {
-    animation: expandLine 0.6s var(--ease-out) 0.25s both;
+@keyframes shimmerSweep {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(220%);  }
 }
 
-/* Right */
+.about__left.reveal--visible .about__accent-line {
+    animation: expandLine 0.6s var(--ease-out) 0.35s both;
+}
+
+.about__left.reveal--visible .about__accent-line::after {
+    animation: shimmerSweep 0.72s var(--ease-out) 1s both;
+}
+
+/* ── Stat counters ───────────────────────────────────────── */
+.about__stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-16);
+    margin-top: var(--s-12);
+    padding-top: var(--s-24);
+    border-top: 1px solid var(--border-subtle);
+}
+
+.about__stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    opacity: 0;
+    transform: translateX(-14px);
+    transition:
+        opacity  0.52s var(--ease-out),
+        transform 0.52s var(--ease-out);
+}
+
+.about__stat--visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.about__stat-value {
+    font-family: var(--font-display), sans-serif;
+    font-size: clamp(var(--t-28), 2.8vw, var(--t-36));
+    font-weight: var(--fw-black);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--c-forest);
+}
+
+.about__stat-suffix {
+    /* Slightly smaller suffix to give the number visual dominance */
+    font-size: 0.72em;
+    letter-spacing: -0.02em;
+}
+
+.about__stat-label {
+    font-family: var(--font-body), sans-serif;
+    font-size: var(--t-12);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--c-steel);
+}
+
+/* ── Right column ────────────────────────────────────────── */
 .about__right {
     display: flex;
     flex-direction: column;
-    gap: var(--s-32);
+    gap: var(--s-24);
 }
 
+/* ── Interactive text cards ──────────────────────────────── */
+.about__card {
+    position: relative;
+    padding: var(--s-28) var(--s-24);
+    border-radius: var(--r-16);
+    border: 1px solid transparent;
+    transition:
+        border-color  0.26s var(--ease-out),
+        background    0.26s var(--ease-out),
+        box-shadow    0.26s var(--ease-out),
+        transform     0.26s var(--ease-out);
+}
+
+/* Sliding saffron left-edge indicator */
+.about__card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20px;
+    bottom: 20px;
+    width: 3px;
+    background: var(--c-saffron);
+    border-radius: var(--r-full);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.3s var(--ease-out);
+}
+
+.about__card:hover {
+    border-color: var(--c-mist);
+    background: var(--c-snow);
+    box-shadow: var(--sh-sm);
+    transform: translateX(4px);
+}
+
+.about__card:hover::before {
+    transform: scaleY(1);
+}
+
+.about__card--sub {
+    background: transparent;
+}
+
+.about__card--sub:hover {
+    background: var(--c-ice);
+}
+
+/* ── Body text ───────────────────────────────────────────── */
 .about__body {
-    font-family: var(--font-body);
+    font-family: var(--font-body), sans-serif;
     font-size: clamp(var(--t-18), 1.6vw, var(--t-22));
     line-height: 1.8;
     color: var(--c-charcoal);
@@ -79,16 +229,14 @@
 }
 
 .about__sub {
-    font-family: var(--font-body);
+    font-family: var(--font-body), sans-serif;
     font-size: clamp(var(--t-15), 1.2vw, var(--t-17));
     line-height: 1.85;
     color: var(--c-steel);
     font-weight: var(--fw-regular);
-    padding-top: var(--s-4);
-    border-top: 1px solid var(--border-subtle);
 }
 
-/* CTA */
+/* ── CTA ─────────────────────────────────────────────────── */
 .about__footer {
     display: flex;
     align-items: center;
@@ -111,7 +259,7 @@
     animation: arrowNudge 0.45s var(--ease-spring);
 }
 
-/* Responsive */
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 900px) {
     .about__grid {
         grid-template-columns: 1fr;
@@ -120,6 +268,22 @@
 
     .about__left {
         position: static;
+    }
+
+    /* Stats flow horizontally on wider mobile/tablet */
+    .about__stats {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: var(--s-24) var(--s-32);
+        border-top: none;
+        padding-top: 0;
+        border-left: 3px solid var(--border-subtle);
+        padding-left: var(--s-20);
+        margin-top: var(--s-4);
+    }
+
+    .about__stat {
+        min-width: 100px;
     }
 }
 
@@ -135,5 +299,40 @@
     .about__heading {
         font-size: var(--t-32);
     }
+
+    .about__card {
+        padding: var(--s-20) var(--s-16);
+    }
+
+    .about__card:hover {
+        transform: none;
+    }
 }
 
+/* ── Reduced motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .about__heading-word {
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .about__accent-line,
+    .about__accent-line::after {
+        animation: none !important;
+    }
+
+    .about__stat {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .about__card,
+    .about__card::before {
+        transition: none !important;
+    }
+
+    .about__card:hover {
+        transform: none;
+    }
+}

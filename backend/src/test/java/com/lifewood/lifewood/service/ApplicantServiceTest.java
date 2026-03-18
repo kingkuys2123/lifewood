@@ -14,8 +14,10 @@ import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
 import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
 import com.lifewood.lifewood.entity.ApplicantEntity;
 import com.lifewood.lifewood.repository.ApplicantRepository;
+import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.BadRequestException;
 import com.lifewood.lifewood.util.FileUtil;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +38,12 @@ class ApplicantServiceTest {
 
     @Mock
     private EmailService emailService;
+
+    @Mock
+    private NotificationService notificationService;
+
+    @Mock
+    private UserRepository userRepository;
 
     @InjectMocks
     private ApplicantService applicantService;
@@ -67,6 +75,7 @@ class ApplicantServiceTest {
 
         when(applicantRepository.findById(10L)).thenReturn(Optional.of(pendingApplicant));
         when(applicantRepository.save(any(ApplicantEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
 
         ApplicantResponseDTO response = applicantService.approveApplicant(request);
 
@@ -90,6 +99,7 @@ class ApplicantServiceTest {
 
         when(applicantRepository.findById(10L)).thenReturn(Optional.of(pendingApplicant));
         when(applicantRepository.save(any(ApplicantEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findAll()).thenReturn(Collections.emptyList());
 
         ApplicantResponseDTO response = applicantService.denyApplicant(request);
 

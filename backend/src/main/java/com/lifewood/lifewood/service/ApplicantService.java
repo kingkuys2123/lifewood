@@ -6,7 +6,11 @@ import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
 import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.UpdateApplicantDTO;
 import com.lifewood.lifewood.entity.ApplicantEntity;
+import com.lifewood.lifewood.entity.NotificationEntity;
+import com.lifewood.lifewood.entity.UserEntity;
+import com.lifewood.lifewood.enumeration.NotificationTypeEnum;
 import com.lifewood.lifewood.repository.ApplicantRepository;
+import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.ApplicantSpecifications;
 import com.lifewood.lifewood.util.BadRequestException;
 import com.lifewood.lifewood.util.FileUtil;
@@ -27,6 +31,8 @@ public class ApplicantService {
     private final ApplicantRepository applicantRepository;
     private final FileUtil fileUtil;
     private final EmailService emailService;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Transactional
     public ApplicantResponseDTO createApplicant(AddApplicantDTO request) {
@@ -117,6 +123,8 @@ public class ApplicantService {
                 true,
                 request.getMessage());
 
+        createApplicantNotification(savedApplicantEntity.getProjectAppliedFor(), true);
+
         log.info("Approved applicant id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
         return mapToResponse(savedApplicantEntity);
     }
@@ -136,6 +144,8 @@ public class ApplicantService {
                 savedApplicantEntity.getProjectAppliedFor(),
                 false,
                 request.getMessage());
+
+        createApplicantNotification(savedApplicantEntity.getProjectAppliedFor(), false);
 
         log.info("Denied applicant id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
         return mapToResponse(savedApplicantEntity);
@@ -169,5 +179,29 @@ public class ApplicantService {
                 .createdAt(applicantEntity.getCreatedAt())
                 .updatedAt(applicantEntity.getUpdatedAt())
                 .build();
+    }
+
+    private void createApplicantNotification(String project, boolean approved) {
+        try {
+            // Get the admin user to send notification to
+            UserEntity adminUser = userRepository.findAll().stream()
+                    .filter(user -> user.getRole().name().equals("ADMIN"))
+                    .findFirst()
+                    .orElse(null);
+
+            if (adminUser != null) {
+                NotificationEntity notification = NotificationEntity.builder()
+                        .title(approved ? "Application Approved" : "Application Denied")
+                        .message("An application for " + project + " was " + (approved ? "approved" : "denied") + ".")
+                        .type(approved ? NotificationTypeEnum.APPLICATION_APPROVED : NotificationTypeEnum.APPLICATION_DENIED)
+                        .recipient(adminUser)
+                        .isRead(false)
+                        .build();
+
+                notificationService.createNotificationInternal(notification);
+            }
+        } catch (Exception ex) {
+            log.error("Failed to create applicant notification for project {}", project, ex);
+        }
     }
 }

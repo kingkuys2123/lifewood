@@ -3,7 +3,7 @@ package com.lifewood.lifewood.service;
 import com.lifewood.lifewood.dto.auth.AuthResponseDTO;
 import com.lifewood.lifewood.dto.auth.LoginRequestDTO;
 import com.lifewood.lifewood.dto.auth.RefreshTokenRequestDTO;
-import com.lifewood.lifewood.entity.User;
+import com.lifewood.lifewood.entity.UserEntity;
 import com.lifewood.lifewood.filter.JwtUtil;
 import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.UnauthorizedException;
@@ -26,12 +26,12 @@ public class AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        User user = userRepository.findByUsername(request.getUsername())
+        UserEntity userEntity = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
-        String accessToken = jwtUtil.generateAccessToken(user.getUsername(), user.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
-        log.info("User authenticated: {}", user.getUsername());
+        String accessToken = jwtUtil.generateAccessToken(userEntity.getUsername(), userEntity.getRole().name());
+        String refreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername(), userEntity.getRole().name());
+        log.info("UserEntity authenticated: {}", userEntity.getUsername());
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
@@ -46,11 +46,11 @@ public class AuthService {
             throw new UnauthorizedException("Invalid refresh token");
         }
         String username = jwtUtil.extractUsername(request.getRefreshToken());
-        User user = userRepository.findByUsername(username)
+        UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
 
-        String accessToken = jwtUtil.generateAccessToken(user.getUsername(), user.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
+        String accessToken = jwtUtil.generateAccessToken(userEntity.getUsername(), userEntity.getRole().name());
+        String refreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername(), userEntity.getRole().name());
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)

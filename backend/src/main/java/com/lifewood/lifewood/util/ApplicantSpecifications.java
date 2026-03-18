@@ -1,6 +1,6 @@
 package com.lifewood.lifewood.util;
 
-import com.lifewood.lifewood.entity.Applicant;
+import com.lifewood.lifewood.entity.ApplicantEntity;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class ApplicantSpecifications {
@@ -8,7 +8,7 @@ public final class ApplicantSpecifications {
     private ApplicantSpecifications() {
     }
 
-    public static Specification<Applicant> withKeyword(String keyword) {
+    public static Specification<ApplicantEntity> withKeyword(String keyword) {
         return (root, query, cb) -> {
             if (keyword == null || keyword.isBlank()) {
                 return cb.conjunction();

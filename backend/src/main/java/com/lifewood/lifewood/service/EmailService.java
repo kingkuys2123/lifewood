@@ -24,7 +24,7 @@ public class EmailService {
     public void sendApplicantSubmissionNotification(String applicantEmail, String applicantName, String project) {
         sendMail(notificationTo,
                 "New applicant submission",
-                "Applicant " + applicantName + " applied for project: " + project + ".");
+                "ApplicantEntity " + applicantName + " applied for project: " + project + ".");
 
         sendMail(applicantEmail,
                 "Application received",

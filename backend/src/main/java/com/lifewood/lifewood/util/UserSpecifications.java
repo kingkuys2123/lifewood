@@ -1,6 +1,6 @@
 package com.lifewood.lifewood.util;
 
-import com.lifewood.lifewood.entity.User;
+import com.lifewood.lifewood.entity.UserEntity;
 import org.springframework.data.jpa.domain.Specification;
 
 public final class UserSpecifications {
@@ -8,7 +8,7 @@ public final class UserSpecifications {
     private UserSpecifications() {
     }
 
-    public static Specification<User> withKeyword(String keyword) {
+    public static Specification<UserEntity> withKeyword(String keyword) {
         return (root, query, cb) -> {
             if (keyword == null || keyword.isBlank()) {
                 return cb.conjunction();

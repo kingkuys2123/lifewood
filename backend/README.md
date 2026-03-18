@@ -27,17 +27,17 @@ Spring Boot REST API with MVC architecture, JWT authentication, role-based autho
 ## Key Endpoints
 - `POST /auth/login`
 - `POST /auth/refresh`
-- `GET /user/get`
-- `GET /user/get/all`
-- `POST /user/create`
-- `PUT /user/update`
-- `PATCH /user/change-password`
-- `DELETE /user/delete`
-- `POST /applicant/create` (multipart)
-- `GET /applicant/get`
-- `GET /applicant/get/all`
-- `PUT /applicant/update` (multipart)
-- `DELETE /applicant/delete`
+- `GET /userEntity/get`
+- `GET /userEntity/get/all`
+- `POST /userEntity/create`
+- `PUT /userEntity/update`
+- `PATCH /userEntity/change-password`
+- `DELETE /userEntity/delete`
+- `POST /applicantEntity/create` (multipart)
+- `GET /applicantEntity/get`
+- `GET /applicantEntity/get/all`
+- `PUT /applicantEntity/update` (multipart)
+- `DELETE /applicantEntity/delete`
 - `POST /contact/send`
 
 ## Configuration

@@ -4,7 +4,7 @@ import com.lifewood.lifewood.dto.user.AddUserDTO;
 import com.lifewood.lifewood.dto.user.ChangePasswordDTO;
 import com.lifewood.lifewood.dto.user.UpdateUserDTO;
 import com.lifewood.lifewood.dto.user.UserResponseDTO;
-import com.lifewood.lifewood.entity.User;
+import com.lifewood.lifewood.entity.UserEntity;
 import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.BadRequestException;
 import com.lifewood.lifewood.util.ResourceNotFoundException;
@@ -34,7 +34,7 @@ public class UserService {
             throw new BadRequestException("Email already exists");
         }
 
-        User user = User.builder()
+        UserEntity userEntity = UserEntity.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .profilePicture(request.getProfilePicture())
@@ -45,16 +45,16 @@ public class UserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .build();
 
-        User savedUser = userRepository.save(user);
-        log.info("Created user with username={}", savedUser.getUsername());
-        return mapToResponse(savedUser);
+        UserEntity savedUserEntity = userRepository.save(userEntity);
+        log.info("Created userEntity with username={}", savedUserEntity.getUsername());
+        return mapToResponse(savedUserEntity);
     }
 
     @Transactional(readOnly = true)
     public UserResponseDTO getUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        return mapToResponse(user);
+        UserEntity userEntity = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("UserEntity not found with id: " + id));
+        return mapToResponse(userEntity);
     }
 
     @Transactional(readOnly = true)
@@ -64,56 +64,56 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO updateUser(Long id, UpdateUserDTO request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        UserEntity userEntity = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("UserEntity not found with id: " + id));
 
-        if (!user.getEmail().equalsIgnoreCase(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+        if (!userEntity.getEmail().equalsIgnoreCase(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
 
-        user.setEmail(request.getEmail());
-        user.setProfilePicture(request.getProfilePicture());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setRole(request.getRole());
+        userEntity.setEmail(request.getEmail());
+        userEntity.setProfilePicture(request.getProfilePicture());
+        userEntity.setFirstName(request.getFirstName());
+        userEntity.setLastName(request.getLastName());
+        userEntity.setPhoneNumber(request.getPhoneNumber());
+        userEntity.setRole(request.getRole());
 
-        return mapToResponse(userRepository.save(user));
+        return mapToResponse(userRepository.save(userEntity));
     }
 
     @Transactional
     public void changePassword(Long id, ChangePasswordDTO request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        UserEntity userEntity = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("UserEntity not found with id: " + id));
 
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getOldPassword(), userEntity.getPassword())) {
             throw new BadRequestException("Old password is incorrect");
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        userRepository.save(user);
+        userEntity.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(userEntity);
     }
 
     @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("User not found with id: " + id);
+            throw new ResourceNotFoundException("UserEntity not found with id: " + id);
         }
         userRepository.deleteById(id);
     }
 
-    private UserResponseDTO mapToResponse(User user) {
+    private UserResponseDTO mapToResponse(UserEntity userEntity) {
         return UserResponseDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .profilePicture(user.getProfilePicture())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .phoneNumber(user.getPhoneNumber())
-                .role(user.getRole())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
+                .id(userEntity.getId())
+                .username(userEntity.getUsername())
+                .email(userEntity.getEmail())
+                .profilePicture(userEntity.getProfilePicture())
+                .firstName(userEntity.getFirstName())
+                .lastName(userEntity.getLastName())
+                .phoneNumber(userEntity.getPhoneNumber())
+                .role(userEntity.getRole())
+                .createdAt(userEntity.getCreatedAt())
+                .updatedAt(userEntity.getUpdatedAt())
                 .build();
     }
 }

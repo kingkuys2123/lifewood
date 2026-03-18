@@ -31,13 +31,13 @@ public class ApplicantController {
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ApplicantResponseDTO>> createApplicant(@Valid @ModelAttribute AddApplicantDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("Applicant created successfully", applicantService.createApplicant(request)));
+        return ResponseEntity.ok(ApiResponse.success("ApplicantEntity created successfully", applicantService.createApplicant(request)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/get")
     public ResponseEntity<ApiResponse<ApplicantResponseDTO>> getApplicant(@RequestParam("id") Long id) {
-        return ResponseEntity.ok(ApiResponse.success("Applicant fetched successfully", applicantService.getApplicant(id)));
+        return ResponseEntity.ok(ApiResponse.success("ApplicantEntity fetched successfully", applicantService.getApplicant(id)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -54,13 +54,13 @@ public class ApplicantController {
     public ResponseEntity<ApiResponse<ApplicantResponseDTO>> updateApplicant(
             @RequestParam("id") Long id,
             @Valid @ModelAttribute UpdateApplicantDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("Applicant updated successfully", applicantService.updateApplicant(id, request)));
+        return ResponseEntity.ok(ApiResponse.success("ApplicantEntity updated successfully", applicantService.updateApplicant(id, request)));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/delete")
     public ResponseEntity<ApiResponse<Object>> deleteApplicant(@RequestParam("id") Long id) {
         applicantService.deleteApplicant(id);
-        return ResponseEntity.ok(ApiResponse.success("Applicant deleted successfully", null));
+        return ResponseEntity.ok(ApiResponse.success("ApplicantEntity deleted successfully", null));
     }
 }

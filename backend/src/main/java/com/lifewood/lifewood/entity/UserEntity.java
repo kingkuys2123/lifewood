@@ -1,7 +1,10 @@
 package com.lifewood.lifewood.entity;
 
+import com.lifewood.lifewood.enumeration.UserRoleEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,12 +21,21 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "applicants")
-public class Applicant extends BaseAuditEntity {
+@Table(name = "users")
+public class UserEntity extends BaseAuditEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "profile_picture")
+    private String profilePicture;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -31,22 +43,14 @@ public class Applicant extends BaseAuditEntity {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "age", nullable = false)
-    private Integer age;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
-    @Column(name = "email", nullable = false)
-    private String email;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRoleEnum role;
 
-    @Column(name = "degree", nullable = false)
-    private String degree;
-
-    @Column(name = "project_applied_for", nullable = false)
-    private String projectAppliedFor;
-
-    @Column(name = "experience")
-    private String experience;
-
-    @Column(name = "resume_path", nullable = false)
-    private String resumePath;
+    @Column(name = "password", nullable = false)
+    private String password;
 }
 

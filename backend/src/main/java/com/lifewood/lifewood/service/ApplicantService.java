@@ -3,7 +3,7 @@ package com.lifewood.lifewood.service;
 import com.lifewood.lifewood.dto.applicant.AddApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
 import com.lifewood.lifewood.dto.applicant.UpdateApplicantDTO;
-import com.lifewood.lifewood.entity.Applicant;
+import com.lifewood.lifewood.entity.ApplicantEntity;
 import com.lifewood.lifewood.repository.ApplicantRepository;
 import com.lifewood.lifewood.util.ApplicantSpecifications;
 import com.lifewood.lifewood.util.FileUtil;
@@ -27,7 +27,7 @@ public class ApplicantService {
     @Transactional
     public ApplicantResponseDTO createApplicant(AddApplicantDTO request) {
         String resumePath = fileUtil.storeResume(request.getResume());
-        Applicant applicant = Applicant.builder()
+        ApplicantEntity applicantEntity = ApplicantEntity.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .age(request.getAge())
@@ -38,21 +38,21 @@ public class ApplicantService {
                 .resumePath(resumePath)
                 .build();
 
-        Applicant savedApplicant = applicantRepository.save(applicant);
+        ApplicantEntity savedApplicantEntity = applicantRepository.save(applicantEntity);
         emailService.sendApplicantSubmissionNotification(
-                savedApplicant.getEmail(),
-                savedApplicant.getFirstName() + " " + savedApplicant.getLastName(),
-                savedApplicant.getProjectAppliedFor());
+                savedApplicantEntity.getEmail(),
+                savedApplicantEntity.getFirstName() + " " + savedApplicantEntity.getLastName(),
+                savedApplicantEntity.getProjectAppliedFor());
 
-        log.info("Created applicant id={} email={}", savedApplicant.getId(), savedApplicant.getEmail());
-        return mapToResponse(savedApplicant);
+        log.info("Created applicantEntity id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
+        return mapToResponse(savedApplicantEntity);
     }
 
     @Transactional(readOnly = true)
     public ApplicantResponseDTO getApplicant(Long id) {
-        Applicant applicant = applicantRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Applicant not found with id: " + id));
-        return mapToResponse(applicant);
+        ApplicantEntity applicantEntity = applicantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
+        return mapToResponse(applicantEntity);
     }
 
     @Transactional(readOnly = true)
@@ -63,45 +63,45 @@ public class ApplicantService {
 
     @Transactional
     public ApplicantResponseDTO updateApplicant(Long id, UpdateApplicantDTO request) {
-        Applicant applicant = applicantRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Applicant not found with id: " + id));
+        ApplicantEntity applicantEntity = applicantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
 
-        applicant.setFirstName(request.getFirstName());
-        applicant.setLastName(request.getLastName());
-        applicant.setAge(request.getAge());
-        applicant.setEmail(request.getEmail());
-        applicant.setDegree(request.getDegree());
-        applicant.setProjectAppliedFor(request.getProjectAppliedFor());
-        applicant.setExperience(request.getExperience());
+        applicantEntity.setFirstName(request.getFirstName());
+        applicantEntity.setLastName(request.getLastName());
+        applicantEntity.setAge(request.getAge());
+        applicantEntity.setEmail(request.getEmail());
+        applicantEntity.setDegree(request.getDegree());
+        applicantEntity.setProjectAppliedFor(request.getProjectAppliedFor());
+        applicantEntity.setExperience(request.getExperience());
 
         if (request.getResume() != null && !request.getResume().isEmpty()) {
-            applicant.setResumePath(fileUtil.storeResume(request.getResume()));
+            applicantEntity.setResumePath(fileUtil.storeResume(request.getResume()));
         }
 
-        return mapToResponse(applicantRepository.save(applicant));
+        return mapToResponse(applicantRepository.save(applicantEntity));
     }
 
     @Transactional
     public void deleteApplicant(Long id) {
         if (!applicantRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Applicant not found with id: " + id);
+            throw new ResourceNotFoundException("ApplicantEntity not found with id: " + id);
         }
         applicantRepository.deleteById(id);
     }
 
-    private ApplicantResponseDTO mapToResponse(Applicant applicant) {
+    private ApplicantResponseDTO mapToResponse(ApplicantEntity applicantEntity) {
         return ApplicantResponseDTO.builder()
-                .id(applicant.getId())
-                .firstName(applicant.getFirstName())
-                .lastName(applicant.getLastName())
-                .age(applicant.getAge())
-                .email(applicant.getEmail())
-                .degree(applicant.getDegree())
-                .projectAppliedFor(applicant.getProjectAppliedFor())
-                .experience(applicant.getExperience())
-                .resumePath(applicant.getResumePath())
-                .createdAt(applicant.getCreatedAt())
-                .updatedAt(applicant.getUpdatedAt())
+                .id(applicantEntity.getId())
+                .firstName(applicantEntity.getFirstName())
+                .lastName(applicantEntity.getLastName())
+                .age(applicantEntity.getAge())
+                .email(applicantEntity.getEmail())
+                .degree(applicantEntity.getDegree())
+                .projectAppliedFor(applicantEntity.getProjectAppliedFor())
+                .experience(applicantEntity.getExperience())
+                .resumePath(applicantEntity.getResumePath())
+                .createdAt(applicantEntity.getCreatedAt())
+                .updatedAt(applicantEntity.getUpdatedAt())
                 .build();
     }
 }

@@ -1,16 +1,16 @@
 package com.lifewood.lifewood.repository;
 
-import com.lifewood.lifewood.entity.User;
+import com.lifewood.lifewood.entity.UserEntity;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
-    Optional<User> findByUsername(String username);
+public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpecificationExecutor<UserEntity> {
+    Optional<UserEntity> findByUsername(String username);
 
-    Optional<User> findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
 
     boolean existsByUsername(String username);
 

@@ -1,6 +1,6 @@
 package com.lifewood.lifewood.service;
 
-import com.lifewood.lifewood.entity.User;
+import com.lifewood.lifewood.entity.UserEntity;
 import com.lifewood.lifewood.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,13 +17,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        UserEntity userEntity = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("UserEntity not found: " + username));
 
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                java.util.List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())));
+                userEntity.getUsername(),
+                userEntity.getPassword(),
+                java.util.List.of(new SimpleGrantedAuthority("ROLE_" + userEntity.getRole().name())));
     }
 }
 

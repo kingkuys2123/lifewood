@@ -33,13 +33,13 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(@Valid @RequestBody AddUserDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("User created successfully", userService.createUser(request)));
+        return ResponseEntity.ok(ApiResponse.success("UserEntity created successfully", userService.createUser(request)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/get")
     public ResponseEntity<ApiResponse<UserResponseDTO>> getUser(@RequestParam("id") Long id) {
-        return ResponseEntity.ok(ApiResponse.success("User fetched successfully", userService.getUser(id)));
+        return ResponseEntity.ok(ApiResponse.success("UserEntity fetched successfully", userService.getUser(id)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -55,7 +55,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
             @RequestParam("id") Long id,
             @Valid @RequestBody UpdateUserDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("User updated successfully", userService.updateUser(id, request)));
+        return ResponseEntity.ok(ApiResponse.success("UserEntity updated successfully", userService.updateUser(id, request)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -71,7 +71,7 @@ public class UserController {
     @DeleteMapping("/delete")
     public ResponseEntity<ApiResponse<Object>> deleteUser(@RequestParam("id") Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
+        return ResponseEntity.ok(ApiResponse.success("UserEntity deleted successfully", null));
     }
 }
 

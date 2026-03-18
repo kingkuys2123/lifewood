@@ -48,5 +48,13 @@ public class ApplicantEntity extends BaseAuditEntity {
 
     @Column(name = "resume_path", nullable = false)
     private String resumePath;
+
+    @Builder.Default
+    @Column(name = "approved", nullable = false)
+    private boolean approved = false;
+
+    @Builder.Default
+    @Column(name = "reviewed", nullable = false)
+    private boolean reviewed = false;
 }
 

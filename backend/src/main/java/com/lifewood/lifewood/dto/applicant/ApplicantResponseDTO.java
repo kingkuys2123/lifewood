@@ -16,6 +16,8 @@ public class ApplicantResponseDTO {
     private String projectAppliedFor;
     private String experience;
     private String resumePath;
+    private boolean approved;
+    private boolean reviewed;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

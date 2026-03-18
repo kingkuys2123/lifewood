@@ -2,7 +2,9 @@ package com.lifewood.lifewood.controller;
 
 import com.lifewood.lifewood.dto.ApiResponse;
 import com.lifewood.lifewood.dto.applicant.AddApplicantDTO;
+import com.lifewood.lifewood.dto.applicant.ApproveApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
+import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.UpdateApplicantDTO;
 import com.lifewood.lifewood.service.ApplicantService;
 import jakarta.validation.Valid;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,9 +47,18 @@ public class ApplicantController {
     @GetMapping("/get/all")
     public ResponseEntity<ApiResponse<Page<ApplicantResponseDTO>>> getAllApplicants(
             @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "approved", required = false) Boolean approved,
+            @RequestParam(value = "reviewed", required = false) Boolean reviewed,
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         return ResponseEntity.ok(
-                ApiResponse.success("Applicants fetched successfully", applicantService.getAllApplicants(keyword, pageable)));
+                ApiResponse.success("Applicants fetched successfully", applicantService.getAllApplicants(keyword, approved, reviewed, pageable)));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/get/pending")
+    public ResponseEntity<ApiResponse<Page<ApplicantResponseDTO>>> getPendingApplicants(
+            @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
+        return ResponseEntity.ok(ApiResponse.success("Pending applicants fetched successfully", applicantService.getPendingApplicants(pageable)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -62,5 +74,17 @@ public class ApplicantController {
     public ResponseEntity<ApiResponse<Object>> deleteApplicant(@RequestParam("id") Long id) {
         applicantService.deleteApplicant(id);
         return ResponseEntity.ok(ApiResponse.success("ApplicantEntity deleted successfully", null));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/approve")
+    public ResponseEntity<ApiResponse<ApplicantResponseDTO>> approveApplicant(@Valid @RequestBody ApproveApplicantDTO request) {
+        return ResponseEntity.ok(ApiResponse.success("Applicant approved successfully", applicantService.approveApplicant(request)));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/deny")
+    public ResponseEntity<ApiResponse<ApplicantResponseDTO>> denyApplicant(@Valid @RequestBody DenyApplicantDTO request) {
+        return ResponseEntity.ok(ApiResponse.success("Applicant denied successfully", applicantService.denyApplicant(request)));
     }
 }

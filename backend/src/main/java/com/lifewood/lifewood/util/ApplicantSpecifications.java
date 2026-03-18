@@ -22,5 +22,13 @@ public final class ApplicantSpecifications {
                     cb.like(cb.lower(root.get("lastName")), like));
         };
     }
+
+    public static Specification<ApplicantEntity> withApproved(Boolean approved) {
+        return (root, query, cb) -> approved == null ? cb.conjunction() : cb.equal(root.get("approved"), approved);
+    }
+
+    public static Specification<ApplicantEntity> withReviewed(Boolean reviewed) {
+        return (root, query, cb) -> reviewed == null ? cb.conjunction() : cb.equal(root.get("reviewed"), reviewed);
+    }
 }
 

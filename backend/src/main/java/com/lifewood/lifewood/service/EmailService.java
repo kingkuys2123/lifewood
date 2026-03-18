@@ -31,6 +31,29 @@ public class EmailService {
                 "Hello " + applicantName + ", your application has been received successfully.");
     }
 
+    public void sendApplicantDecisionNotification(
+            String applicantEmail,
+            String applicantName,
+            String project,
+            boolean approved,
+            String customMessage) {
+        String decision = approved ? "approved" : "denied";
+        String normalizedMessage = customMessage == null ? "" : customMessage.trim();
+        String applicantBody = "Hello " + applicantName + ",\n\n"
+                + "Your application for " + project + " has been " + decision + ".";
+        if (!normalizedMessage.isEmpty()) {
+            applicantBody = applicantBody + "\n\nMessage from the recruitment team:\n" + normalizedMessage;
+        }
+
+        sendMail(notificationTo,
+                "Applicant " + decision,
+                "Applicant " + applicantName + " (" + applicantEmail + ") was " + decision + " for " + project + ".");
+
+        sendMail(applicantEmail,
+                "Application " + (approved ? "approved" : "update"),
+                applicantBody);
+    }
+
     public void sendContactFormMessage(ContactMessageDTO request) {
         String body = "From: " + request.getName() + " <" + request.getEmail() + ">\n\n" + request.getMessage();
         sendMail(notificationTo, request.getSubject(), body);

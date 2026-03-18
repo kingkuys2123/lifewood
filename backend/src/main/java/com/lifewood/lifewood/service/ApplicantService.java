@@ -1,17 +1,21 @@
 package com.lifewood.lifewood.service;
 
 import com.lifewood.lifewood.dto.applicant.AddApplicantDTO;
+import com.lifewood.lifewood.dto.applicant.ApproveApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
+import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.UpdateApplicantDTO;
 import com.lifewood.lifewood.entity.ApplicantEntity;
 import com.lifewood.lifewood.repository.ApplicantRepository;
 import com.lifewood.lifewood.util.ApplicantSpecifications;
+import com.lifewood.lifewood.util.BadRequestException;
 import com.lifewood.lifewood.util.FileUtil;
 import com.lifewood.lifewood.util.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,9 +60,17 @@ public class ApplicantService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ApplicantResponseDTO> getAllApplicants(String keyword, Pageable pageable) {
-        return applicantRepository.findAll(ApplicantSpecifications.withKeyword(keyword), pageable)
+    public Page<ApplicantResponseDTO> getAllApplicants(String keyword, Boolean approved, Boolean reviewed, Pageable pageable) {
+        Specification<ApplicantEntity> specification = Specification.where(ApplicantSpecifications.withKeyword(keyword))
+                .and(ApplicantSpecifications.withApproved(approved))
+                .and(ApplicantSpecifications.withReviewed(reviewed));
+        return applicantRepository.findAll(specification, pageable)
                 .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ApplicantResponseDTO> getPendingApplicants(Pageable pageable) {
+        return applicantRepository.findAllByReviewedFalse(pageable).map(this::mapToResponse);
     }
 
     @Transactional
@@ -89,6 +101,58 @@ public class ApplicantService {
         applicantRepository.deleteById(id);
     }
 
+    @Transactional
+    public ApplicantResponseDTO approveApplicant(ApproveApplicantDTO request) {
+        ApplicantEntity applicantEntity = getApplicantById(request.getApplicantId());
+        ensurePending(applicantEntity);
+
+        applicantEntity.setApproved(true);
+        applicantEntity.setReviewed(true);
+        ApplicantEntity savedApplicantEntity = applicantRepository.save(applicantEntity);
+
+        emailService.sendApplicantDecisionNotification(
+                savedApplicantEntity.getEmail(),
+                savedApplicantEntity.getFirstName() + " " + savedApplicantEntity.getLastName(),
+                savedApplicantEntity.getProjectAppliedFor(),
+                true,
+                request.getMessage());
+
+        log.info("Approved applicant id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
+        return mapToResponse(savedApplicantEntity);
+    }
+
+    @Transactional
+    public ApplicantResponseDTO denyApplicant(DenyApplicantDTO request) {
+        ApplicantEntity applicantEntity = getApplicantById(request.getApplicantId());
+        ensurePending(applicantEntity);
+
+        applicantEntity.setApproved(false);
+        applicantEntity.setReviewed(true);
+        ApplicantEntity savedApplicantEntity = applicantRepository.save(applicantEntity);
+
+        emailService.sendApplicantDecisionNotification(
+                savedApplicantEntity.getEmail(),
+                savedApplicantEntity.getFirstName() + " " + savedApplicantEntity.getLastName(),
+                savedApplicantEntity.getProjectAppliedFor(),
+                false,
+                request.getMessage());
+
+        log.info("Denied applicant id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
+        return mapToResponse(savedApplicantEntity);
+    }
+
+    private ApplicantEntity getApplicantById(Long id) {
+        return applicantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
+    }
+
+    private void ensurePending(ApplicantEntity applicantEntity) {
+        if (applicantEntity.isReviewed()) {
+            log.warn("Applicant already processed id={} approved={}", applicantEntity.getId(), applicantEntity.isApproved());
+            throw new BadRequestException("Applicant has already been processed");
+        }
+    }
+
     private ApplicantResponseDTO mapToResponse(ApplicantEntity applicantEntity) {
         return ApplicantResponseDTO.builder()
                 .id(applicantEntity.getId())
@@ -100,6 +164,8 @@ public class ApplicantService {
                 .projectAppliedFor(applicantEntity.getProjectAppliedFor())
                 .experience(applicantEntity.getExperience())
                 .resumePath(applicantEntity.getResumePath())
+                .approved(applicantEntity.isApproved())
+                .reviewed(applicantEntity.isReviewed())
                 .createdAt(applicantEntity.getCreatedAt())
                 .updatedAt(applicantEntity.getUpdatedAt())
                 .build();

@@ -1,0 +1,73 @@
+.portal-landing {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--s-32) var(--s-16);
+  background: radial-gradient(circle at top right, var(--c-saffron-soft), transparent 45%),
+    var(--c-ice);
+}
+
+.portal-landing-card {
+  width: min(680px, 100%);
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-24);
+  box-shadow: var(--sh-lg);
+  padding: clamp(var(--s-24), 5vw, var(--s-48));
+  text-align: center;
+}
+
+.portal-landing-logo {
+  width: min(280px, 75%);
+  margin: 0 auto var(--s-16);
+}
+
+.portal-landing-eyebrow {
+  display: inline-flex;
+  background: var(--c-saffron-soft);
+  color: var(--c-forest);
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+  font-weight: var(--fw-semibold);
+  font-size: var(--t-12);
+  margin-bottom: var(--s-16);
+}
+
+.portal-landing h1 {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-28), 5vw, var(--t-48));
+  line-height: 1.1;
+  margin-bottom: var(--s-16);
+}
+
+.portal-landing p {
+  color: var(--c-steel);
+  max-width: 52ch;
+  margin: 0 auto;
+}
+
+.portal-landing-login {
+  margin-top: var(--s-24);
+}
+
+.portal-landing-brand-message {
+  margin-top: var(--s-12);
+  color: var(--c-forest);
+  font-weight: var(--fw-semibold);
+}
+
+.portal-landing-highlights {
+  margin-top: var(--s-12);
+  text-align: left;
+  display: grid;
+  gap: 6px;
+  max-width: 56ch;
+  margin-inline: auto;
+  color: var(--c-charcoal);
+  font-size: var(--t-14);
+}
+
+.portal-landing-highlights li::before {
+  content: '- ';
+  color: var(--c-forest);
+}

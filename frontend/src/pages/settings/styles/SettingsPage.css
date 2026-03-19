@@ -1,0 +1,48 @@
+.settings-page {
+  display: grid;
+  gap: var(--s-16);
+}
+
+.settings-title {
+  font-family: var(--font-display);
+  font-size: var(--t-28);
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--s-16);
+}
+
+.settings-card {
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-16);
+  padding: var(--s-16);
+}
+
+.settings-card h2 {
+  font-family: var(--font-display);
+  font-size: var(--t-20);
+  margin-bottom: var(--s-12);
+}
+
+.settings-list {
+  display: grid;
+  gap: var(--s-10);
+}
+
+.settings-item {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-12);
+  font-size: var(--t-14);
+}
+
+.settings-alert-list {
+  display: grid;
+  gap: var(--s-10);
+  color: var(--c-steel);
+  list-style: disc;
+  padding-left: 18px;
+}

@@ -1,12 +1,17 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './styles/global.css';
-import Navbar from './components/shared/Navbar';
-import Footer from './components/shared/Footer';
-import ScrollProgressBar from './components/shared/ScrollProgressBar';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import PortalLayout from './app/layouts/PortalLayout';
+import PublicSiteLayout from './app/layouts/PublicSiteLayout';
+import ApplicantsPage from './pages/applicants/ApplicantsPage';
+import LoginPage from './pages/auth/LoginPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
+import LandingPage from './pages/landing/LandingPage';
 import Home from './pages/landing-page/home/Home';
-import PrivacyPolicy from './pages/policies/PrivacyPolicy';
+import ProfileEditPage from './pages/profile/ProfileEditPage';
 import CookiePolicy from './pages/policies/CookiePolicy';
+import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import TermsConditions from './pages/policies/TermsConditions';
+import SettingsPage from './pages/settings/SettingsPage';
+import UsersPage from './pages/users/UsersPage';
 import ContactUs from './pages/landing-page/contact-us/ContactUs';
 import ApplyNow from './pages/landing-page/apply/ApplyNow';
 import Careers from './pages/landing-page/careers/Careers';
@@ -21,23 +26,33 @@ import TypeBHorizontalLLMData from './pages/landing-page/what-we-offer/type-b-ho
 import TypeCVerticalLLMData from './pages/landing-page/what-we-offer/type-c-vertical-llm-data/TypeCVerticalLLMData';
 import TypeDAIGC from './pages/landing-page/what-we-offer/type-d-aigc/TypeDAIGC';
 import NotFound from './pages/NotFound';
+import './styles/global.css';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <ScrollProgressBar />
-      <Navbar />
-      <main>
-        <Routes>
+      <Routes>
+        <Route path="/admin" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route path="/portal" element={<PortalLayout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="applicants" element={<ApplicantsPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="profile/edit" element={<ProfileEditPage />} />
+        </Route>
+
+        <Route element={<PublicSiteLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/terms-and-conditions" element={<TermsConditions />} />
           <Route path="/contact" element={<ContactUs />} />
-          <Route path="/apply"   element={<ApplyNow />} />
-          <Route path="/careers"       element={<Careers />} />
-          <Route path="/internal-news"  element={<InternalNews />} />
-          <Route path="/philanthropy"   element={<PhilanthropyImpact />} />
+          <Route path="/apply" element={<ApplyNow />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/internal-news" element={<InternalNews />} />
+          <Route path="/philanthropy" element={<PhilanthropyImpact />} />
           <Route path="/ai-initiatives/services" element={<AIServices />} />
           <Route path="/ai-initiatives/projects" element={<AIProject />} />
           <Route path="/our-company/about" element={<AboutUs />} />
@@ -46,11 +61,9 @@ export default function App() {
           <Route path="/offer/type-b" element={<TypeBHorizontalLLMData />} />
           <Route path="/offer/type-c" element={<TypeCVerticalLLMData />} />
           <Route path="/offer/type-d" element={<TypeDAIGC />} />
-          {/* Catch-all — must be last */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-      <Footer />
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }

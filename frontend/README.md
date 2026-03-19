@@ -1,16 +1,31 @@
-# React + Vite
+# Lifewood Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project now includes a branded public site and a static admin portal UI that is ready to connect to the Spring Boot backend.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+## Build Check
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm run build
+```
 
-## Expanding the ESLint configuration
+## Key Routes
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `/admin` - Portal landing page with login call-to-action
+- `/login` - Static login portal (username/email, forgot password, password, sign in)
+- `/portal` - Dashboard shell with sidebar, profile dropdown, and logout confirmation modal
+- `/portal/users` - User management table (filter, sort, paginate, column visibility, CRUD-like actions)
+- `/portal/applicants` - Applicants table (filter, sort, paginate, column visibility, view/approve/deny)
+- `/portal/settings` - Static settings and alerts
+- `/portal/profile/edit` - Profile edit form with profile picture input
+
+## Libraries Added
+
+- `recharts` for dashboard analytics visualization
+- `@tanstack/react-table` for advanced table interactivity

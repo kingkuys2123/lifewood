@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -94,10 +95,11 @@ class NotificationServiceTest {
         MarkNotificationDTO request = new MarkNotificationDTO();
         request.setNotificationId(10L);
 
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(notificationRepository.findById(10L)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(any(NotificationEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        NotificationResponseDTO response = notificationService.markAsRead(request);
+        NotificationResponseDTO response = notificationService.markAsRead(request, "testuser");
 
         assertTrue(response.isRead());
         verify(notificationRepository, times(1)).save(notification);
@@ -105,11 +107,22 @@ class NotificationServiceTest {
 
     @Test
     void getUnreadCount_returnsCorrectValue() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(notificationRepository.countByRecipientIdAndIsReadFalse(1L)).thenReturn(5L);
 
-        long count = notificationService.getUnreadCount(1L);
+        long count = notificationService.getUnreadCount("testuser", null);
 
         assertEquals(5L, count);
         verify(notificationRepository, times(1)).countByRecipientIdAndIsReadFalse(1L);
+    }
+
+    @Test
+    void markAllAsRead_usesBulkUpdateForCurrentUser() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        when(notificationRepository.markAllAsReadByRecipientId(1L)).thenReturn(3);
+
+        notificationService.markAllAsRead("testuser", null);
+
+        verify(notificationRepository, times(1)).markAllAsReadByRecipientId(eq(1L));
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,8 +38,12 @@ public class NotificationController {
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/get")
-    public ResponseEntity<ApiResponse<NotificationResponseDTO>> getNotification(@RequestParam("id") Long id) {
-        return ResponseEntity.ok(ApiResponse.success("Notification fetched successfully", notificationService.getNotification(id)));
+    public ResponseEntity<ApiResponse<NotificationResponseDTO>> getNotification(
+            @RequestParam("id") Long id,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Notification fetched successfully",
+                notificationService.getNotification(id, authentication.getName())));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
@@ -48,44 +53,56 @@ public class NotificationController {
             @RequestParam(value = "type", required = false) NotificationTypeEnum type,
             @RequestParam(value = "isRead", required = false) Boolean isRead,
             @RequestParam(value = "keyword", required = false) String keyword,
+            Authentication authentication,
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success("Notifications fetched successfully",
-                notificationService.getAllNotifications(userId, type, isRead, keyword, pageable)));
+                notificationService.getAllNotifications(authentication.getName(), userId, type, isRead, keyword, pageable)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/get/unread")
     public ResponseEntity<ApiResponse<Page<NotificationResponseDTO>>> getUnreadNotifications(
-            @RequestParam("userId") Long userId,
+            @RequestParam(value = "userId", required = false) Long userId,
+            Authentication authentication,
             @PageableDefault(size = 10, sort = "createdAt") Pageable pageable) {
         return ResponseEntity.ok(ApiResponse.success("Unread notifications fetched successfully",
-                notificationService.getUnreadNotifications(userId, pageable)));
+                notificationService.getUnreadNotifications(authentication.getName(), userId, pageable)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/get/unread/count")
-    public ResponseEntity<ApiResponse<Long>> getUnreadCount(@RequestParam("userId") Long userId) {
+    public ResponseEntity<ApiResponse<Long>> getUnreadCount(
+            @RequestParam(value = "userId", required = false) Long userId,
+            Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success("Unread count fetched successfully",
-                notificationService.getUnreadCount(userId)));
+                notificationService.getUnreadCount(authentication.getName(), userId)));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PatchMapping("/mark/read")
-    public ResponseEntity<ApiResponse<NotificationResponseDTO>> markAsRead(@Valid @RequestBody MarkNotificationDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("Notification marked as read", notificationService.markAsRead(request)));
+    public ResponseEntity<ApiResponse<NotificationResponseDTO>> markAsRead(
+            @Valid @RequestBody MarkNotificationDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Notification marked as read",
+                notificationService.markAsRead(request, authentication.getName())));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PatchMapping("/mark/all/read")
-    public ResponseEntity<ApiResponse<Object>> markAllAsRead(@RequestParam("userId") Long userId) {
-        notificationService.markAllAsRead(userId);
+    public ResponseEntity<ApiResponse<Object>> markAllAsRead(
+            @RequestParam(value = "userId", required = false) Long userId,
+            Authentication authentication) {
+        notificationService.markAllAsRead(authentication.getName(), userId);
         return ResponseEntity.ok(ApiResponse.success("All notifications marked as read", null));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @DeleteMapping("/delete")
-    public ResponseEntity<ApiResponse<Object>> deleteNotification(@RequestParam("id") Long id) {
-        notificationService.deleteNotification(id);
+    public ResponseEntity<ApiResponse<Object>> deleteNotification(
+            @RequestParam("id") Long id,
+            Authentication authentication) {
+        notificationService.deleteNotification(id, authentication.getName());
         return ResponseEntity.ok(ApiResponse.success("Notification deleted successfully", null));
     }
 }

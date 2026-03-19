@@ -12,12 +12,13 @@ import static org.mockito.Mockito.when;
 import com.lifewood.lifewood.dto.applicant.ApproveApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
 import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
+import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
 import com.lifewood.lifewood.entity.ApplicantEntity;
 import com.lifewood.lifewood.repository.ApplicantRepository;
 import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.BadRequestException;
 import com.lifewood.lifewood.util.FileUtil;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,7 +76,8 @@ class ApplicantServiceTest {
 
         when(applicantRepository.findById(10L)).thenReturn(Optional.of(pendingApplicant));
         when(applicantRepository.save(any(ApplicantEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+        when(userRepository.findByEmail("jane@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findAllByRole(any())).thenReturn(List.of());
 
         ApplicantResponseDTO response = applicantService.approveApplicant(request);
 
@@ -87,8 +89,10 @@ class ApplicantServiceTest {
         assertTrue(applicantCaptor.getValue().isApproved());
         assertTrue(applicantCaptor.getValue().isReviewed());
 
-        verify(emailService, times(1)).sendApplicantDecisionNotification(
-                "jane@example.com", "Jane Doe", "Backend", true, "Welcome aboard");
+        ArgumentCaptor<ApprovalNotificationDTO> notificationCaptor = ArgumentCaptor.forClass(ApprovalNotificationDTO.class);
+        verify(emailService, times(1)).sendDecisionNotification(notificationCaptor.capture());
+        assertTrue(notificationCaptor.getValue().getApproved());
+        assertEquals("jane@example.com", notificationCaptor.getValue().getApplicantEmail());
     }
 
     @Test
@@ -99,15 +103,18 @@ class ApplicantServiceTest {
 
         when(applicantRepository.findById(10L)).thenReturn(Optional.of(pendingApplicant));
         when(applicantRepository.save(any(ApplicantEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+        when(userRepository.findByEmail("jane@example.com")).thenReturn(Optional.empty());
+        when(userRepository.findAllByRole(any())).thenReturn(List.of());
 
         ApplicantResponseDTO response = applicantService.denyApplicant(request);
 
         assertFalse(response.isApproved());
         assertTrue(response.isReviewed());
 
-        verify(emailService, times(1)).sendApplicantDecisionNotification(
-                "jane@example.com", "Jane Doe", "Backend", false, "We are moving with other candidates");
+        ArgumentCaptor<ApprovalNotificationDTO> notificationCaptor = ArgumentCaptor.forClass(ApprovalNotificationDTO.class);
+        verify(emailService, times(1)).sendDecisionNotification(notificationCaptor.capture());
+        assertFalse(notificationCaptor.getValue().getApproved());
+        assertEquals("jane@example.com", notificationCaptor.getValue().getApplicantEmail());
     }
 
     @Test

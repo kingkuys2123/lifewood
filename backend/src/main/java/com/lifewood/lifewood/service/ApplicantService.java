@@ -5,10 +5,12 @@ import com.lifewood.lifewood.dto.applicant.ApproveApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
 import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.UpdateApplicantDTO;
+import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
 import com.lifewood.lifewood.entity.ApplicantEntity;
 import com.lifewood.lifewood.entity.NotificationEntity;
 import com.lifewood.lifewood.entity.UserEntity;
 import com.lifewood.lifewood.enumeration.NotificationTypeEnum;
+import com.lifewood.lifewood.enumeration.UserRoleEnum;
 import com.lifewood.lifewood.repository.ApplicantRepository;
 import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.ApplicantSpecifications;
@@ -22,6 +24,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -116,14 +121,15 @@ public class ApplicantService {
         applicantEntity.setReviewed(true);
         ApplicantEntity savedApplicantEntity = applicantRepository.save(applicantEntity);
 
-        emailService.sendApplicantDecisionNotification(
-                savedApplicantEntity.getEmail(),
-                savedApplicantEntity.getFirstName() + " " + savedApplicantEntity.getLastName(),
-                savedApplicantEntity.getProjectAppliedFor(),
-                true,
-                request.getMessage());
-
-        createApplicantNotification(savedApplicantEntity.getProjectAppliedFor(), true);
+        ApprovalNotificationDTO decisionNotification = ApprovalNotificationDTO.builder()
+                .applicantEmail(savedApplicantEntity.getEmail())
+                .applicantName(savedApplicantEntity.getFirstName() + " " + savedApplicantEntity.getLastName())
+                .projectAppliedFor(savedApplicantEntity.getProjectAppliedFor())
+                .approved(true)
+                .adminMessage(request.getMessage())
+                .build();
+        emailService.sendDecisionNotification(decisionNotification);
+        createDecisionNotifications(savedApplicantEntity, true, request.getMessage());
 
         log.info("Approved applicant id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
         return mapToResponse(savedApplicantEntity);
@@ -138,14 +144,15 @@ public class ApplicantService {
         applicantEntity.setReviewed(true);
         ApplicantEntity savedApplicantEntity = applicantRepository.save(applicantEntity);
 
-        emailService.sendApplicantDecisionNotification(
-                savedApplicantEntity.getEmail(),
-                savedApplicantEntity.getFirstName() + " " + savedApplicantEntity.getLastName(),
-                savedApplicantEntity.getProjectAppliedFor(),
-                false,
-                request.getMessage());
-
-        createApplicantNotification(savedApplicantEntity.getProjectAppliedFor(), false);
+        ApprovalNotificationDTO decisionNotification = ApprovalNotificationDTO.builder()
+                .applicantEmail(savedApplicantEntity.getEmail())
+                .applicantName(savedApplicantEntity.getFirstName() + " " + savedApplicantEntity.getLastName())
+                .projectAppliedFor(savedApplicantEntity.getProjectAppliedFor())
+                .approved(false)
+                .adminMessage(request.getMessage())
+                .build();
+        emailService.sendDecisionNotification(decisionNotification);
+        createDecisionNotifications(savedApplicantEntity, false, request.getMessage());
 
         log.info("Denied applicant id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
         return mapToResponse(savedApplicantEntity);
@@ -181,27 +188,49 @@ public class ApplicantService {
                 .build();
     }
 
-    private void createApplicantNotification(String project, boolean approved) {
+    private void createDecisionNotifications(ApplicantEntity applicantEntity, boolean approved, String customMessage) {
         try {
-            // Get the admin user to send notification to
-            UserEntity adminUser = userRepository.findAll().stream()
-                    .filter(user -> user.getRole().name().equals("ADMIN"))
-                    .findFirst()
-                    .orElse(null);
+            NotificationTypeEnum type = approved ? NotificationTypeEnum.APPROVAL : NotificationTypeEnum.REJECTION;
+            String decision = approved ? "approved" : "denied";
+            String normalizedMessage = normalizeDecisionMessage(customMessage);
 
-            if (adminUser != null) {
-                NotificationEntity notification = NotificationEntity.builder()
-                        .title(approved ? "Application Approved" : "Application Denied")
-                        .message("An application for " + project + " was " + (approved ? "approved" : "denied") + ".")
-                        .type(approved ? NotificationTypeEnum.APPLICATION_APPROVED : NotificationTypeEnum.APPLICATION_DENIED)
+            Optional<UserEntity> applicantUserOptional = userRepository.findByEmail(applicantEntity.getEmail());
+            applicantUserOptional.ifPresent(recipient -> {
+                NotificationEntity applicantNotification = NotificationEntity.builder()
+                        .title("Application " + (approved ? "Approved" : "Denied"))
+                        .message("Your application for " + applicantEntity.getProjectAppliedFor() + " was " + decision
+                                + ". " + normalizedMessage)
+                        .type(type)
+                        .recipient(recipient)
+                        .isRead(false)
+                        .build();
+                notificationService.createNotificationInternal(applicantNotification);
+            });
+
+            if (applicantUserOptional.isEmpty()) {
+                log.info("Skipping applicant in-app notification because no user account exists for email={}",
+                        applicantEntity.getEmail());
+            }
+
+            List<UserEntity> admins = userRepository.findAllByRole(UserRoleEnum.ADMIN);
+            for (UserEntity adminUser : admins) {
+                NotificationEntity adminNotification = NotificationEntity.builder()
+                        .title("Applicant " + (approved ? "Approved" : "Denied"))
+                        .message("Applicant " + applicantEntity.getFirstName() + " " + applicantEntity.getLastName()
+                                + " was " + decision + " for " + applicantEntity.getProjectAppliedFor() + ".")
+                        .type(type)
                         .recipient(adminUser)
                         .isRead(false)
                         .build();
-
-                notificationService.createNotificationInternal(notification);
+                notificationService.createNotificationInternal(adminNotification);
             }
         } catch (Exception ex) {
-            log.error("Failed to create applicant notification for project {}", project, ex);
+            log.error("Failed to create in-app decision notifications for applicant id={}", applicantEntity.getId(), ex);
         }
+    }
+
+    private String normalizeDecisionMessage(String customMessage) {
+        String message = customMessage == null ? "" : customMessage.trim();
+        return message.isEmpty() ? "" : "Message: " + message;
     }
 }

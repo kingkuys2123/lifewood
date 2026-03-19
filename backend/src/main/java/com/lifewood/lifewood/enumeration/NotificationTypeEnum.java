@@ -1,6 +1,8 @@
 package com.lifewood.lifewood.enumeration;
 
 public enum NotificationTypeEnum {
+    APPROVAL("Approval"),
+    REJECTION("Rejection"),
     APPLICATION_APPROVED("Application Approved"),
     APPLICATION_DENIED("Application Denied"),
     APPLICANT_SUBMISSION("New Applicant"),

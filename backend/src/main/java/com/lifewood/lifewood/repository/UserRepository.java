@@ -1,6 +1,8 @@
 package com.lifewood.lifewood.repository;
 
 import com.lifewood.lifewood.entity.UserEntity;
+import com.lifewood.lifewood.enumeration.UserRoleEnum;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -15,5 +17,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, JpaSpec
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
+
+    List<UserEntity> findAllByRole(UserRoleEnum role);
 }
 

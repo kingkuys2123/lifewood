@@ -270,6 +270,17 @@ textarea {
   transform: translateY(-2px);
 }
 
+.btn-danger {
+  background: #9d2333;
+  color: var(--c-white);
+}
+
+.btn-danger:hover {
+  background: #861d2b;
+  box-shadow: 0 4px 20px rgba(157, 35, 51, 0.32);
+  transform: translateY(-2px);
+}
+
 /* ── Shared Portal Surfaces ────────────────────────────────  */
 .portal-surface {
   background: var(--c-white);

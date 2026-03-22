@@ -3,13 +3,30 @@ import { useProfileForm } from './hooks/useProfileForm';
 import './styles/ProfileEditPage.css';
 
 export default function ProfileEditPage() {
-  const { form, updateField } = useProfileForm();
+  const {
+    form,
+    updateField,
+    updateProfilePicture,
+    avatarPreview,
+    saveProfile,
+    saveState,
+  } = useProfileForm();
 
   return (
     <section className="profile-edit-page portal-animate-in">
-      <h1 className="portal-page-title">Edit Profile</h1>
-      <p>Keep your account details updated for better collaboration.</p>
-      <ProfileForm form={form} updateField={updateField} />
+      <header className="profile-edit-header">
+        <p className="profile-edit-eyebrow">Account Settings</p>
+        <h1 className="portal-page-title">Edit Profile</h1>
+        <p>Keep your account details updated for better collaboration.</p>
+      </header>
+      <ProfileForm
+        form={form}
+        updateField={updateField}
+        updateProfilePicture={updateProfilePicture}
+        avatarPreview={avatarPreview}
+        onSaveProfile={saveProfile}
+        saveState={saveState}
+      />
     </section>
   );
 }

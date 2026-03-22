@@ -9,5 +9,17 @@ export function getSettingsData() {
       'System update window is scheduled for Saturday 11:30 PM.',
       'Audit reminder: review role permissions before month-end.',
     ],
+    groups: [
+      {
+        id: 'security',
+        title: 'Security',
+        description: 'Protect admin access with stronger verification and session controls.',
+      },
+      {
+        id: 'automation',
+        title: 'Workflow automation',
+        description: 'Configure assignment and notification behavior across applicant pipelines.',
+      },
+    ],
   };
 }

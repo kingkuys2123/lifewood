@@ -1,0 +1,47 @@
+.action-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  background: rgba(0, 0, 0, 0.38);
+  padding: var(--s-16);
+  display: grid;
+  place-items: center;
+}
+
+.action-modal {
+  width: min(440px, 92vw);
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-16);
+  box-shadow: var(--sh-lg);
+  padding: var(--s-20);
+}
+
+.action-modal h3 {
+  font-family: var(--font-display);
+  font-size: var(--t-22);
+  line-height: 1.2;
+}
+
+.action-modal p {
+  margin-top: var(--s-8);
+  color: var(--c-steel);
+}
+
+.action-modal-actions {
+  margin-top: var(--s-20);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-10);
+}
+
+@media (max-width: 560px) {
+  .action-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .action-modal-actions .btn {
+    width: 100%;
+  }
+}
+

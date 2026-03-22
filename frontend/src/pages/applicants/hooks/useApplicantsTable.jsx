@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-table';
 import { getApplicants } from '../services/applicantsService';
 
-export function useApplicantsTable() {
+export function useApplicantsTable({ pageSize = 5, onAction = () => {} } = {}) {
   const data = useMemo(() => getApplicants(), []);
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState([]);
@@ -31,16 +31,22 @@ export function useApplicantsTable() {
         header: 'Actions',
         enableSorting: false,
         enableHiding: false,
-        cell: () => (
+        cell: ({ row }) => (
           <div className="action-group">
-            <button type="button">View</button>
-            <button type="button">Approve</button>
-            <button type="button">Deny</button>
+            <button type="button" onClick={() => onAction('view', row.original)}>
+              View
+            </button>
+            <button type="button" onClick={() => onAction('approve', row.original)}>
+              Approve
+            </button>
+            <button type="button" onClick={() => onAction('deny', row.original)}>
+              Deny
+            </button>
           </div>
         ),
       },
     ],
-    [],
+    [onAction],
   );
 
   const table = useReactTable({
@@ -60,7 +66,7 @@ export function useApplicantsTable() {
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
-        pageSize: 5,
+        pageSize,
       },
     },
   });

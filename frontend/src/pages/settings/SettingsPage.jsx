@@ -4,13 +4,13 @@ import { useSettingsData } from './hooks/useSettingsData';
 import './styles/SettingsPage.css';
 
 export default function SettingsPage() {
-  const { controls, notifications } = useSettingsData();
+  const { controls, notifications, groups, toggleControl } = useSettingsData();
 
   return (
     <section className="settings-page portal-animate-in">
       <h1 className="settings-title portal-page-title">Settings</h1>
       <div className="settings-grid">
-        <SettingsPanel controls={controls} />
+        <SettingsPanel controls={controls} groups={groups} onToggleControl={toggleControl} />
         <SettingsNotifications notifications={notifications} />
       </div>
     </section>

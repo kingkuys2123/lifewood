@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-table';
 import { getUsers } from '../services/usersService';
 
-export function useUsersTable() {
+export function useUsersTable({ pageSize = 5, onAction = () => {} } = {}) {
   const data = useMemo(() => getUsers(), []);
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState([]);
@@ -47,16 +47,22 @@ export function useUsersTable() {
         header: 'Actions',
         enableSorting: false,
         enableHiding: false,
-        cell: () => (
+        cell: ({ row }) => (
           <div className="action-group">
-            <button type="button">View</button>
-            <button type="button">Edit</button>
-            <button type="button">Delete</button>
+            <button type="button" onClick={() => onAction('view', row.original)}>
+              View
+            </button>
+            <button type="button" onClick={() => onAction('edit', row.original)}>
+              Edit
+            </button>
+            <button type="button" onClick={() => onAction('delete', row.original)}>
+              Delete
+            </button>
           </div>
         ),
       },
     ],
-    [],
+    [onAction],
   );
 
   const table = useReactTable({
@@ -76,7 +82,7 @@ export function useUsersTable() {
     getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
-        pageSize: 5,
+        pageSize,
       },
     },
   });

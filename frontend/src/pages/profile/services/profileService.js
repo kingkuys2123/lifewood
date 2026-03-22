@@ -1,5 +1,4 @@
-import { resolveCurrentUserId } from '../../../services/auth/currentUserService';
-import { fetchUserById, updateUser } from '../../../services/users/usersService';
+import { fetchMyProfile, updateMyProfile } from '../../../services/users/usersService';
 
 function mapProfile(user) {
   return {
@@ -14,30 +13,20 @@ function mapProfile(user) {
   };
 }
 
-export async function getProfile(username) {
-  const userId = await resolveCurrentUserId(username);
-  if (!userId) {
-    throw new Error('Unable to resolve current user profile.');
-  }
-
-  const user = await fetchUserById(userId);
+export async function getProfile() {
+  const user = await fetchMyProfile();
   return mapProfile(user);
 }
 
 export async function saveProfile(profile) {
-  if (!profile?.id) {
-    throw new Error('Missing profile user id.');
-  }
-
   const payload = {
     email: profile.email,
     profilePicture: profile.profilePicture,
     firstName: profile.firstName,
     lastName: profile.lastName,
     phoneNumber: profile.phoneNumber,
-    role: profile.role,
   };
 
-  const user = await updateUser(profile.id, payload);
+  const user = await updateMyProfile(payload);
   return mapProfile(user);
 }

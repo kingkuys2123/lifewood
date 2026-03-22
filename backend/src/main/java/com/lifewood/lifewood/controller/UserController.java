@@ -3,6 +3,7 @@ package com.lifewood.lifewood.controller;
 import com.lifewood.lifewood.dto.ApiResponse;
 import com.lifewood.lifewood.dto.user.AddUserDTO;
 import com.lifewood.lifewood.dto.user.ChangePasswordDTO;
+import com.lifewood.lifewood.dto.user.UpdateMyProfileDTO;
 import com.lifewood.lifewood.dto.user.UpdateUserDTO;
 import com.lifewood.lifewood.dto.user.UserResponseDTO;
 import com.lifewood.lifewood.service.UserService;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -43,6 +45,13 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getMyProfile(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success("User profile fetched successfully",
+                userService.getCurrentUser(authentication.getName())));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/get/all")
     public ResponseEntity<ApiResponse<Page<UserResponseDTO>>> getAllUsers(
             @RequestParam(value = "keyword", required = false) String keyword,
@@ -59,11 +68,29 @@ public class UserController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateMyProfile(
+            @Valid @RequestBody UpdateMyProfileDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success("User profile updated successfully",
+                userService.updateCurrentUser(authentication.getName(), request)));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PatchMapping("/change-password")
     public ResponseEntity<ApiResponse<Object>> changePassword(
             @RequestParam("id") Long id,
             @Valid @RequestBody ChangePasswordDTO request) {
         userService.changePassword(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PatchMapping("/me/change-password")
+    public ResponseEntity<ApiResponse<Object>> changeMyPassword(
+            @Valid @RequestBody ChangePasswordDTO request,
+            Authentication authentication) {
+        userService.changeCurrentUserPassword(authentication.getName(), request);
         return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
     }
 

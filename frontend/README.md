@@ -1,6 +1,6 @@
 # Lifewood Frontend (React + Vite)
 
-This project now includes a branded public site and a static admin portal UI that is ready to connect to the Spring Boot backend.
+This project includes a branded public site and an admin portal integrated with the Spring Boot backend using JWT auth, Axios interceptors, and STOMP notifications.
 
 ## Quick Start
 
@@ -25,7 +25,17 @@ npm run build
 - `/portal/settings` - Static settings and alerts
 - `/portal/profile/edit` - Profile edit form with profile picture input
 
-## Libraries Added
+## Integration Notes
+
+- API base URL is configured with `VITE_API_BASE_URL`.
+- WebSocket base URL is configured with `VITE_WS_URL`.
+- JWT access token is attached via Axios interceptors.
+- Refresh token flow is handled automatically on 401 responses.
+- Real-time notifications subscribe to `/user/queue/notifications`.
+
+## Libraries Used
 
 - `recharts` for dashboard analytics visualization
 - `@tanstack/react-table` for advanced table interactivity
+- `axios` for centralized API calls with auth interceptors
+- `@stomp/stompjs` + `sockjs-client` for real-time notifications

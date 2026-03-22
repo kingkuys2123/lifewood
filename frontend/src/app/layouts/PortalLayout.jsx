@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../providers/useAuth';
 import { useNotifications } from '../../hooks/useNotifications';
-import { resolveCurrentUserId } from '../../services/auth/currentUserService';
 import brandWordmark from '../../assets/branding/lifewood-icon-text.png';
 import './PortalLayout.css';
 
@@ -23,37 +22,13 @@ export default function PortalLayout() {
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [userId, setUserId] = useState(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const bootstrapUserId = async () => {
-      try {
-        const id = await resolveCurrentUserId(user?.username);
-        if (mounted) {
-          setUserId(id);
-        }
-      } catch {
-        if (mounted) {
-          setUserId(null);
-        }
-      }
-    };
-
-    bootstrapUserId();
-
-    return () => {
-      mounted = false;
-    };
-  }, [user?.username]);
 
   const {
     notifications,
     unreadCount: unreadNotifications,
     markAllRead: markAllNotificationsRead,
     markOneRead: markNotificationRead,
-  } = useNotifications({ userId, enabled: Boolean(user) });
+  } = useNotifications({ enabled: Boolean(user) });
 
   const displayName = useMemo(() => {
     if (!user?.username) {

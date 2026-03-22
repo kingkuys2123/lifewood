@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from '../../../app/providers/useAuth';
 import { getProfile, saveProfile as saveProfileRequest } from '../services/profileService';
 
 const EMPTY_FORM = {
@@ -14,7 +13,6 @@ const EMPTY_FORM = {
 };
 
 export function useProfileForm() {
-  const { user } = useAuth();
   const [form, setForm] = useState(EMPTY_FORM);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [saveState, setSaveState] = useState('idle');
@@ -65,7 +63,7 @@ export function useProfileForm() {
       setError('');
 
       try {
-        const profile = await getProfile(user?.username);
+        const profile = await getProfile();
         if (mounted) {
           setForm(profile);
         }
@@ -85,7 +83,7 @@ export function useProfileForm() {
     return () => {
       mounted = false;
     };
-  }, [user?.username]);
+  }, []);
 
   useEffect(() => {
     if (saveState !== 'saved') {

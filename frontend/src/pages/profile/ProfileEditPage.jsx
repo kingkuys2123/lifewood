@@ -15,7 +15,6 @@ export default function ProfileEditPage() {
   return (
     <section className="profile-edit-page portal-animate-in">
       <header className="profile-edit-header">
-        <p className="profile-edit-eyebrow">Account Settings</p>
         <h1 className="portal-page-title">Edit Profile</h1>
         <p>Keep your account details updated for better collaboration.</p>
       </header>

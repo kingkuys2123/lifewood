@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import brandWordmark from '../../assets/branding/lifewood-icon-text.png';
 import './PortalLayout.css';
 
@@ -12,10 +12,39 @@ const MENU_ITEMS = [
 export default function PortalLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const userMenuRef = useRef(null);
+  const notificationsRef = useRef(null);
+  const headerAccountRef = useRef(null);
+  const sidebarAccountRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    {
+      id: 1,
+      type: 'APPROVAL',
+      title: 'Application approved',
+      message: 'Emily Ford was approved for Linguistics QA.',
+      time: '2m ago',
+      read: false,
+    },
+    {
+      id: 2,
+      type: 'REJECTION',
+      title: 'Application rejected',
+      message: 'Diego Ruiz was rejected for LLM Evaluation.',
+      time: '18m ago',
+      read: false,
+    },
+    {
+      id: 3,
+      type: 'APPROVAL',
+      title: 'Batch approvals completed',
+      message: '5 pending applicants were approved by Super Admin.',
+      time: '1h ago',
+      read: true,
+    },
+  ]);
 
   const user = useMemo(
     () => ({
@@ -28,31 +57,112 @@ export default function PortalLayout() {
 
   const handleLogout = () => {
     setShowLogoutModal(false);
-    setShowUserMenu(false);
+    setUserMenuAnchor(null);
     navigate('/login');
   };
 
+  const isSidebarMenuOpen = userMenuAnchor === 'sidebar';
+  const isHeaderMenuOpen = userMenuAnchor === 'header';
+
+  const toggleUserMenu = (anchor) => {
+    setUserMenuAnchor((prev) => (prev === anchor ? null : anchor));
+  };
+
+  const unreadNotifications = notifications.filter((item) => !item.read).length;
+
+  const markAllNotificationsRead = () => {
+    setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
+  };
+
+  const markNotificationRead = (id) => {
+    setNotifications((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, read: true } : item)),
+    );
+  };
+
+  const renderUserMenu = (menuClassName) => (
+    <div className={`portal-user-menu ${menuClassName}`} role="menu" aria-label="User options">
+      <div className="portal-user-menu-profile" aria-hidden="true">
+        <p className="portal-user-menu-name">{user.name}</p>
+        <p className="portal-user-menu-role">{user.role}</p>
+      </div>
+      <div className="portal-user-menu-divider" role="separator" />
+      <button
+        type="button"
+        className="portal-user-menu-item"
+        onClick={() => {
+          setUserMenuAnchor(null);
+          navigate('/portal/profile/edit');
+        }}
+      >
+        Edit Profile
+      </button>
+      <button
+        type="button"
+        className="portal-user-menu-item"
+        onClick={() => {
+          setUserMenuAnchor(null);
+          navigate('/portal/settings');
+        }}
+      >
+        Settings
+      </button>
+      <button
+        type="button"
+        className="portal-user-menu-item"
+        onClick={() => setShowLogoutModal(true)}
+      >
+        Log Out
+      </button>
+    </div>
+  );
+
 
   useEffect(() => {
-    if (!showUserMenu) {
+    if (!userMenuAnchor) {
       return;
     }
 
     const handlePointerDown = (event) => {
-      if (!userMenuRef.current?.contains(event.target)) {
-        setShowUserMenu(false);
+      const isInHeaderMenu = headerAccountRef.current?.contains(event.target);
+      const isInSidebarMenu = sidebarAccountRef.current?.contains(event.target);
+
+      if (!isInHeaderMenu && !isInSidebarMenu) {
+        setUserMenuAnchor(null);
       }
     };
 
     window.addEventListener('pointerdown', handlePointerDown);
     return () => window.removeEventListener('pointerdown', handlePointerDown);
-  }, [showUserMenu]);
+  }, [userMenuAnchor]);
+
+  useEffect(() => {
+    if (!showNotifications) {
+      return;
+    }
+
+    const handlePointerDown = (event) => {
+      if (!notificationsRef.current?.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
+    return () => window.removeEventListener('pointerdown', handlePointerDown);
+  }, [showNotifications]);
 
   return (
     <div className="portal-layout">
       <aside className={`portal-sidebar ${menuOpen ? 'is-open' : ''}`}>
         <div className="portal-logo-wrap">
-          <img src={brandWordmark} alt="Lifewood" className="portal-logo" />
+          <Link
+            to="/portal"
+            className="portal-logo-link"
+            aria-label="Go to dashboard"
+            onClick={() => setMenuOpen(false)}
+          >
+            <img src={brandWordmark} alt="Lifewood" className="portal-logo" />
+          </Link>
         </div>
 
         <nav className="portal-nav" aria-label="Main Menu">
@@ -73,52 +183,30 @@ export default function PortalLayout() {
 
         </nav>
 
-        <div className="portal-user-block" ref={userMenuRef}>
+        <div className="portal-user-block" ref={sidebarAccountRef}>
           <button
             type="button"
-            className="portal-user-trigger"
-            aria-expanded={showUserMenu}
+            className={`portal-user-card portal-user-card--trigger ${isSidebarMenuOpen ? 'is-open' : ''}`}
+            aria-label="Open account menu"
+            aria-expanded={isSidebarMenuOpen}
             aria-haspopup="menu"
-            onClick={() => setShowUserMenu((prev) => !prev)}
+            onClick={() => toggleUserMenu('sidebar')}
           >
-            <div>
-              <p className="portal-user-name">{user.name}</p>
-              <p className="portal-user-role">{user.role}</p>
-            </div>
-            <span className="portal-user-chevron">▾</span>
+            <span className="portal-user-card-main">
+              <span className="portal-user-avatar" aria-hidden="true">
+                SC
+              </span>
+              <span>
+                <span className="portal-user-name">{user.name}</span>
+                <span className="portal-user-role">{user.role}</span>
+              </span>
+            </span>
+            <span className="portal-user-card-chevron" aria-hidden="true">
+              ▾
+            </span>
           </button>
 
-          {showUserMenu && (
-            <div className="portal-user-menu" role="menu" aria-label="User options">
-              <button
-                type="button"
-                className="portal-user-menu-item"
-                onClick={() => {
-                  setShowUserMenu(false);
-                  navigate('/portal/profile/edit');
-                }}
-              >
-                Edit Profile
-              </button>
-              <button
-                type="button"
-                className="portal-user-menu-item"
-                onClick={() => {
-                  setShowUserMenu(false);
-                  navigate('/portal/settings');
-                }}
-              >
-                Settings
-              </button>
-              <button
-                type="button"
-                className="portal-user-menu-item"
-                onClick={() => setShowLogoutModal(true)}
-              >
-                Log Out
-              </button>
-            </div>
-          )}
+          {isSidebarMenuOpen && renderUserMenu('portal-user-menu--sidebar')}
         </div>
       </aside>
 
@@ -126,12 +214,113 @@ export default function PortalLayout() {
         <header className="portal-topbar">
           <button
             type="button"
-            className="portal-menu-btn"
+            className={`portal-menu-btn ${menuOpen ? 'is-open' : ''}`}
             onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
           >
-            Menu
+            <span className="portal-menu-icon" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
           </button>
-          <p className="portal-user-email">{user.email}</p>
+
+          <div className="portal-topbar-right">
+            <div className="portal-notification-wrap" ref={notificationsRef}>
+              <button
+                type="button"
+                className="portal-notification-btn"
+                aria-label="Notifications"
+                aria-expanded={showNotifications}
+                aria-haspopup="menu"
+                onClick={() => setShowNotifications((prev) => !prev)}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9.5 19.5C9.9 20.7 10.9 21.5 12 21.5C13.1 21.5 14.1 20.7 14.5 19.5M6 9.5C6 6.2 8.4 3.5 12 3.5C15.6 3.5 18 6.2 18 9.5V13.2L19.4 15.8C19.7 16.4 19.3 17.1 18.6 17.1H5.4C4.7 17.1 4.3 16.4 4.6 15.8L6 13.2V9.5Z"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {unreadNotifications > 0 ? (
+                  <span className="portal-notification-badge">{unreadNotifications}</span>
+                ) : null}
+              </button>
+
+              {showNotifications && (
+                <div
+                  className="portal-notification-menu"
+                  role="menu"
+                  aria-label="Recent notifications"
+                >
+                  <div className="portal-notification-menu-head">
+                    <p>Notifications</p>
+                    <button
+                      type="button"
+                      className="portal-notification-mark-all"
+                      onClick={markAllNotificationsRead}
+                      disabled={unreadNotifications === 0}
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+
+                  <div className="portal-notification-list">
+                    {notifications.map((item) => (
+                      <article
+                        key={item.id}
+                        className={`portal-notification-item ${item.read ? 'is-read' : ''}`}
+                      >
+                        <div className="portal-notification-item-head">
+                          <span
+                            className={`portal-notification-type portal-notification-type--${item.type.toLowerCase()}`}
+                          >
+                            {item.type}
+                          </span>
+                          <span className="portal-notification-time">{item.time}</span>
+                        </div>
+                        <p className="portal-notification-title">{item.title}</p>
+                        <p className="portal-notification-message">{item.message}</p>
+                        {!item.read ? (
+                          <button
+                            type="button"
+                            className="portal-notification-read-btn"
+                            onClick={() => markNotificationRead(item.id)}
+                          >
+                            Mark as read
+                          </button>
+                        ) : null}
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="portal-header-account" ref={headerAccountRef}>
+              <button
+                type="button"
+                className="portal-header-account-btn"
+                aria-label="Open account menu"
+                aria-expanded={isHeaderMenuOpen}
+                aria-haspopup="menu"
+                onClick={() => toggleUserMenu('header')}
+              >
+                <span className="portal-user-avatar portal-user-avatar--sm" aria-hidden="true">
+                  SC
+                </span>
+              </button>
+
+              {isHeaderMenuOpen && renderUserMenu('portal-user-menu--header')}
+            </div>
+          </div>
         </header>
         <main className="portal-main">
           <div key={location.pathname} className="portal-animate-in">

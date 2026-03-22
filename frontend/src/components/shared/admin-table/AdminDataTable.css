@@ -62,7 +62,7 @@
   top: calc(100% + var(--s-8));
   min-width: 220px;
   display: grid;
-  gap: 6px;
+  gap: 8px;
   border: 1px solid var(--c-border);
   border-radius: var(--r-10);
   background: var(--c-white);
@@ -71,11 +71,37 @@
   z-index: 5;
 }
 
-.admin-column-toggle-panel label {
+.admin-column-item {
   font-size: var(--t-13);
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
   align-items: center;
+  column-gap: var(--s-8);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--r-8);
+  padding: 7px 9px;
+  background: var(--c-snow);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+
+.admin-column-item:hover {
+  border-color: rgba(19, 48, 32, 0.28);
+  background: rgba(19, 48, 32, 0.04);
+}
+
+.admin-column-item-label {
+  color: var(--c-charcoal);
+}
+
+.admin-column-item-divider {
+  color: var(--c-steel);
+  font-size: var(--t-12);
+}
+
+.admin-column-item input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--c-forest);
 }
 
 .admin-table-wrap {

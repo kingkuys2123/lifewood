@@ -76,13 +76,20 @@ export default function AdminDataTable({
                     .getAllLeafColumns()
                     .filter((column) => column.getCanHide())
                     .map((column) => (
-                      <label key={column.id}>
+                      <label key={column.id} className="admin-column-item">
+                        <span className="admin-column-item-label">
+                          {typeof column.columnDef.header === 'string'
+                            ? column.columnDef.header
+                            : column.id}
+                        </span>
+                        <span className="admin-column-item-divider" aria-hidden="true">
+                          |
+                        </span>
                         <input
                           type="checkbox"
                           checked={column.getIsVisible()}
                           onChange={column.getToggleVisibilityHandler()}
                         />
-                        {column.columnDef.header}
                       </label>
                     ))}
                 </MotionDiv>

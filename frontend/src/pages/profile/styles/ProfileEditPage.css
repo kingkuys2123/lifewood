@@ -1,25 +1,13 @@
 .profile-edit-page {
-  max-width: 940px;
+  width: 100%;
+  max-width: 100%;
   display: grid;
-  gap: var(--s-18);
+  gap: var(--s-20);
 }
 
 .profile-edit-header {
   display: grid;
   gap: var(--s-8);
-}
-
-.profile-edit-eyebrow {
-  width: fit-content;
-  border: 1px solid rgba(19, 48, 32, 0.18);
-  background: rgba(19, 48, 32, 0.08);
-  color: var(--c-forest);
-  border-radius: var(--r-full);
-  padding: 4px 11px;
-  font-size: var(--t-12);
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .profile-edit-page p {
@@ -36,6 +24,7 @@
   display: grid;
   gap: var(--s-14);
   box-shadow: var(--sh-md);
+  width: 100%;
 }
 
 .profile-form-grid {

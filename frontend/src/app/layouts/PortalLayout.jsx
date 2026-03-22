@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../providers/useAuth';
+import { useNotifications } from '../../hooks/useNotifications';
+import { resolveCurrentUserId } from '../../services/auth/currentUserService';
 import brandWordmark from '../../assets/branding/lifewood-icon-text.png';
 import './PortalLayout.css';
 
@@ -12,6 +15,7 @@ const MENU_ITEMS = [
 export default function PortalLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
   const notificationsRef = useRef(null);
   const headerAccountRef = useRef(null);
   const sidebarAccountRef = useRef(null);
@@ -19,46 +23,65 @@ export default function PortalLayout() {
   const [userMenuAnchor, setUserMenuAnchor] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: 'APPROVAL',
-      title: 'Application approved',
-      message: 'Emily Ford was approved for Linguistics QA.',
-      time: '2m ago',
-      read: false,
-    },
-    {
-      id: 2,
-      type: 'REJECTION',
-      title: 'Application rejected',
-      message: 'Diego Ruiz was rejected for LLM Evaluation.',
-      time: '18m ago',
-      read: false,
-    },
-    {
-      id: 3,
-      type: 'APPROVAL',
-      title: 'Batch approvals completed',
-      message: '5 pending applicants were approved by Super Admin.',
-      time: '1h ago',
-      read: true,
-    },
-  ]);
+  const [userId, setUserId] = useState(null);
 
-  const user = useMemo(
+  useEffect(() => {
+    let mounted = true;
+
+    const bootstrapUserId = async () => {
+      try {
+        const id = await resolveCurrentUserId(user?.username);
+        if (mounted) {
+          setUserId(id);
+        }
+      } catch {
+        if (mounted) {
+          setUserId(null);
+        }
+      }
+    };
+
+    bootstrapUserId();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.username]);
+
+  const {
+    notifications,
+    unreadCount: unreadNotifications,
+    markAllRead: markAllNotificationsRead,
+    markOneRead: markNotificationRead,
+  } = useNotifications({ userId, enabled: Boolean(user) });
+
+  const displayName = useMemo(() => {
+    if (!user?.username) {
+      return 'Portal User';
+    }
+
+    return user.username;
+  }, [user?.username]);
+
+  const initials = useMemo(() => {
+    const chunks = displayName.split(/[._\s-]+/).filter(Boolean);
+    const value = chunks.slice(0, 2).map((item) => item[0]).join('').toUpperCase();
+    return value || 'LW';
+  }, [displayName]);
+
+  const userCard = useMemo(
     () => ({
-      name: 'Samantha Cruz',
-      role: 'Super Admin',
-      email: 'samantha.cruz@lifewood.com',
+      name: displayName,
+      role: user?.role || 'USER',
+      email: user?.username || '',
     }),
-    [],
+    [displayName, user?.role, user?.username],
   );
 
   const handleLogout = () => {
     setShowLogoutModal(false);
     setUserMenuAnchor(null);
-    navigate('/login');
+    logout();
   };
 
   const isSidebarMenuOpen = userMenuAnchor === 'sidebar';
@@ -68,23 +91,11 @@ export default function PortalLayout() {
     setUserMenuAnchor((prev) => (prev === anchor ? null : anchor));
   };
 
-  const unreadNotifications = notifications.filter((item) => !item.read).length;
-
-  const markAllNotificationsRead = () => {
-    setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
-  };
-
-  const markNotificationRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, read: true } : item)),
-    );
-  };
-
   const renderUserMenu = (menuClassName) => (
     <div className={`portal-user-menu ${menuClassName}`} role="menu" aria-label="User options">
       <div className="portal-user-menu-profile" aria-hidden="true">
-        <p className="portal-user-menu-name">{user.name}</p>
-        <p className="portal-user-menu-role">{user.role}</p>
+        <p className="portal-user-menu-name">{userCard.name}</p>
+        <p className="portal-user-menu-role">{userCard.role}</p>
       </div>
       <div className="portal-user-menu-divider" role="separator" />
       <button
@@ -116,7 +127,6 @@ export default function PortalLayout() {
       </button>
     </div>
   );
-
 
   useEffect(() => {
     if (!userMenuAnchor) {
@@ -194,11 +204,11 @@ export default function PortalLayout() {
           >
             <span className="portal-user-card-main">
               <span className="portal-user-avatar" aria-hidden="true">
-                SC
+                {initials}
               </span>
               <span>
-                <span className="portal-user-name">{user.name}</span>
-                <span className="portal-user-role">{user.role}</span>
+                <span className="portal-user-name">{userCard.name}</span>
+                <span className="portal-user-role">{userCard.role}</span>
               </span>
             </span>
             <span className="portal-user-card-chevron" aria-hidden="true">
@@ -280,11 +290,10 @@ export default function PortalLayout() {
                       >
                         <div className="portal-notification-item-head">
                           <span
-                            className={`portal-notification-type portal-notification-type--${item.type.toLowerCase()}`}
+                            className={`portal-notification-type portal-notification-type--${(item.type || 'other').toLowerCase()}`}
                           >
-                            {item.type}
+                            {item.type || 'Notification'}
                           </span>
-                          <span className="portal-notification-time">{item.time}</span>
                         </div>
                         <p className="portal-notification-title">{item.title}</p>
                         <p className="portal-notification-message">{item.message}</p>
@@ -314,7 +323,7 @@ export default function PortalLayout() {
                 onClick={() => toggleUserMenu('header')}
               >
                 <span className="portal-user-avatar portal-user-avatar--sm" aria-hidden="true">
-                  SC
+                  {initials}
                 </span>
               </button>
 
@@ -366,4 +375,3 @@ export default function PortalLayout() {
     </div>
   );
 }
-

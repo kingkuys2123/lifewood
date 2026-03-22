@@ -1,10 +1,25 @@
 import { useEffect, useState } from 'react';
-import { getProfile } from '../services/profileService';
+import { useAuth } from '../../../app/providers/useAuth';
+import { getProfile, saveProfile as saveProfileRequest } from '../services/profileService';
+
+const EMPTY_FORM = {
+  id: null,
+  firstName: '',
+  lastName: '',
+  email: '',
+  phoneNumber: '',
+  school: '',
+  profilePicture: '',
+  role: 'USER',
+};
 
 export function useProfileForm() {
-  const [form, setForm] = useState(getProfile);
+  const { user } = useAuth();
+  const [form, setForm] = useState(EMPTY_FORM);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [saveState, setSaveState] = useState('idle');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -28,12 +43,49 @@ export function useProfileForm() {
     updateField('profilePicture', file.name);
   };
 
-  const saveProfile = () => {
+  const saveProfile = async () => {
     setSaveState('saving');
-    window.setTimeout(() => {
+    setError('');
+
+    try {
+      const saved = await saveProfileRequest(form);
+      setForm(saved);
       setSaveState('saved');
-    }, 620);
+    } catch (err) {
+      setSaveState('idle');
+      setError(err?.message || 'Unable to save profile.');
+    }
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      setLoading(true);
+      setError('');
+
+      try {
+        const profile = await getProfile(user?.username);
+        if (mounted) {
+          setForm(profile);
+        }
+      } catch (err) {
+        if (mounted) {
+          setError(err?.message || 'Unable to load profile.');
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.username]);
 
   useEffect(() => {
     if (saveState !== 'saved') {
@@ -55,5 +107,14 @@ export function useProfileForm() {
     [avatarPreview],
   );
 
-  return { form, updateField, updateProfilePicture, avatarPreview, saveProfile, saveState };
+  return {
+    form,
+    updateField,
+    updateProfilePicture,
+    avatarPreview,
+    saveProfile,
+    saveState,
+    loading,
+    error,
+  };
 }

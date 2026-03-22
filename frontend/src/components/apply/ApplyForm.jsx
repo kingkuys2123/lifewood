@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { createApplicant } from '../../services/applicants/applicantsService';
 import './ApplyForm.css';
 
 /* ─────────────────────────────────────────────────────────
@@ -32,13 +33,16 @@ function validate(f) {
     const e = {};
     if (!f.firstName.trim())              e.firstName = 'First name is required';
     if (!f.lastName.trim())               e.lastName  = 'Last name is required';
-    if (f.age && (isNaN(f.age) || +f.age < 16 || +f.age > 60))
-                                           e.age       = 'Enter a valid age (16–60)';
+    if (!f.age)                           e.age       = 'Age is required';
+    else if (isNaN(f.age) || +f.age < 16 || +f.age > 100)
+                                           e.age       = 'Enter a valid age (16-100)';
     if (!f.email.trim())                  e.email     = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email))
                                            e.email     = 'Enter a valid email address';
+    if (!f.degree.trim())                 e.degree    = 'Degree/field is required';
     if (!f.project || f.project === PROJECTS[0])
                                            e.project   = 'Please select a project';
+    if (!f.resume)                        e.resume    = 'Resume is required';
     return e;
 }
 
@@ -75,12 +79,14 @@ function Field({ id, label, required, error, touched, children }) {
    Main component
 ───────────────────────────────────────────────────────── */
 export default function ApplyForm() {
-    const [fields, setFields]     = useState(INITIAL);
-    const [touched, setTouched]   = useState({});
+    const [fields, setFields] = useState(INITIAL);
+    const [touched, setTouched] = useState({});
     const [submitted, setSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
     const fileRef = useRef(null);
 
-    const errors  = validate(fields);
+    const errors = validate(fields);
     const isValid = Object.keys(errors).length === 0;
 
     /* Helpers */
@@ -109,30 +115,40 @@ export default function ApplyForm() {
         if (fileRef.current) fileRef.current.value = '';
     }, []);
 
-    const handleSubmit = useCallback((e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
-        setTouched({ firstName: true, lastName: true, age: true, email: true, project: true, degree: true, experience: true });
+        setTouched({ firstName: true, lastName: true, age: true, email: true, project: true, degree: true, experience: true, resume: true });
         if (!isValid) return;
 
-        /* Build mailto link */
-        const subject = encodeURIComponent(`Internship Application – ${fields.firstName} ${fields.lastName}`);
-        const body = encodeURIComponent(
-            `First Name: ${fields.firstName}\n` +
-            `Last Name: ${fields.lastName}\n` +
-            `Age: ${fields.age || 'Not provided'}\n` +
-            `Email: ${fields.email}\n` +
-            `Degree / Field of Study: ${fields.degree || 'Not provided'}\n` +
-            `Project Applied For: ${fields.project}\n\n` +
-            `Relevant Experience:\n${fields.experience || 'Not provided'}\n\n` +
-            `Resume: ${fields.resume ? fields.resume.name : 'Not attached — please attach manually'}`
-        );
-        window.location.href = `mailto:lifewoodph@gmail.com?subject=${subject}&body=${body}`;
-        setSubmitted(true);
+        setSubmitError('');
+        setIsSubmitting(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('firstName', fields.firstName.trim());
+            formData.append('lastName', fields.lastName.trim());
+            formData.append('age', String(fields.age));
+            formData.append('email', fields.email.trim());
+            formData.append('degree', fields.degree.trim());
+            formData.append('projectAppliedFor', fields.project);
+            formData.append('experience', fields.experience?.trim() || '');
+            if (fields.resume) {
+                formData.append('resume', fields.resume);
+            }
+
+            await createApplicant(formData);
+            setSubmitted(true);
+        } catch (err) {
+            setSubmitError(err?.message || 'Unable to submit your application right now.');
+        } finally {
+            setIsSubmitting(false);
+        }
     }, [isValid, fields]);
 
     const handleReset = useCallback(() => {
         setFields(INITIAL);
         setTouched({});
+        setSubmitError('');
         setSubmitted(false);
         if (fileRef.current) fileRef.current.value = '';
     }, []);
@@ -152,8 +168,8 @@ export default function ApplyForm() {
                             </div>
                             <h2 className="apply-form__success-title">Application Submitted!</h2>
                             <p className="apply-form__success-body">
-                                Your email client should have opened with your application pre-filled.
-                                We review all applications carefully and will be in touch within 5–7 business days.
+                                Your application has been sent successfully.
+                                We review all applications carefully and will be in touch within 5-7 business days.
                             </p>
                             <button className="apply-form__reset-btn" onClick={handleReset}>
                                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
@@ -216,10 +232,10 @@ export default function ApplyForm() {
 
                         {/* Row 2 — Age / Email */}
                         <div className="apply-form__row">
-                            <Field id="age" label="Age" error={errors.age} touched={touched.age}>
+                            <Field id="age" label="Age" required error={errors.age} touched={touched.age}>
                                 <input
                                     id="age" name="age" type="number"
-                                    min="16" max="60" placeholder="22"
+                                    min="16" max="100" placeholder="22"
                                     value={fields.age}
                                     onChange={handleChange} onBlur={handleBlur}
                                     className={inputCls('age', 'apply-form__input')}
@@ -337,18 +353,29 @@ export default function ApplyForm() {
                                     </button>
                                 )}
                             </label>
+                            {touched.resume && errors.resume ? (
+                                <span className="apply-form__error" role="alert">
+                                    <ErrorIcon /> {errors.resume}
+                                </span>
+                            ) : null}
                         </div>
 
                         {/* Divider */}
                         <div className="apply-form__divider" role="separator" />
 
+                        {submitError ? (
+                            <span className="apply-form__error" role="alert">
+                                <ErrorIcon /> {submitError}
+                            </span>
+                        ) : null}
+
                         {/* Submit */}
                         <button
                             type="submit"
                             className="apply-form__submit"
-                            disabled={Object.keys(touched).length > 0 && !isValid && Object.keys(errors).length > 0}
+                            disabled={isSubmitting || (Object.keys(touched).length > 0 && !isValid)}
                         >
-                            Submit Application
+                            {isSubmitting ? 'Submitting...' : 'Submit Application'}
                             <svg className="apply-form__submit-icon" width="18" height="18"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -368,4 +395,3 @@ export default function ApplyForm() {
         </section>
     );
 }
-

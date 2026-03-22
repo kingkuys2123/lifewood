@@ -177,6 +177,22 @@
   height: 280px;
 }
 
+.dashboard-error-banner {
+  border: 1px solid rgba(157, 35, 51, 0.25);
+  background: rgba(157, 35, 51, 0.08);
+  color: #702030;
+  border-radius: var(--r-12);
+  padding: var(--s-12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--s-12);
+}
+
+.dashboard-error-banner p {
+  margin: 0;
+}
+
 @keyframes dashboardSkeleton {
   0% {
     background-position: 100% 0;

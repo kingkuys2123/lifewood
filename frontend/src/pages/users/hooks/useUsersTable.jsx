@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   getCoreRowModel,
   getFilteredRowModel,
@@ -8,11 +8,46 @@ import {
 } from '@tanstack/react-table';
 import { getUsers } from '../services/usersService';
 
+function mapUserRow(item) {
+  return {
+    id: item.id,
+    firstName: item.firstName,
+    lastName: item.lastName,
+    email: item.email,
+    role: item.role,
+    status: 'Active',
+    username: item.username,
+    phoneNumber: item.phoneNumber,
+    profilePicture: item.profilePicture,
+  };
+}
+
 export function useUsersTable({ pageSize = 5, onAction = () => {} } = {}) {
-  const data = useMemo(() => getUsers(), []);
+  const [data, setData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await getUsers({ pageIndex: 0, pageSize: 200, keyword: globalFilter });
+      const rows = (response?.content || []).map(mapUserRow);
+      setData(rows);
+    } catch (err) {
+      setError(err?.message || 'Unable to load users.');
+    } finally {
+      setLoading(false);
+    }
+  }, [globalFilter]);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const columns = useMemo(
     () => [
@@ -91,5 +126,8 @@ export function useUsersTable({ pageSize = 5, onAction = () => {} } = {}) {
     table,
     globalFilter,
     setGlobalFilter,
+    loading,
+    error,
+    reload: loadUsers,
   };
 }

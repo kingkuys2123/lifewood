@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import ApplicantTrendsChart from './components/ApplicantTrendsChart';
 import NotificationsPanel from './components/NotificationsPanel';
 import ProfileQuickCard from './components/ProfileQuickCard';
@@ -8,21 +7,24 @@ import { useDashboardMetrics } from './hooks/useDashboardMetrics';
 import './styles/DashboardPage.css';
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true);
-  const { metrics, applicantTrends, notifications, reports, settings } =
+  const { metrics, applicantTrends, notifications, reports, settings, loading, error, reload } =
     useDashboardMetrics();
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setIsLoading(false), 360);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   return (
     <section className="dashboard-page">
+      {error ? (
+        <div className="dashboard-error-banner">
+          <p>{error}</p>
+          <button type="button" className="btn btn-ghost" onClick={reload}>
+            Retry
+          </button>
+        </div>
+      ) : null}
+
       <div className="dashboard-header-grid">
         <ProfileQuickCard />
         <div className="dashboard-stat-grid">
-          {isLoading
+          {loading
             ? Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="dashboard-stat-card dashboard-skeleton" />
               ))
@@ -30,7 +32,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {loading ? (
         <div className="dashboard-loading-grid">
           <div className="dashboard-panel dashboard-skeleton dashboard-skeleton--lg" />
           <div className="dashboard-panel dashboard-skeleton dashboard-skeleton--sm" />

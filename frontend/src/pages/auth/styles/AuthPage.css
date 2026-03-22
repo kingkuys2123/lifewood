@@ -98,6 +98,17 @@
   min-height: 44px;
 }
 
+.auth-error-message {
+  color: #9d2333;
+  font-size: var(--t-13);
+  margin-top: 2px;
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 560px) {
   .auth-card {
     border-radius: var(--r-16);
@@ -110,4 +121,3 @@
     margin-bottom: var(--s-16);
   }
 }
-

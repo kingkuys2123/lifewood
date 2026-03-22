@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   getCoreRowModel,
   getFilteredRowModel,
@@ -8,11 +8,45 @@ import {
 } from '@tanstack/react-table';
 import { getApplicants } from '../services/applicantsService';
 
+function mapApplicantRow(item) {
+  const status = item.reviewed ? (item.approved ? 'Approved' : 'Denied') : 'Pending';
+
+  return {
+    id: item.id,
+    name: `${item.firstName} ${item.lastName}`,
+    email: item.email,
+    date: item.createdAt?.slice(0, 10) || '-',
+    program: item.projectAppliedFor,
+    status,
+  };
+}
+
 export function useApplicantsTable({ pageSize = 5, onAction = () => {} } = {}) {
-  const data = useMemo(() => getApplicants(), []);
+  const [data, setData] = useState([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadApplicants = useCallback(async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await getApplicants({ pageIndex: 0, pageSize: 200, keyword: globalFilter });
+      const rows = (response?.content || []).map(mapApplicantRow);
+      setData(rows);
+    } catch (err) {
+      setError(err?.message || 'Unable to load applicants.');
+    } finally {
+      setLoading(false);
+    }
+  }, [globalFilter]);
+
+  useEffect(() => {
+    loadApplicants();
+  }, [loadApplicants]);
 
   const columns = useMemo(
     () => [
@@ -75,5 +109,8 @@ export function useApplicantsTable({ pageSize = 5, onAction = () => {} } = {}) {
     table,
     globalFilter,
     setGlobalFilter,
+    loading,
+    error,
+    reload: loadApplicants,
   };
 }

@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import ProtectedRoute from './app/guards/ProtectedRoute';
 import PortalLayout from './app/layouts/PortalLayout';
 import PublicSiteLayout from './app/layouts/PublicSiteLayout';
+import AuthProvider from './app/providers/AuthProvider';
 import ApplicantsPage from './pages/applicants/ApplicantsPage';
 import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
@@ -31,39 +33,55 @@ import './styles/global.css';
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/admin" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/admin" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
 
-        <Route path="/portal" element={<PortalLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="applicants" element={<ApplicantsPage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="profile/edit" element={<ProfileEditPage />} />
-        </Route>
+          <Route
+            path="/portal"
+            element={(
+              <ProtectedRoute allowedRoles={['ADMIN', 'USER']}>
+                <PortalLayout />
+              </ProtectedRoute>
+            )}
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="applicants" element={<ApplicantsPage />} />
+            <Route
+              path="users"
+              element={(
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <UsersPage />
+                </ProtectedRoute>
+              )}
+            />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="profile/edit" element={<ProfileEditPage />} />
+          </Route>
 
-        <Route element={<PublicSiteLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
-          <Route path="/terms-and-conditions" element={<TermsConditions />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/apply" element={<ApplyNow />} />
-          <Route path="/careers" element={<Careers />} />
-          <Route path="/internal-news" element={<InternalNews />} />
-          <Route path="/philanthropy" element={<PhilanthropyImpact />} />
-          <Route path="/ai-initiatives/services" element={<AIServices />} />
-          <Route path="/ai-initiatives/projects" element={<AIProject />} />
-          <Route path="/our-company/about" element={<AboutUs />} />
-          <Route path="/our-company/offices" element={<Offices />} />
-          <Route path="/offer/type-a" element={<TypeADataServicing />} />
-          <Route path="/offer/type-b" element={<TypeBHorizontalLLMData />} />
-          <Route path="/offer/type-c" element={<TypeCVerticalLLMData />} />
-          <Route path="/offer/type-d" element={<TypeDAIGC />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+          <Route element={<PublicSiteLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/terms-and-conditions" element={<TermsConditions />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/apply" element={<ApplyNow />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/internal-news" element={<InternalNews />} />
+            <Route path="/philanthropy" element={<PhilanthropyImpact />} />
+            <Route path="/ai-initiatives/services" element={<AIServices />} />
+            <Route path="/ai-initiatives/projects" element={<AIProject />} />
+            <Route path="/our-company/about" element={<AboutUs />} />
+            <Route path="/our-company/offices" element={<Offices />} />
+            <Route path="/offer/type-a" element={<TypeADataServicing />} />
+            <Route path="/offer/type-b" element={<TypeBHorizontalLLMData />} />
+            <Route path="/offer/type-c" element={<TypeCVerticalLLMData />} />
+            <Route path="/offer/type-d" element={<TypeDAIGC />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

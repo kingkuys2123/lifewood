@@ -1,34 +1,46 @@
-import { useNavigate } from 'react-router-dom';
-import { authenticateUser } from '../services/authService';
+import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../app/providers/useAuth';
 import { useLoginForm } from '../hooks/useLoginForm';
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
   const { values, updateField } = useLoginForm();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      await login(values);
+      const redirectPath = location.state?.from?.pathname || '/portal';
+      navigate(redirectPath, { replace: true });
+    } catch (err) {
+      setError(err?.message || 'Invalid username or password.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <form
-      className="auth-form"
-      onSubmit={(event) => {
-        event.preventDefault();
-        const response = authenticateUser(values);
-        if (response.ok) {
-          navigate('/portal');
-        }
-      }}
-    >
-      <label htmlFor="username">Username or email</label>
+    <form className="auth-form" onSubmit={onSubmit}>
+      <label htmlFor="username">Username</label>
       <input
         id="username"
         type="text"
         value={values.username}
-        placeholder="you@lifewood.com"
+        placeholder="your.username"
         onChange={(event) => updateField('username', event.target.value)}
         required
       />
 
       <div className="auth-password-row">
-        <button type="button" className="auth-forgot-link">
+        <button type="button" className="auth-forgot-link" disabled>
           Forgot password?
         </button>
       </div>
@@ -43,8 +55,10 @@ export default function LoginForm() {
         required
       />
 
-      <button type="submit" className="btn btn-forest auth-submit-btn">
-        Sign In
+      {error ? <p className="auth-error-message">{error}</p> : null}
+
+      <button type="submit" className="btn btn-forest auth-submit-btn" disabled={isSubmitting}>
+        {isSubmitting ? 'Signing in...' : 'Sign In'}
       </button>
     </form>
   );

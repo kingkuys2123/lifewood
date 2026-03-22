@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import { sendContactMessage } from '../../services/contact/contactService';
 import './ContactForm.css';
 
 const MAX_MESSAGE = 1200;
@@ -82,9 +83,11 @@ function ContactInfoPanel() {
 
 /* ── Main form ─────────────────────────────────────────── */
 export default function ContactForm() {
-    const [fields, setFields]   = useState(INITIAL);
+    const [fields, setFields] = useState(INITIAL);
     const [touched, setTouched] = useState({});
     const [submitted, setSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState('');
 
     const errors = validate(fields);
     const isValid = Object.keys(errors).length === 0;
@@ -98,21 +101,35 @@ export default function ContactForm() {
         setTouched(prev => ({ ...prev, [e.target.name]: true }));
     }, []);
 
-    const handleSubmit = useCallback((e) => {
-        // Mark all fields as touched to show any remaining errors
+    const handleSubmit = useCallback(async (e) => {
+        e.preventDefault();
         setTouched({ name: true, email: true, subject: true, message: true });
         if (!isValid) {
-            e.preventDefault();
             return;
         }
-        // mailto: will open the native email client
-        // Let the default href action proceed (form uses method="get" mailto)
-        setSubmitted(true);
-    }, [isValid]);
+
+        setSubmitError('');
+        setIsSubmitting(true);
+
+        try {
+            await sendContactMessage({
+                name: fields.name.trim(),
+                email: fields.email.trim(),
+                subject: fields.subject.trim(),
+                message: fields.message.trim(),
+            });
+            setSubmitted(true);
+        } catch (err) {
+            setSubmitError(err?.message || 'Unable to send message right now.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, [fields, isValid]);
 
     const handleReset = useCallback(() => {
         setFields(INITIAL);
         setTouched({});
+        setSubmitError('');
         setSubmitted(false);
     }, []);
 
@@ -122,9 +139,6 @@ export default function ContactForm() {
         const isGood  = touched[name] && !errors[name] && fields[name].trim();
         return `${base}${hasErr ? ` ${base}--error` : ''}${isGood ? ` ${base}--valid` : ''}`;
     };
-
-    /* Build mailto href */
-    const mailtoHref = `mailto:lifewoodph@gmail.com?subject=${encodeURIComponent(fields.subject)}&body=${encodeURIComponent(`Name: ${fields.name}\nEmail: ${fields.email}\n\n${fields.message}`)}`;
 
     return (
         <section className="contact-form-section">
@@ -143,8 +157,8 @@ export default function ContactForm() {
                             </div>
                             <h2 className="contact-form__success-title">Message Sent!</h2>
                             <p className="contact-form__success-body">
-                                Your email client should have opened. We'll get back to you within
-                                1–2 business days.
+                                Your message has been sent. We will get back to you within
+                                1-2 business days.
                             </p>
                             <button className="contact-form__reset" onClick={handleReset}>
                                 <svg width="14" height="14" viewBox="0 0 16 16" fill="none"
@@ -240,15 +254,22 @@ export default function ContactForm() {
                                 </Field>
 
                                 {/* Submit — uses mailto href on valid, prevents default on invalid */}
-                                <a
-                                    href={isValid ? mailtoHref : undefined}
-                                    onClick={handleSubmit}
+                                {submitError ? (
+                                    <span className="contact-form__error-msg" role="alert" style={{ marginTop: 0 }}>
+                                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                                            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
+                                            <path d="M8 5v4M8 11v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                                        </svg>
+                                        {submitError}
+                                    </span>
+                                ) : null}
+
+                                <button
+                                    type="submit"
                                     className="contact-form__submit"
-                                    role="button"
-                                    aria-disabled={!isValid}
-                                    style={{ textDecoration: 'none' }}
+                                    disabled={isSubmitting}
                                 >
-                                    Send Message
+                                    {isSubmitting ? 'Sending...' : 'Send Message'}
                                     <svg className="contact-form__submit-icon" width="17" height="17"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -256,7 +277,7 @@ export default function ContactForm() {
                                         <line x1="22" y1="2" x2="11" y2="13"/>
                                         <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                                     </svg>
-                                </a>
+                                </button>
 
                                 <p className="contact-form__privacy">
                                     Your information is handled in accordance with our{' '}
@@ -274,4 +295,3 @@ export default function ContactForm() {
         </section>
     );
 }
-

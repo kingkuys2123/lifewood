@@ -15,9 +15,21 @@
   margin-top: var(--s-8);
 }
 
+.portal-page-error {
+  color: #9d2333;
+  font-size: var(--t-13);
+}
+
+.portal-table-loading {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-12);
+  background: var(--c-white);
+  padding: var(--s-16);
+  box-shadow: var(--sh-xs);
+}
+
 @media (max-width: 640px) {
   .portal-page-summary {
     margin-bottom: var(--s-12);
   }
 }
-

@@ -10,6 +10,8 @@ export default function ProfileEditPage() {
     avatarPreview,
     saveProfile,
     saveState,
+    loading,
+    error,
   } = useProfileForm();
 
   return (
@@ -18,14 +20,21 @@ export default function ProfileEditPage() {
         <h1 className="portal-page-title">Edit Profile</h1>
         <p>Keep your account details updated for better collaboration.</p>
       </header>
-      <ProfileForm
-        form={form}
-        updateField={updateField}
-        updateProfilePicture={updateProfilePicture}
-        avatarPreview={avatarPreview}
-        onSaveProfile={saveProfile}
-        saveState={saveState}
-      />
+
+      {error ? <p className="portal-page-error">{error}</p> : null}
+
+      {loading ? (
+        <div className="portal-table-loading">Loading profile...</div>
+      ) : (
+        <ProfileForm
+          form={form}
+          updateField={updateField}
+          updateProfilePicture={updateProfilePicture}
+          avatarPreview={avatarPreview}
+          onSaveProfile={saveProfile}
+          saveState={saveState}
+        />
+      )}
     </section>
   );
 }

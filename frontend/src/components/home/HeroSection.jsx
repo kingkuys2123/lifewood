@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { trackEvent } from '../../services/analytics/analyticsService';
 import './HeroSection.css';
 
 const POINTER_DELTA_THRESHOLD_PX = 3;
@@ -44,21 +45,8 @@ export default function HeroSection() {
         []
     );
 
-    const trackHeroEvent = (eventName, meta = {}) => {
-        const payload = {
-            event: eventName,
-            section: 'home_hero',
-            ts: Date.now(),
-            ...meta,
-        };
-
-        window.dispatchEvent(new CustomEvent('lifewood:hero-engagement', { detail: payload }));
-        if (Array.isArray(window.dataLayer)) {
-            window.dataLayer.push(payload);
-        }
-    };
-
     useEffect(() => {
+        const timeoutIds = timeoutIdsRef.current;
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
         const finePointer = window.matchMedia('(pointer: fine)');
         const syncInteractionMode = () => {
@@ -73,8 +61,8 @@ export default function HeroSection() {
         return () => {
             reduceMotion.removeEventListener('change', syncInteractionMode);
             finePointer.removeEventListener('change', syncInteractionMode);
-            timeoutIdsRef.current.forEach((id) => window.clearTimeout(id));
-            timeoutIdsRef.current.clear();
+            timeoutIds.forEach((id) => window.clearTimeout(id));
+            timeoutIds.clear();
             if (rafRef.current) window.cancelAnimationFrame(rafRef.current);
         };
     }, []);
@@ -151,7 +139,12 @@ export default function HeroSection() {
         const id = window.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
         setRipples((prev) => [...prev.slice(-3), { id, x, y }]);
-        trackHeroEvent('hero_interaction_ripple', { source, x: Number(x.toFixed(2)), y: Number(y.toFixed(2)) });
+        trackEvent('hero_interaction_ripple', {
+            section: 'home_hero',
+            source,
+            x: Number(x.toFixed(2)),
+            y: Number(y.toFixed(2)),
+        });
 
         const timeoutId = window.setTimeout(() => {
             setRipples((prev) => prev.filter((ripple) => ripple.id !== id));
@@ -211,7 +204,7 @@ export default function HeroSection() {
     };
 
     const handleCtaClick = (ctaType) => {
-        trackHeroEvent(`hero_cta_${ctaType}_click`);
+        trackEvent(`hero_cta_${ctaType}_click`, { section: 'home_hero' });
     };
 
     const handleScrollCueClick = () => {
@@ -219,7 +212,7 @@ export default function HeroSection() {
         if (!hero) return;
         const top = hero.offsetTop + hero.offsetHeight - 56;
         window.scrollTo({ top, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-        trackHeroEvent('hero_scroll_cue_click');
+        trackEvent('hero_scroll_cue_click', { section: 'home_hero' });
     };
 
     return (

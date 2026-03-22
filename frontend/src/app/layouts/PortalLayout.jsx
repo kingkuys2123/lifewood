@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../providers/useAuth';
 import { useNotifications } from '../../hooks/useNotifications';
+import { trackEvent } from '../../services/analytics/analyticsService';
 import brandWordmark from '../../assets/branding/lifewood-icon-text.png';
 import './PortalLayout.css';
 
@@ -64,6 +65,45 @@ export default function PortalLayout() {
 
   const toggleUserMenu = (anchor) => {
     setUserMenuAnchor((prev) => (prev === anchor ? null : anchor));
+  };
+
+  const handleNotificationsToggle = () => {
+    const nextOpen = !showNotifications;
+    setShowNotifications(nextOpen);
+    trackEvent('portal_notifications_toggle', {
+      section: 'portal_topbar',
+      open: nextOpen,
+      unreadCount: unreadNotifications,
+    });
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    try {
+      await markAllNotificationsRead();
+      trackEvent('portal_notifications_mark_all_read', {
+        section: 'portal_topbar',
+        unreadCountBefore: unreadNotifications,
+      });
+    } catch {
+      trackEvent('portal_notifications_mark_all_read_failed', {
+        section: 'portal_topbar',
+      });
+    }
+  };
+
+  const handleMarkNotificationRead = async (notificationId) => {
+    try {
+      await markNotificationRead(notificationId);
+      trackEvent('portal_notification_mark_read', {
+        section: 'portal_topbar',
+        notificationId,
+      });
+    } catch {
+      trackEvent('portal_notification_mark_read_failed', {
+        section: 'portal_topbar',
+        notificationId,
+      });
+    }
   };
 
   const renderUserMenu = (menuClassName) => (
@@ -218,7 +258,7 @@ export default function PortalLayout() {
                 aria-label="Notifications"
                 aria-expanded={showNotifications}
                 aria-haspopup="menu"
-                onClick={() => setShowNotifications((prev) => !prev)}
+                onClick={handleNotificationsToggle}
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -250,7 +290,7 @@ export default function PortalLayout() {
                     <button
                       type="button"
                       className="portal-notification-mark-all"
-                      onClick={markAllNotificationsRead}
+                      onClick={handleMarkAllNotificationsRead}
                       disabled={unreadNotifications === 0}
                     >
                       Mark all as read
@@ -276,7 +316,7 @@ export default function PortalLayout() {
                           <button
                             type="button"
                             className="portal-notification-read-btn"
-                            onClick={() => markNotificationRead(item.id)}
+                            onClick={() => handleMarkNotificationRead(item.id)}
                           >
                             Mark as read
                           </button>

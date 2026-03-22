@@ -7,7 +7,7 @@ export default function UsersPage() {
   const { table, globalFilter, setGlobalFilter } = useUsersTable();
 
   return (
-    <section>
+    <section className="portal-page">
       <UsersSummary />
       <AdminDataTable
         title="Users"

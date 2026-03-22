@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import brandWordmark from '../../assets/branding/lifewood-icon-text.png';
 import './PortalLayout.css';
 
@@ -11,6 +11,8 @@ const MENU_ITEMS = [
 
 export default function PortalLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const userMenuRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -30,6 +32,22 @@ export default function PortalLayout() {
     navigate('/login');
   };
 
+
+  useEffect(() => {
+    if (!showUserMenu) {
+      return;
+    }
+
+    const handlePointerDown = (event) => {
+      if (!userMenuRef.current?.contains(event.target)) {
+        setShowUserMenu(false);
+      }
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
+    return () => window.removeEventListener('pointerdown', handlePointerDown);
+  }, [showUserMenu]);
+
   return (
     <div className="portal-layout">
       <aside className={`portal-sidebar ${menuOpen ? 'is-open' : ''}`}>
@@ -44,6 +62,7 @@ export default function PortalLayout() {
               key={item.to}
               to={item.to}
               end={item.to === '/portal'}
+              onClick={() => setMenuOpen(false)}
               className={({ isActive }) =>
                 `portal-nav-link ${isActive ? 'active' : ''}`
               }
@@ -52,21 +71,14 @@ export default function PortalLayout() {
             </NavLink>
           ))}
 
-          <p className="portal-nav-title portal-nav-title--settings">Settings</p>
-          <NavLink
-            to="/portal/settings"
-            className={({ isActive }) =>
-              `portal-nav-link ${isActive ? 'active' : ''}`
-            }
-          >
-            Settings
-          </NavLink>
         </nav>
 
-        <div className="portal-user-block">
+        <div className="portal-user-block" ref={userMenuRef}>
           <button
             type="button"
             className="portal-user-trigger"
+            aria-expanded={showUserMenu}
+            aria-haspopup="menu"
             onClick={() => setShowUserMenu((prev) => !prev)}
           >
             <div>
@@ -87,6 +99,16 @@ export default function PortalLayout() {
                 }}
               >
                 Edit Profile
+              </button>
+              <button
+                type="button"
+                className="portal-user-menu-item"
+                onClick={() => {
+                  setShowUserMenu(false);
+                  navigate('/portal/settings');
+                }}
+              >
+                Settings
               </button>
               <button
                 type="button"
@@ -112,9 +134,20 @@ export default function PortalLayout() {
           <p className="portal-user-email">{user.email}</p>
         </header>
         <main className="portal-main">
-          <Outlet />
+          <div key={location.pathname} className="portal-animate-in">
+            <Outlet />
+          </div>
         </main>
       </div>
+
+      {menuOpen && (
+        <button
+          type="button"
+          className="portal-sidebar-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
 
       {showLogoutModal && (
         <div className="portal-modal-backdrop" role="presentation">

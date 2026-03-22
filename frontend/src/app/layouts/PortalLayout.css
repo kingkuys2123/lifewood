@@ -1,9 +1,10 @@
 .portal-layout {
   min-height: 100vh;
-  background: var(--c-ice);
+  background: linear-gradient(160deg, var(--c-ice), var(--c-snow));
   color: var(--c-charcoal);
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 292px 1fr;
+  position: relative;
 }
 
 .portal-sidebar {
@@ -11,11 +12,12 @@
   border-right: 1px solid var(--c-border);
   display: flex;
   flex-direction: column;
-  padding: var(--s-24) var(--s-20);
+  padding: var(--s-24) var(--s-16) var(--s-16);
   position: sticky;
   top: 0;
   height: 100vh;
   z-index: 4;
+  gap: var(--s-16);
 }
 
 .portal-logo-wrap {
@@ -29,7 +31,7 @@
 }
 
 .portal-nav {
-  padding-top: var(--s-20);
+  padding-top: var(--s-8);
   display: flex;
   flex-direction: column;
   gap: var(--s-8);
@@ -43,19 +45,19 @@
   margin: 0 0 var(--s-8);
 }
 
-.portal-nav-title--settings {
-  margin-top: var(--s-20);
-}
-
 .portal-nav-link {
-  padding: 11px 12px;
-  border-radius: var(--r-8);
+  padding: 11px 14px;
+  border-radius: var(--r-10);
   font-weight: var(--fw-medium);
-  transition: background var(--dur-fast), color var(--dur-fast);
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast),
+    transform var(--dur-base) var(--ease-out);
 }
 
 .portal-nav-link:hover {
   background: var(--c-ice);
+  transform: translateX(2px);
 }
 
 .portal-nav-link.active {
@@ -76,6 +78,12 @@
   border: 1px solid var(--c-border);
   border-radius: var(--r-12);
   padding: var(--s-12);
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.portal-user-trigger:hover {
+  border-color: rgba(19, 48, 32, 0.35);
+  box-shadow: var(--sh-sm);
 }
 
 .portal-user-name {
@@ -104,6 +112,7 @@
   padding: var(--s-8);
   display: grid;
   gap: var(--s-4);
+  animation: portalUserMenuIn var(--dur-base) var(--ease-out);
 }
 
 .portal-user-menu-item {
@@ -114,13 +123,14 @@
 }
 
 .portal-user-menu-item:hover {
-  background: var(--c-ice);
+  background: rgba(19, 48, 32, 0.08);
 }
 
 .portal-content-area {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
 .portal-topbar {
@@ -133,7 +143,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--s-16) var(--s-24);
+  padding: var(--s-16) clamp(var(--s-16), 2vw, var(--s-24));
 }
 
 .portal-menu-btn {
@@ -149,10 +159,11 @@
 .portal-user-email {
   color: var(--c-steel);
   font-size: var(--t-14);
+  white-space: nowrap;
 }
 
 .portal-main {
-  padding: var(--s-24);
+  padding: clamp(var(--s-14), 2vw, var(--s-24));
 }
 
 .portal-modal-backdrop {
@@ -162,6 +173,8 @@
   display: grid;
   place-items: center;
   z-index: 20;
+  padding: var(--s-16);
+  animation: portalModalFadeIn var(--dur-base) var(--ease-out);
 }
 
 .portal-modal {
@@ -170,6 +183,7 @@
   border-radius: var(--r-16);
   box-shadow: var(--sh-lg);
   padding: var(--s-24);
+  animation: portalModalSlideIn var(--dur-base) var(--ease-out);
 }
 
 .portal-modal h2 {
@@ -188,15 +202,55 @@
   gap: var(--s-12);
 }
 
-@media (max-width: 980px) {
+.portal-sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 10, 0.34);
+  opacity: 1;
+  z-index: 3;
+  animation: portalModalFadeIn var(--dur-base) var(--ease-out);
+}
+
+@keyframes portalUserMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes portalModalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes portalModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 1080px) {
   .portal-layout {
     grid-template-columns: 1fr;
   }
 
   .portal-sidebar {
     position: fixed;
-    left: -320px;
-    width: 280px;
+    left: -340px;
+    width: min(320px, 85vw);
     transition: left var(--dur-base) var(--ease-out);
     box-shadow: var(--sh-lg);
   }
@@ -207,6 +261,38 @@
 
   .portal-menu-btn {
     display: inline-flex;
+  }
+
+  .portal-user-email {
+    max-width: 62vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 720px) {
+  .portal-topbar {
+    padding: var(--s-12) var(--s-14);
+  }
+
+  .portal-user-email {
+    font-size: var(--t-13);
+  }
+
+  .portal-main {
+    padding: var(--s-12);
+  }
+
+  .portal-modal {
+    padding: var(--s-20);
+  }
+
+  .portal-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .portal-modal-actions .btn {
+    width: 100%;
   }
 }
 

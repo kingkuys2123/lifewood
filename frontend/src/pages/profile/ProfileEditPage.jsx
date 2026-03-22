@@ -6,8 +6,8 @@ export default function ProfileEditPage() {
   const { form, updateField } = useProfileForm();
 
   return (
-    <section className="profile-edit-page">
-      <h1>Edit Profile</h1>
+    <section className="profile-edit-page portal-animate-in">
+      <h1 className="portal-page-title">Edit Profile</h1>
       <p>Keep your account details updated for better collaboration.</p>
       <ProfileForm form={form} updateField={updateField} />
     </section>

@@ -4,8 +4,7 @@
 }
 
 .settings-title {
-  font-family: var(--font-display);
-  font-size: var(--t-28);
+  margin: 0;
 }
 
 .settings-grid {
@@ -18,7 +17,14 @@
   background: var(--c-white);
   border: 1px solid var(--c-border);
   border-radius: var(--r-16);
-  padding: var(--s-16);
+  padding: clamp(var(--s-14), 2vw, var(--s-18));
+  box-shadow: var(--sh-xs);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base);
+}
+
+.settings-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-sm);
 }
 
 .settings-card h2 {
@@ -35,8 +41,15 @@
 .settings-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: var(--s-12);
   font-size: var(--t-14);
+}
+
+.settings-item input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--c-forest);
 }
 
 .settings-alert-list {
@@ -46,3 +59,14 @@
   list-style: disc;
   padding-left: 18px;
 }
+
+@media (max-width: 640px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-item {
+    font-size: var(--t-13);
+  }
+}
+

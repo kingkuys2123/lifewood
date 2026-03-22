@@ -28,7 +28,9 @@ export default function LoginForm() {
       />
 
       <div className="auth-password-row">
-        <span>Forgot password?</span>
+        <button type="button" className="auth-forgot-link">
+          Forgot password?
+        </button>
       </div>
 
       <label htmlFor="password">Password</label>

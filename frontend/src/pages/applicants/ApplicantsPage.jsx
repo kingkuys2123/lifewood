@@ -7,7 +7,7 @@ export default function ApplicantsPage() {
   const { table, globalFilter, setGlobalFilter } = useApplicantsTable();
 
   return (
-    <section>
+    <section className="portal-page">
       <ApplicantsSummary />
       <AdminDataTable
         title="Applicants"

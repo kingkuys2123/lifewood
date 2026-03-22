@@ -3,7 +3,7 @@
    ================================================================ */
 
 /* ── Google Fonts ──────────────────────────────────────────  */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
 /* ── Design Tokens ─────────────────────────────────────────  */
 :root {
@@ -25,7 +25,7 @@
 
   /* Typography */
   --font-display: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   --fw-regular: 400;
   --fw-medium: 500;
@@ -61,7 +61,9 @@
   --s-8: 0.5rem;
   --s-10: 0.625rem;
   --s-12: 0.75rem;
+  --s-14: 0.875rem;
   --s-16: 1rem;
+  --s-18: 1.125rem;
   --s-20: 1.25rem;
   --s-24: 1.5rem;
   --s-28: 1.75rem;
@@ -85,6 +87,7 @@
   /* Radius */
   --r-4: 4px;
   --r-8: 8px;
+  --r-10: 10px;
   --r-12: 12px;
   --r-16: 16px;
   --r-20: 20px;
@@ -159,6 +162,12 @@ button {
   font: inherit;
   cursor: pointer;
   line-height: inherit;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
 }
 
 /* ── Utility Classes ───────────────────────────────────────  */
@@ -259,6 +268,41 @@ button {
   background: #0d2218;
   box-shadow: 0 4px 20px rgba(19, 48, 32, 0.32);
   transform: translateY(-2px);
+}
+
+/* ── Shared Portal Surfaces ────────────────────────────────  */
+.portal-surface {
+  background: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-16);
+  box-shadow: var(--sh-sm);
+}
+
+.portal-page-title {
+  font-family: var(--font-display);
+  font-size: clamp(var(--t-24), 1.7vw, var(--t-32));
+  line-height: 1.2;
+}
+
+.portal-page-description {
+  color: var(--c-steel);
+  margin-top: var(--s-8);
+  max-width: 70ch;
+}
+
+.portal-animate-in {
+  animation: portalFadeIn var(--dur-slow) var(--ease-out);
+}
+
+@keyframes portalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── Scroll Reveal ─────────────────────────────────────────  */

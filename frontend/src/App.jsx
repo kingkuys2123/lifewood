@@ -12,7 +12,6 @@ import ProfileEditPage from './pages/profile/ProfileEditPage';
 import CookiePolicy from './pages/policies/CookiePolicy';
 import PrivacyPolicy from './pages/policies/PrivacyPolicy';
 import TermsConditions from './pages/policies/TermsConditions';
-import SettingsPage from './pages/settings/SettingsPage';
 import UsersPage from './pages/users/UsersPage';
 import ContactUs from './pages/landing-page/contact-us/ContactUs';
 import ApplyNow from './pages/landing-page/apply/ApplyNow';
@@ -56,7 +55,6 @@ export default function App() {
                 </ProtectedRoute>
               )}
             />
-            <Route path="settings" element={<SettingsPage />} />
             <Route path="profile/edit" element={<ProfileEditPage />} />
           </Route>
 

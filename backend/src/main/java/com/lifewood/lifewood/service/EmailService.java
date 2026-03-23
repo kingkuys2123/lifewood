@@ -5,9 +5,11 @@ import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
@@ -34,14 +36,32 @@ public class EmailService {
     @Value("${app.mail.templates.rejection-body:Hello {{name}},\n\nThank you for applying to {{project}}. Your application was not selected this time.\n\n{{message}}}")
     private String rejectionBodyTemplate;
 
-    public void sendApplicantSubmissionNotification(String applicantEmail, String applicantName, String project) {
-        sendMail(notificationTo,
-                "New applicant submission",
-                "ApplicantEntity " + applicantName + " applied for project: " + project + ".");
+    @Value("${app.mail.brand.name:Lifewood}")
+    private String brandName;
 
-        sendMail(applicantEmail,
+    @Value("${app.mail.brand.website:https://www.lifewood.com}")
+    private String brandWebsite;
+
+    public void sendApplicantSubmissionNotification(String applicantEmail, String applicantName, String project) {
+        String adminBody = """
+                <p><strong>%s</strong> applied for <strong>%s</strong>.</p>
+                <p>Email: %s</p>
+                <p>Please review this application in the admin portal.</p>
+                """.formatted(escapeHtml(applicantName), escapeHtml(project), escapeHtml(applicantEmail));
+
+        String applicantBody = """
+                <p>Hello %s,</p>
+                <p>Thank you for applying to <strong>%s</strong>. We have successfully received your application.</p>
+                <p>Our team will review your profile and share an update soon.</p>
+                """.formatted(escapeHtml(applicantName), escapeHtml(project));
+
+        sendHtmlMail(notificationTo,
+                "New applicant submission",
+                composeTemplate("New Application", "A new applicant has submitted their profile.", adminBody));
+
+        sendHtmlMail(applicantEmail,
                 "Application received",
-                "Hello " + applicantName + ", your application has been received successfully.");
+                composeTemplate("Application Received", "Your submission is in review.", applicantBody));
     }
 
     public void sendApplicantDecisionNotification(
@@ -70,32 +90,113 @@ public class EmailService {
                 normalizedMessage);
         String applicantSubject = request.getApproved() ? approvalSubjectTemplate : rejectionSubjectTemplate;
 
-        sendMail(notificationTo,
-                "Applicant " + decisionLabel,
-                "Applicant " + request.getApplicantName() + " (" + request.getApplicantEmail() + ") was "
-                        + decisionLabel + " for " + request.getProjectAppliedFor() + ".\n\nMessage: " + normalizedMessage);
+        String adminBody = """
+                <p><strong>%s</strong> (%s) was <strong>%s</strong> for <strong>%s</strong>.</p>
+                <p>Message: %s</p>
+                """.formatted(
+                escapeHtml(request.getApplicantName()),
+                escapeHtml(request.getApplicantEmail()),
+                escapeHtml(decisionLabel),
+                escapeHtml(request.getProjectAppliedFor()),
+                escapeHtml(normalizedMessage));
 
-        sendMail(request.getApplicantEmail(), applicantSubject, applicantBody);
+        sendHtmlMail(notificationTo,
+                "Applicant " + decisionLabel,
+                composeTemplate("Application Decision", "A recruitment decision has been recorded.", adminBody));
+
+        sendHtmlMail(
+                request.getApplicantEmail(),
+                applicantSubject,
+                composeTemplate(
+                        request.getApproved() ? "Application Approved" : "Application Update",
+                        "Status update for your " + escapeHtml(request.getProjectAppliedFor()) + " application.",
+                        "<p>" + escapeHtml(renderTemplate(applicantBody, request.getApplicantName(),
+                                request.getProjectAppliedFor(), normalizedMessage)).replace("\n", "<br/>") + "</p>"));
         log.info("Sent applicant decision emails applicantEmail={} decision={}", request.getApplicantEmail(), decisionLabel);
     }
 
     public void sendContactFormMessage(ContactMessageDTO request) {
-        String body = "From: " + request.getName() + " <" + request.getEmail() + ">\n\n" + request.getMessage();
-        sendMail(notificationTo, request.getSubject(), body);
+        String adminBody = """
+                <p><strong>From:</strong> %s (%s)</p>
+                <p><strong>Subject:</strong> %s</p>
+                <div style="margin-top: 12px; padding: 14px; border-radius: 12px; background: #f7f8f9; color: #1D1D1F;">
+                  %s
+                </div>
+                """.formatted(
+                escapeHtml(request.getName()),
+                escapeHtml(request.getEmail()),
+                escapeHtml(request.getSubject()),
+                escapeHtml(request.getMessage()).replace("\n", "<br/>")
+        );
+
+        String senderBody = """
+                <p>Hello %s,</p>
+                <p>Thanks for contacting %s. We received your message and our team will respond as soon as possible.</p>
+                <p>Subject: <strong>%s</strong></p>
+                """.formatted(escapeHtml(request.getName()), escapeHtml(brandName), escapeHtml(request.getSubject()));
+
+        sendHtmlMail(notificationTo, "Contact Message: " + request.getSubject(),
+                composeTemplate("New Contact Message", "A visitor submitted the contact form.", adminBody));
+        sendHtmlMail(request.getEmail(), "We received your message",
+                composeTemplate("Message Received", "Thanks for reaching out.", senderBody));
     }
 
-    private void sendMail(String to, String subject, String body) {
+    private void sendHtmlMail(String to, String subject, String htmlBody) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(body);
+            var message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true);
             mailSender.send(message);
             log.info("Email sent to {} with subject {}", to, subject);
         } catch (Exception ex) {
             log.error("Failed to send email to {}", to, ex);
         }
+    }
+
+    private String composeTemplate(String title, String subtitle, String bodyHtml) {
+        return """
+                <div style="background:#f2f4f5;padding:24px;font-family:Arial,sans-serif;color:#1D1D1F;">
+                  <table role="presentation" style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
+                    <tr>
+                      <td style="padding:24px;background:linear-gradient(135deg,#133020,#1f4d33);color:#ffffff;">
+                        <div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;opacity:.9;">%s</div>
+                        <h1 style="margin:10px 0 6px;font-size:24px;line-height:1.2;">%s</h1>
+                        <p style="margin:0;font-size:14px;opacity:.95;">%s</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:24px;font-size:15px;line-height:1.65;">%s</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:18px 24px;border-top:1px solid #eceff2;color:#6b7280;font-size:12px;">
+                        Sent by %s | <a href="%s" style="color:#133020;text-decoration:none;">Visit website</a>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+                """.formatted(
+                escapeHtml(brandName),
+                escapeHtml(title),
+                escapeHtml(subtitle),
+                bodyHtml,
+                escapeHtml(brandName),
+                escapeHtml(brandWebsite));
+    }
+
+    private String escapeHtml(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
     private String normalizeAdminMessage(String adminMessage) {

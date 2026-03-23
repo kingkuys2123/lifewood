@@ -19,6 +19,7 @@ import com.lifewood.lifewood.util.FileUtil;
 import com.lifewood.lifewood.util.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,6 +34,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ApplicantService {
 
+    public record ResumeFile(Resource resource, String fileName, String contentType) {
+    }
+
     private final ApplicantRepository applicantRepository;
     private final FileUtil fileUtil;
     private final EmailService emailService;
@@ -41,6 +45,8 @@ public class ApplicantService {
 
     @Transactional
     public ApplicantResponseDTO createApplicant(AddApplicantDTO request) {
+        ensureEmailAvailable(request.getEmail(), null);
+
         String resumePath = fileUtil.storeResume(request.getResume());
         ApplicantEntity applicantEntity = ApplicantEntity.builder()
                 .firstName(request.getFirstName())
@@ -71,6 +77,22 @@ public class ApplicantService {
     }
 
     @Transactional(readOnly = true)
+    public ResumeFile getApplicantResume(Long id) {
+        ApplicantEntity applicantEntity = applicantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
+
+        Resource resource = fileUtil.loadResumeResource(applicantEntity.getResumePath());
+        String fileName = resource.getFilename() == null ? "resume" : resource.getFilename();
+        String contentType = null;
+        try {
+            contentType = fileUtil.resolveContentType(resource.getFile().toPath());
+        } catch (Exception ex) {
+            log.debug("Unable to resolve resume content type for applicant id={}", id, ex);
+        }
+        return new ResumeFile(resource, fileName, contentType);
+    }
+
+    @Transactional(readOnly = true)
     public Page<ApplicantResponseDTO> getAllApplicants(String keyword, Boolean approved, Boolean reviewed, Pageable pageable) {
         Specification<ApplicantEntity> specification = Specification.where(ApplicantSpecifications.withKeyword(keyword))
                 .and(ApplicantSpecifications.withApproved(approved))
@@ -89,6 +111,8 @@ public class ApplicantService {
         ApplicantEntity applicantEntity = applicantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
 
+        ensureEmailAvailable(request.getEmail(), id);
+
         applicantEntity.setFirstName(request.getFirstName());
         applicantEntity.setLastName(request.getLastName());
         applicantEntity.setAge(request.getAge());
@@ -102,6 +126,20 @@ public class ApplicantService {
         }
 
         return mapToResponse(applicantRepository.save(applicantEntity));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isEmailAvailable(String email, Long excludeApplicantId) {
+        String normalizedEmail = normalizeEmail(email);
+        if (normalizedEmail.isEmpty()) {
+            return false;
+        }
+
+        if (excludeApplicantId != null) {
+            return !applicantRepository.existsByEmailIgnoreCaseAndIdNot(normalizedEmail, excludeApplicantId);
+        }
+
+        return !applicantRepository.existsByEmailIgnoreCase(normalizedEmail);
     }
 
     @Transactional
@@ -168,6 +206,16 @@ public class ApplicantService {
             log.warn("Applicant already processed id={} approved={}", applicantEntity.getId(), applicantEntity.isApproved());
             throw new BadRequestException("Applicant has already been processed");
         }
+    }
+
+    private void ensureEmailAvailable(String email, Long excludeApplicantId) {
+        if (!isEmailAvailable(email, excludeApplicantId)) {
+            throw new BadRequestException("Email has already been used");
+        }
+    }
+
+    private String normalizeEmail(String email) {
+        return email == null ? "" : email.trim();
     }
 
     private ApplicantResponseDTO mapToResponse(ApplicantEntity applicantEntity) {

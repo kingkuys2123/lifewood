@@ -7,9 +7,12 @@ export default function ActionModal({
   isOpen,
   title,
   message,
+  children,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   tone = 'default',
+  hideCancel = false,
+  loading = false,
   onConfirm,
   onClose,
 }) {
@@ -37,16 +40,20 @@ export default function ActionModal({
           >
             <h3>{title}</h3>
             {message ? <p>{message}</p> : null}
+            {children ? <div className="action-modal-content">{children}</div> : null}
             <div className="action-modal-actions">
-              <button type="button" className="btn btn-ghost" onClick={onClose}>
-                {cancelLabel}
-              </button>
+              {!hideCancel ? (
+                <button type="button" className="btn btn-ghost" onClick={onClose} disabled={loading}>
+                  {cancelLabel}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className={`btn ${tone === 'danger' ? 'btn-danger' : 'btn-forest'}`}
                 onClick={onConfirm}
+                disabled={loading}
               >
-                {confirmLabel}
+                {loading ? 'Processing...' : confirmLabel}
               </button>
             </div>
           </MotionDiv>

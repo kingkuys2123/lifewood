@@ -305,7 +305,7 @@
   width: 42px;
   height: 42px;
   border-radius: var(--r-12);
-  border: 1px solid rgba(19, 48, 32, 0.2);
+  border: none;
   background: var(--c-white);
   display: inline-flex;
   align-items: center;
@@ -319,7 +319,6 @@
 .portal-header-account-btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--sh-sm);
-  border-color: rgba(19, 48, 32, 0.42);
 }
 
 .portal-notification-wrap {
@@ -330,7 +329,7 @@
   width: 42px;
   height: 42px;
   border-radius: var(--r-12);
-  border: 1px solid rgba(19, 48, 32, 0.2);
+  border: none;
   background: var(--c-white);
   color: var(--c-forest);
   display: inline-flex;
@@ -346,7 +345,6 @@
 .portal-notification-btn:hover {
   transform: translateY(-1px);
   box-shadow: var(--sh-sm);
-  border-color: rgba(19, 48, 32, 0.42);
 }
 
 .portal-notification-btn svg {

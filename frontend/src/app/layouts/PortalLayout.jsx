@@ -126,16 +126,6 @@ export default function PortalLayout() {
       <button
         type="button"
         className="portal-user-menu-item"
-        onClick={() => {
-          setUserMenuAnchor(null);
-          navigate('/portal/settings');
-        }}
-      >
-        Settings
-      </button>
-      <button
-        type="button"
-        className="portal-user-menu-item"
         onClick={() => setShowLogoutModal(true)}
       >
         Log Out

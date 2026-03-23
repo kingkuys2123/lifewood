@@ -34,7 +34,7 @@ public class ApplicantEntity extends BaseAuditEntity {
     @Column(name = "age", nullable = false)
     private Integer age;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "degree", nullable = false)

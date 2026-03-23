@@ -84,8 +84,8 @@ export function AuthProvider({ children }) {
     };
   }, []);
 
-  const login = async (credentials) => {
-    const authPayload = await loginRequest(credentials);
+  const login = async (credentials, options = {}) => {
+    const authPayload = await loginRequest(credentials, options);
     setTokens(authPayload);
     clearCachedUserId();
     const nextUser = normalizeUser(authPayload.accessToken);

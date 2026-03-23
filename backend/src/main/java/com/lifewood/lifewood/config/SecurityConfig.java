@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**", "/swagger-ui/**", "/api-docs/**", "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/applicant/create", "/contact/send").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/applicant/check-email").permitAll()
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

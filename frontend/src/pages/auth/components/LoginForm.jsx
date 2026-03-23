@@ -1,27 +1,28 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../app/providers/useAuth';
+import { useToast } from '../../../app/providers/useToast';
 import { useLoginForm } from '../hooks/useLoginForm';
 
 export default function LoginForm() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const toast = useToast();
   const { values, updateField } = useLoginForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
 
   const onSubmit = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
-    setError('');
 
     try {
-      await login(values);
+      await login(values, { suppressGlobalErrorToast: true });
+      toast.success('Login successful. Redirecting...');
       const redirectPath = location.state?.from?.pathname || '/portal';
       navigate(redirectPath, { replace: true });
     } catch (err) {
-      setError(err?.message || 'Invalid username or password.');
+      toast.error(err?.message || 'Wrong Username/Password');
     } finally {
       setIsSubmitting(false);
     }
@@ -54,8 +55,6 @@ export default function LoginForm() {
         onChange={(event) => updateField('password', event.target.value)}
         required
       />
-
-      {error ? <p className="auth-error-message">{error}</p> : null}
 
       <button type="submit" className="btn btn-forest auth-submit-btn" disabled={isSubmitting}>
         {isSubmitting ? 'Signing in...' : 'Sign In'}

@@ -32,7 +32,7 @@ public class UserService {
             throw new BadRequestException("Username already exists");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email has already been used");
         }
 
         UserEntity userEntity = UserEntity.builder()
@@ -74,7 +74,7 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("UserEntity not found with id: " + id));
 
         if (!userEntity.getEmail().equalsIgnoreCase(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email has already been used");
         }
 
         userEntity.setEmail(request.getEmail());
@@ -92,7 +92,7 @@ public class UserService {
         UserEntity userEntity = getUserEntityByUsername(username);
 
         if (!userEntity.getEmail().equalsIgnoreCase(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
+            throw new BadRequestException("Email has already been used");
         }
 
         userEntity.setEmail(request.getEmail());
@@ -130,6 +130,21 @@ public class UserService {
     }
 
     @Transactional
+    public void resetPasswordByAdmin(Long id, String newPassword) {
+        UserEntity userEntity = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("UserEntity not found with id: " + id));
+
+        validatePasswordQuality(newPassword);
+
+        if (passwordEncoder.matches(newPassword, userEntity.getPassword())) {
+            throw new BadRequestException("New password must be different from current password");
+        }
+
+        userEntity.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(userEntity);
+    }
+
+    @Transactional
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new ResourceNotFoundException("UserEntity not found with id: " + id);
@@ -140,6 +155,19 @@ public class UserService {
     private UserEntity getUserEntityByUsername(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("UserEntity not found with username: " + username));
+    }
+
+    private void validatePasswordQuality(String password) {
+        String value = password == null ? "" : password.trim();
+        if (value.length() < 8 || value.length() > 72) {
+            throw new BadRequestException("Password must be between 8 and 72 characters");
+        }
+
+        boolean hasLetter = value.chars().anyMatch(Character::isLetter);
+        boolean hasDigit = value.chars().anyMatch(Character::isDigit);
+        if (!hasLetter || !hasDigit) {
+            throw new BadRequestException("Password must include at least one letter and one number");
+        }
     }
 
     private UserResponseDTO mapToResponse(UserEntity userEntity) {

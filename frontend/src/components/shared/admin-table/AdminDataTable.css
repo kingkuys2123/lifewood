@@ -3,7 +3,9 @@
   border: 1px solid var(--c-border);
   border-radius: var(--r-16);
   padding: clamp(var(--s-12), 2vw, var(--s-18));
-  overflow: hidden;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 
 .admin-table-toolbar {
@@ -35,6 +37,7 @@
 
 .admin-column-toggle {
   position: relative;
+  z-index: 12;
 }
 
 .admin-column-toggle-trigger {
@@ -68,7 +71,9 @@
   background: var(--c-white);
   box-shadow: var(--sh-md);
   padding: var(--s-10);
-  z-index: 5;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 60;
 }
 
 .admin-column-item {

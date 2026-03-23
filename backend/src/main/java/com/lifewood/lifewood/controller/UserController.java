@@ -3,6 +3,7 @@ package com.lifewood.lifewood.controller;
 import com.lifewood.lifewood.dto.ApiResponse;
 import com.lifewood.lifewood.dto.user.AddUserDTO;
 import com.lifewood.lifewood.dto.user.ChangePasswordDTO;
+import com.lifewood.lifewood.dto.user.ResetUserPasswordDTO;
 import com.lifewood.lifewood.dto.user.UpdateMyProfileDTO;
 import com.lifewood.lifewood.dto.user.UpdateUserDTO;
 import com.lifewood.lifewood.dto.user.UserResponseDTO;
@@ -65,6 +66,15 @@ public class UserController {
             @RequestParam("id") Long id,
             @Valid @RequestBody UpdateUserDTO request) {
         return ResponseEntity.ok(ApiResponse.success("UserEntity updated successfully", userService.updateUser(id, request)));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Object>> resetUserPassword(
+            @RequestParam("id") Long id,
+            @Valid @RequestBody ResetUserPasswordDTO request) {
+        userService.resetPasswordByAdmin(id, request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success("Password reset successfully", null));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")

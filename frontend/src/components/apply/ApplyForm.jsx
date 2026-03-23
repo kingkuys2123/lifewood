@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { createApplicant } from '../../services/applicants/applicantsService';
+import {
+    checkApplicantEmailAvailability,
+    createApplicant,
+} from '../../services/applicants/applicantsService';
+import { useToast } from '../../app/providers/useToast';
 import './ApplyForm.css';
 
 /* ─────────────────────────────────────────────────────────
@@ -83,8 +87,9 @@ export default function ApplyForm() {
     const [touched, setTouched] = useState({});
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState('');
+    const [checkingEmail, setCheckingEmail] = useState(false);
     const fileRef = useRef(null);
+    const toast = useToast();
 
     const errors = validate(fields);
     const isValid = Object.keys(errors).length === 0;
@@ -115,15 +120,20 @@ export default function ApplyForm() {
         if (fileRef.current) fileRef.current.value = '';
     }, []);
 
-    const handleSubmit = useCallback(async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setTouched({ firstName: true, lastName: true, age: true, email: true, project: true, degree: true, experience: true, resume: true });
         if (!isValid) return;
 
-        setSubmitError('');
         setIsSubmitting(true);
 
         try {
+            const isAvailable = await checkApplicantEmailAvailability(fields.email.trim());
+            if (!isAvailable) {
+                toast.error('Email has already been used');
+                return;
+            }
+
             const formData = new FormData();
             formData.append('firstName', fields.firstName.trim());
             formData.append('lastName', fields.lastName.trim());
@@ -138,17 +148,37 @@ export default function ApplyForm() {
 
             await createApplicant(formData);
             setSubmitted(true);
+            toast.success('Application submitted successfully.');
         } catch (err) {
-            setSubmitError(err?.message || 'Unable to submit your application right now.');
+            toast.error(err?.message || 'Unable to submit your application right now.');
         } finally {
             setIsSubmitting(false);
         }
-    }, [isValid, fields]);
+    };
+
+    const handleEmailBlur = async (e) => {
+        handleBlur(e);
+        const nextEmail = e.target.value?.trim() || '';
+        if (!nextEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+            return;
+        }
+
+        try {
+            setCheckingEmail(true);
+            const isAvailable = await checkApplicantEmailAvailability(nextEmail);
+            if (!isAvailable) {
+                toast.error('Email has already been used');
+            }
+        } catch {
+            // Silent: final validation still runs on submit.
+        } finally {
+            setCheckingEmail(false);
+        }
+    };
 
     const handleReset = useCallback(() => {
         setFields(INITIAL);
         setTouched({});
-        setSubmitError('');
         setSubmitted(false);
         if (fileRef.current) fileRef.current.value = '';
     }, []);
@@ -247,7 +277,7 @@ export default function ApplyForm() {
                                     id="email" name="email" type="email"
                                     autoComplete="email" placeholder="jane@example.com"
                                     value={fields.email}
-                                    onChange={handleChange} onBlur={handleBlur}
+                                    onChange={handleChange} onBlur={handleEmailBlur}
                                     className={inputCls('email', 'apply-form__input')}
                                     aria-required="true"
                                 />
@@ -363,17 +393,11 @@ export default function ApplyForm() {
                         {/* Divider */}
                         <div className="apply-form__divider" role="separator" />
 
-                        {submitError ? (
-                            <span className="apply-form__error" role="alert">
-                                <ErrorIcon /> {submitError}
-                            </span>
-                        ) : null}
-
                         {/* Submit */}
                         <button
                             type="submit"
                             className="apply-form__submit"
-                            disabled={isSubmitting || (Object.keys(touched).length > 0 && !isValid)}
+                            disabled={isSubmitting || checkingEmail || (Object.keys(touched).length > 0 && !isValid)}
                         >
                             {isSubmitting ? 'Submitting...' : 'Submit Application'}
                             <svg className="apply-form__submit-icon" width="18" height="18"

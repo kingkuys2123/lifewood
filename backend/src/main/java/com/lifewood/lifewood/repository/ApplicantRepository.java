@@ -12,6 +12,10 @@ public interface ApplicantRepository extends JpaRepository<ApplicantEntity, Long
 
 	Page<ApplicantEntity> findAllByReviewedFalse(Pageable pageable);
 
+	boolean existsByEmailIgnoreCase(String email);
+
+	boolean existsByEmailIgnoreCaseAndIdNot(String email, Long id);
+
 	boolean existsByIdAndReviewedTrue(Long id);
 }
 

@@ -1,5 +1,8 @@
 export {
   fetchApplicants as getApplicants,
+  fetchApplicantById,
+  checkApplicantEmailAvailability,
+  getApplicantResumeUrl,
   createApplicant,
   approveApplicant,
   denyApplicant,

@@ -3,5 +3,6 @@ export {
   fetchUserById,
   createUser,
   updateUser,
+  resetUserPassword,
   deleteUser,
 } from '../../../services/users/usersService';

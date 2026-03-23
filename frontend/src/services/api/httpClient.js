@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { normalizeApiError, unwrapApiResponse } from './apiResponse';
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '../auth/tokenStorage';
+import { emitGlobalApiError } from './apiEvents';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -52,6 +53,7 @@ httpClient.interceptors.response.use(
   async (error) => {
     const status = error?.response?.status;
     const originalRequest = error?.config;
+    const normalizedError = normalizeApiError(error);
 
     if (status === 401 && !originalRequest?._retry && getRefreshToken()) {
       originalRequest._retry = true;
@@ -60,15 +62,19 @@ httpClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${nextToken}`;
         return httpClient(originalRequest);
       } catch {
-        return Promise.reject(normalizeApiError(error));
+        return Promise.reject(normalizedError);
       }
     }
 
     if (status === 401 && !getRefreshToken()) {
-      unauthorizedHandler?.(normalizeApiError(error));
+      unauthorizedHandler?.(normalizedError);
     }
 
-    return Promise.reject(normalizeApiError(error));
+    if (!originalRequest?.suppressGlobalErrorToast) {
+      emitGlobalApiError(normalizedError);
+    }
+
+    return Promise.reject(normalizedError);
   },
 );
 

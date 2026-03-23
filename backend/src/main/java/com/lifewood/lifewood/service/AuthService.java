@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -23,11 +24,15 @@ public class AuthService {
     private final JwtUtil jwtUtil;
 
     public AuthResponseDTO login(LoginRequestDTO request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        } catch (AuthenticationException ex) {
+            throw new UnauthorizedException("Wrong Username/Password");
+        }
 
         UserEntity userEntity = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
+                .orElseThrow(() -> new UnauthorizedException("Wrong Username/Password"));
 
         String accessToken = jwtUtil.generateAccessToken(userEntity.getUsername(), userEntity.getRole().name());
         String refreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername(), userEntity.getRole().name());

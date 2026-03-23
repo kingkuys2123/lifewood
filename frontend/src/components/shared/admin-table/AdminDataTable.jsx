@@ -11,6 +11,7 @@ export default function AdminDataTable({
   globalFilter,
   onGlobalFilterChange,
   createButtonLabel,
+  onCreate,
   pageSize,
   onPageSizeChange,
 }) {
@@ -32,6 +33,17 @@ export default function AdminDataTable({
     window.addEventListener('pointerdown', closeOnOutsideClick);
     return () => window.removeEventListener('pointerdown', closeOnOutsideClick);
   }, [showColumnsMenu]);
+
+  useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') {
+        setShowColumnsMenu(false);
+      }
+    };
+
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, []);
 
   const getHeaderLabel = (cell) => {
     const header = cell.column.columnDef.header;
@@ -67,6 +79,7 @@ export default function AdminDataTable({
                 <MotionDiv
                   className="admin-column-toggle-panel"
                   role="menu"
+                  aria-label={`Toggle ${title} columns`}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -89,6 +102,7 @@ export default function AdminDataTable({
                           type="checkbox"
                           checked={column.getIsVisible()}
                           onChange={column.getToggleVisibilityHandler()}
+                          aria-label={`Toggle ${typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id} column`}
                         />
                       </label>
                     ))}
@@ -96,7 +110,7 @@ export default function AdminDataTable({
               )}
             </AnimatePresence>
           </div>
-          <button type="button" className="btn btn-forest">
+          <button type="button" className="btn btn-forest" onClick={onCreate}>
             {createButtonLabel}
           </button>
         </div>

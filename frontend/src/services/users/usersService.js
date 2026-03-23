@@ -47,3 +47,9 @@ export async function changePassword(id, payload) {
   const response = await httpClient.patch('/user/change-password', payload, { params: { id } });
   return unwrapApiResponse(response);
 }
+
+export async function resetUserPassword(id, payload) {
+  const response = await httpClient.patch('/user/reset-password', payload, { params: { id } });
+  return unwrapApiResponse(response);
+}
+

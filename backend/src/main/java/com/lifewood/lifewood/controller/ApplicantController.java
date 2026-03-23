@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/applicant")
 @RequiredArgsConstructor
@@ -37,10 +41,37 @@ public class ApplicantController {
         return ResponseEntity.ok(ApiResponse.success("ApplicantEntity created successfully", applicantService.createApplicant(request)));
     }
 
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkEmailAvailability(
+            @RequestParam("email") String email,
+            @RequestParam(value = "excludeId", required = false) Long excludeId) {
+        boolean available = applicantService.isEmailAvailable(email, excludeId);
+        return ResponseEntity.ok(ApiResponse.success("Applicant email availability fetched",
+                Map.of("available", available)));
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @GetMapping("/get")
     public ResponseEntity<ApiResponse<ApplicantResponseDTO>> getApplicant(@RequestParam("id") Long id) {
         return ResponseEntity.ok(ApiResponse.success("ApplicantEntity fetched successfully", applicantService.getApplicant(id)));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @GetMapping("/resume")
+    public ResponseEntity<?> getApplicantResume(
+            @RequestParam("id") Long id,
+            @RequestParam(value = "download", defaultValue = "false") boolean download) {
+        ApplicantService.ResumeFile resumeFile = applicantService.getApplicantResume(id);
+        MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+        if (resumeFile.contentType() != null && !resumeFile.contentType().isBlank()) {
+            mediaType = MediaType.parseMediaType(resumeFile.contentType());
+        }
+
+        String disposition = (download ? "attachment" : "inline") + "; filename=\"" + resumeFile.fileName() + "\"";
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(mediaType)
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition)
+                .body(resumeFile.resource());
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")

@@ -1,0 +1,42 @@
+.public-skeleton {
+  min-height: 60vh;
+  padding: 1.5rem 0 3rem;
+}
+
+.public-skeleton__hero {
+  height: 240px;
+  margin: 0 1rem;
+  border-radius: 18px;
+  background: linear-gradient(110deg, #edf2ef 8%, #f7faf8 18%, #edf2ef 33%);
+  background-size: 200% 100%;
+  animation: skeletonWave 1.2s linear infinite;
+}
+
+.public-skeleton__content {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.public-skeleton__line {
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(110deg, #edf2ef 8%, #f7faf8 18%, #edf2ef 33%);
+  background-size: 200% 100%;
+  animation: skeletonWave 1.2s linear infinite;
+}
+
+.public-skeleton__line--wide {
+  width: min(680px, 90%);
+}
+
+.public-skeleton__line--short {
+  width: min(360px, 70%);
+}
+
+@keyframes skeletonWave {
+  to {
+    background-position-x: -200%;
+  }
+}
+

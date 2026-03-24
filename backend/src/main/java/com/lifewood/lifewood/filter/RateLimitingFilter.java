@@ -7,15 +7,17 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Rate limiting filter for authentication endpoints.
- * Protects /auth/login, /auth/forgot-password, and /auth/reset-password from brute force attacks.
  */
 @Slf4j
 @Component
@@ -24,48 +26,37 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final RateLimitConfig rateLimitConfig;
 
-    private static final String[] RATE_LIMITED_PATHS = {
-            "/auth/login",
-            "/auth/forgot-password",
-            "/auth/reset-password"
-    };
+    @Value("${app.auth.rate-limit.endpoints:/auth/login,/auth/forgot-password,/auth/reset-password,/auth/reset-password/validate}")
+    private String rateLimitedEndpoints;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // Check if this is a rate-limited endpoint
         String requestPath = request.getRequestURI();
-        boolean isRateLimited = false;
+        List<String> limitedPaths = Arrays.stream(rateLimitedEndpoints.split(","))
+                .map(String::trim)
+                .filter(path -> !path.isBlank())
+                .toList();
 
-        for (String path : RATE_LIMITED_PATHS) {
-            if (requestPath.endsWith(path)) {
-                isRateLimited = true;
-                break;
-            }
-        }
-
+        boolean isRateLimited = limitedPaths.stream().anyMatch(requestPath::endsWith);
         if (!isRateLimited) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Apply rate limiting based on IP address
         String ip = getClientIp(request);
-        
         if (!rateLimitConfig.allowRequest(ip)) {
-            // Rate limit exceeded
-            double waitTime = rateLimitConfig.getWaitTime(ip);
+            long retryAfterSeconds = rateLimitConfig.getRetryAfterSeconds();
             log.warn("Rate limit exceeded for IP: {} on endpoint: {}", ip, requestPath);
 
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType("application/json");
-            response.addHeader("Retry-After", String.valueOf((long) Math.ceil(waitTime)));
-            response.getWriter().write("{\"error\": \"Too many requests. Please try again in " + (int) Math.ceil(waitTime) + " seconds.\"}");
+            response.addHeader("Retry-After", String.valueOf(retryAfterSeconds));
+            response.getWriter().write("{\"error\": \"Too many requests. Please try again in " + retryAfterSeconds + " seconds.\"}");
             return;
         }
 
-        // Request allowed
         filterChain.doFilter(request, response);
     }
 
@@ -85,4 +76,3 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return request.getRemoteAddr();
     }
 }
-

@@ -1,9 +1,10 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
 import ProtectedRoute from './app/guards/ProtectedRoute';
 import PortalLayout from './app/layouts/PortalLayout';
 import PublicSiteLayout from './app/layouts/PublicSiteLayout';
 import AuthProvider from './app/providers/AuthProvider';
+import PublicRouteSkeleton from './components/shared/PublicRouteSkeleton';
 import './styles/global.css';
 
 const ApplicantsPage = lazy(() => import('./pages/applicants/ApplicantsPage'));
@@ -34,6 +35,15 @@ const TypeDAIGC = lazy(() => import('./pages/landing-page/what-we-offer/type-d-a
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 function RouteFallback() {
+  const { pathname } = useLocation();
+  const isPublicRoute = !pathname.startsWith('/portal') && !pathname.startsWith('/login')
+    && !pathname.startsWith('/forgot-password') && !pathname.startsWith('/reset-password')
+    && !pathname.startsWith('/admin');
+
+  if (isPublicRoute) {
+    return <PublicRouteSkeleton />;
+  }
+
   return <div className="app-page-loading">Loading...</div>;
 }
 

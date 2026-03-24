@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import AdminDataTable from '../../components/shared/admin-table/AdminDataTable';
 import ActionModal from '../../components/shared/portal-modal/ActionModal';
 import {
@@ -27,11 +27,13 @@ const INITIAL_USER_FORM = {
 };
 
 export default function UsersPage() {
+  const profileImageInputRef = useRef(null);
   const [pageSize, setPageSize] = useState(5);
   const [modalState, setModalState] = useState({ open: false, action: '', row: null });
   const [loadingAction, setLoadingAction] = useState(false);
   const [userDetail, setUserDetail] = useState(null);
   const [form, setForm] = useState(INITIAL_USER_FORM);
+  const [resetPasswordModalOpen, setResetPasswordModalOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -76,6 +78,31 @@ export default function UsersPage() {
     }
 
     setModalState({ open: true, action, row });
+  };
+
+  const handleProfilePictureUpload = async (file) => {
+    if (!file) {
+      return;
+    }
+
+    try {
+      const nextValue = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+        reader.onerror = () => reject(new Error('Unable to read selected image.'));
+        reader.readAsDataURL(file);
+      });
+      setForm((prev) => ({ ...prev, profilePicture: nextValue || '' }));
+    } catch (err) {
+      toast.error(err?.message || 'Unable to process selected image.');
+    }
+  };
+
+  const handleRemoveProfilePicture = () => {
+    setForm((prev) => ({ ...prev, profilePicture: '' }));
+    if (profileImageInputRef.current) {
+      profileImageInputRef.current.value = '';
+    }
   };
 
   const { table, globalFilter, setGlobalFilter, loading, error, reload } = useUsersTable({
@@ -158,14 +185,6 @@ export default function UsersPage() {
           profilePicture: form.profilePicture.trim(),
           role: form.role,
         });
-        if (newPassword.trim()) {
-          const resetPasswordError = validatePasswordStrength(newPassword);
-          if (resetPasswordError) {
-            toast.error(resetPasswordError);
-            return;
-          }
-          await resetUserPassword(modalState.row.id, { newPassword: newPassword.trim() });
-        }
         toast.success('User updated successfully.');
       }
 
@@ -177,9 +196,36 @@ export default function UsersPage() {
       setModalState({ open: false, action: '', row: null });
       setUserDetail(null);
       setNewPassword('');
+      setResetPasswordModalOpen(false);
       await reload();
     } catch (err) {
       toast.error(err?.message || 'Unable to process user action.');
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
+  const handleResetPasswordConfirm = async () => {
+    if (!modalState.row?.id) {
+      toast.error('Unable to identify selected user.');
+      return;
+    }
+
+    const candidate = newPassword.trim();
+    const resetPasswordError = validatePasswordStrength(candidate);
+    if (resetPasswordError) {
+      toast.error(resetPasswordError);
+      return;
+    }
+
+    try {
+      setLoadingAction(true);
+      await resetUserPassword(modalState.row.id, { newPassword: candidate });
+      setNewPassword('');
+      setResetPasswordModalOpen(false);
+      toast.success('User password reset successfully.');
+    } catch (err) {
+      toast.error(err?.message || 'Unable to reset user password.');
     } finally {
       setLoadingAction(false);
     }
@@ -214,7 +260,11 @@ export default function UsersPage() {
         tone={modalContent?.tone ?? 'default'}
         loading={loadingAction}
         hideCancel={modalState.action === 'view'}
-        onClose={() => setModalState({ open: false, action: '', row: null })}
+        onClose={() => {
+          setModalState({ open: false, action: '', row: null });
+          setResetPasswordModalOpen(false);
+          setNewPassword('');
+        }}
         onConfirm={onConfirm}
       >
         {modalState.action === 'view' && modalState.row ? (
@@ -225,21 +275,26 @@ export default function UsersPage() {
                 <strong>Full Name</strong>
                 <span>{`${userDetail?.firstName || modalState.row.firstName} ${userDetail?.lastName || modalState.row.lastName}`}</span>
               </p>
-              <p><strong>Email</strong><span>{userDetail?.email || modalState.row.email}</span></p>
+              <p className="action-modal-meta-email-row">
+                <strong>Email</strong>
+                <span>{userDetail?.email || modalState.row.email}</span>
+                <button type="button" className="btn btn-ghost action-modal-inline-btn" onClick={handleCopyEmail}>
+                  Copy Email
+                </button>
+              </p>
               <p><strong>Role</strong><span>{userDetail?.role || modalState.row.role}</span></p>
               <p><strong>Phone Number</strong><span>{userDetail?.phoneNumber || '-'}</span></p>
               <p><strong>Profile Image</strong><span>{userDetail?.profilePicture ? 'Configured' : 'Not set'}</span></p>
             </div>
-            <div className="action-modal-resume-actions">
-              <button type="button" className="btn btn-ghost" onClick={handleCopyEmail}>
-                Copy Email
-              </button>
-              {userDetail?.profilePicture ? (
-                <a className="btn btn-forest" href={userDetail.profilePicture} target="_blank" rel="noreferrer">
-                  Open Profile Image
-                </a>
-              ) : null}
-            </div>
+            {userDetail?.profilePicture ? (
+              <div className="action-modal-user-image-wrap">
+                <img
+                  src={userDetail.profilePicture}
+                  alt="User profile"
+                  className="action-modal-user-image-preview"
+                />
+              </div>
+            ) : null}
           </>
         ) : null}
 
@@ -299,12 +354,38 @@ export default function UsersPage() {
               />
             </div>
             <div className="action-modal-field" style={{ gridColumn: '1 / -1' }}>
-              <label htmlFor="usr-avatar">Profile Picture URL</label>
-              <input
-                id="usr-avatar"
-                value={form.profilePicture}
-                onChange={(event) => setForm((prev) => ({ ...prev, profilePicture: event.target.value }))}
-              />
+              <label>Profile Picture</label>
+              <div className="users-profile-picture-row">
+                <div className="users-profile-picture-preview-wrap">
+                  {form.profilePicture ? (
+                    <img src={form.profilePicture} alt="Profile preview" className="users-profile-picture-preview" />
+                  ) : (
+                    <span className="users-profile-picture-fallback">No image</span>
+                  )}
+                </div>
+                <div className="users-profile-picture-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => profileImageInputRef.current?.click()}
+                  >
+                    {form.profilePicture ? 'Change Image' : 'Upload Image'}
+                  </button>
+                  {form.profilePicture ? (
+                    <button type="button" className="btn btn-ghost" onClick={handleRemoveProfilePicture}>
+                      Delete
+                    </button>
+                  ) : null}
+                  <input
+                    ref={profileImageInputRef}
+                    id="usr-avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="users-profile-picture-file-input"
+                    onChange={(event) => handleProfilePictureUpload(event.target.files?.[0])}
+                  />
+                </div>
+              </div>
             </div>
             {modalState.action === 'create' ? (
               <div className="action-modal-field" style={{ gridColumn: '1 / -1' }}>
@@ -331,32 +412,54 @@ export default function UsersPage() {
               </div>
             ) : (
               <div className="action-modal-field" style={{ gridColumn: '1 / -1' }}>
-                <label htmlFor="usr-new-password">Reset Password (optional)</label>
-                <div className="password-input-wrap">
-                  <input
-                    id="usr-new-password"
-                    type={showResetPassword ? 'text' : 'password'}
-                    value={newPassword}
-                    onChange={(event) => setNewPassword(event.target.value)}
-                    placeholder="Leave blank to keep existing password"
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle-btn"
-                    aria-label={showResetPassword ? 'Hide password' : 'Show password'}
-                    aria-pressed={showResetPassword}
-                    onClick={() => setShowResetPassword((prev) => !prev)}
-                  >
-                    {showResetPassword ? '🙈' : '👁'}
-                  </button>
-                </div>
-                {newPassword.trim() ? (
-                  <PasswordStrengthIndicator password={newPassword} idPrefix="reset-user-password" />
-                ) : null}
+                <label>Password Management</label>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setResetPasswordModalOpen(true)}
+                >
+                  Reset Password
+                </button>
               </div>
             )}
           </div>
         ) : null}
+      </ActionModal>
+
+      <ActionModal
+        isOpen={resetPasswordModalOpen && modalState.action === 'edit'}
+        title="Reset user password"
+        message={`Set a new password for ${form.firstName || modalState.row?.firstName || 'this user'}.`}
+        confirmLabel="Reset Password"
+        loading={loadingAction}
+        onClose={() => {
+          setResetPasswordModalOpen(false);
+          setNewPassword('');
+        }}
+        onConfirm={handleResetPasswordConfirm}
+      >
+        <div className="action-modal-field">
+          <label htmlFor="usr-new-password">New Password</label>
+          <div className="password-input-wrap">
+            <input
+              id="usr-new-password"
+              type={showResetPassword ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(event) => setNewPassword(event.target.value)}
+              placeholder="At least 8 characters"
+            />
+            <button
+              type="button"
+              className="password-toggle-btn"
+              aria-label={showResetPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showResetPassword}
+              onClick={() => setShowResetPassword((prev) => !prev)}
+            >
+              {showResetPassword ? '🙈' : '👁'}
+            </button>
+          </div>
+          <PasswordStrengthIndicator password={newPassword} idPrefix="reset-user-password" />
+        </div>
       </ActionModal>
     </section>
   );

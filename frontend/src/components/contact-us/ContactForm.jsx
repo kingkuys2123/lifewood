@@ -4,6 +4,13 @@ import { sendContactMessage } from '../../services/contact/contactService';
 import './ContactForm.css';
 
 const MAX_MESSAGE = 1200;
+const SUBJECT_OPTIONS = [
+    'General Inquiry',
+    'Application Support',
+    'Partnership Opportunity',
+    'Technical Concern',
+    'Other',
+];
 
 const INITIAL = { name: '', email: '', subject: '', message: '' };
 
@@ -101,7 +108,7 @@ export default function ContactForm() {
         setTouched(prev => ({ ...prev, [e.target.name]: true }));
     }, []);
 
-    const handleSubmit = useCallback(async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setTouched({ name: true, email: true, subject: true, message: true });
         if (!isValid) {
@@ -124,14 +131,14 @@ export default function ContactForm() {
         } finally {
             setIsSubmitting(false);
         }
-    }, [fields, isValid]);
+    };
 
-    const handleReset = useCallback(() => {
+    const handleReset = () => {
         setFields(INITIAL);
         setTouched({});
         setSubmitError('');
         setSubmitted(false);
-    }, []);
+    };
 
     /* ── Input class helper ── */
     const cls = (name, base) => {
@@ -221,17 +228,22 @@ export default function ContactForm() {
                                 {/* Subject */}
                                 <Field id="subject" label="Subject" required
                                     error={errors.subject} touched={touched.subject}>
-                                    <input
+                                    <select
                                         id="subject"
                                         name="subject"
-                                        type="text"
-                                        placeholder="How can we help you?"
                                         value={fields.subject}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        className={cls('subject', 'contact-form__input')}
+                                        className={cls('subject', 'contact-form__select')}
                                         aria-required="true"
-                                    />
+                                    >
+                                        <option value="">Select a Subject</option>
+                                        {SUBJECT_OPTIONS.map((option) => (
+                                            <option key={option} value={option}>
+                                                {option}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </Field>
 
                                 {/* Message */}

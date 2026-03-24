@@ -89,6 +89,16 @@ public class NotificationController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PatchMapping("/mark/unread")
+    public ResponseEntity<ApiResponse<NotificationResponseDTO>> markAsUnread(
+            @Valid @RequestBody MarkNotificationDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Notification marked as unread",
+                notificationService.markAsUnread(request, authentication.getName())));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     @PatchMapping("/mark/all/read")
     public ResponseEntity<ApiResponse<Object>> markAllAsRead(
             @RequestParam(value = "userId", required = false) Long userId,

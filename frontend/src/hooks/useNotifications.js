@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  deleteNotification,
   fetchNotifications,
   fetchUnreadCount,
   markAllNotificationsAsRead,
   markNotificationAsRead,
+  markNotificationAsUnread,
 } from '../services/notifications/notificationsService';
 import { createNotificationSocket } from '../services/websocket/notificationSocket';
 
@@ -39,12 +41,36 @@ export function useNotifications({ userId, enabled = true, pageSize = 10 } = {})
   }, [userId]);
 
   const onMarkOneRead = useCallback(async (id) => {
+    const snapshot = items.find((item) => item.id === id);
     await markNotificationAsRead(id);
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, read: true, isRead: true } : item)),
     );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-  }, []);
+    if (snapshot && !(snapshot.read ?? snapshot.isRead)) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+  }, [items]);
+
+  const onMarkOneUnread = useCallback(async (id) => {
+    const snapshot = items.find((item) => item.id === id);
+    await markNotificationAsUnread(id);
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, read: false, isRead: false } : item)),
+    );
+    if (snapshot && (snapshot.read ?? snapshot.isRead)) {
+      setUnreadCount((prev) => prev + 1);
+    }
+  }, [items]);
+
+  const onDeleteOne = useCallback(async (id) => {
+    const snapshot = items.find((item) => item.id === id);
+    await deleteNotification(id);
+    setItems((prev) => prev.filter((item) => item.id !== id));
+    const removedUnread = Boolean(snapshot && !(snapshot.read ?? snapshot.isRead));
+    if (removedUnread) {
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+  }, [items]);
 
   useEffect(() => {
     loadNotifications();
@@ -83,7 +109,9 @@ export function useNotifications({ userId, enabled = true, pageSize = 10 } = {})
       reload: loadNotifications,
       markAllRead: onMarkAllRead,
       markOneRead: onMarkOneRead,
+      markOneUnread: onMarkOneUnread,
+      deleteOne: onDeleteOne,
     }),
-    [items, unreadCount, loading, loadNotifications, onMarkAllRead, onMarkOneRead],
+    [items, unreadCount, loading, loadNotifications, onMarkAllRead, onMarkOneRead, onMarkOneUnread, onDeleteOne],
   );
 }

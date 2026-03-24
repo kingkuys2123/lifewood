@@ -4,9 +4,6 @@ import { getDashboardData } from '../services/dashboardService';
 const EMPTY = {
   metrics: [],
   applicantTrends: [],
-  notifications: [],
-  reports: [],
-  settings: [],
 };
 
 export function useDashboardMetrics() {

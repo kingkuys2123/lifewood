@@ -1,6 +1,4 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import PasswordStrengthIndicator from '../../../components/shared/password/PasswordStrengthIndicator';
 
 const MotionDiv = motion.div;
 const MotionLabel = motion.label;
@@ -25,34 +23,9 @@ export default function ProfileForm({
   updateProfilePicture,
   avatarPreview,
   onSaveProfile,
-  onChangePassword,
   saveState,
 }) {
   const initials = getInitials(form.firstName, form.lastName);
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-
-  const handlePasswordSubmit = async (event) => {
-    event.preventDefault();
-    if (!onChangePassword || isChangingPassword) {
-      return;
-    }
-
-    setIsChangingPassword(true);
-    try {
-      await onChangePassword({ oldPassword, newPassword, confirmPassword });
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
 
   return (
     <MotionForm
@@ -138,91 +111,6 @@ export default function ProfileForm({
           </MotionParagraph>
         ) : null}
       </div>
-
-      <MotionDiv
-        className="profile-password-card"
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.12 }}
-      >
-        <h3>Change Password</h3>
-        <p>Keep your account secure with a fresh, strong password.</p>
-
-        <div className="profile-password-grid">
-          <label htmlFor="profile-old-password">Current Password</label>
-          <div className="profile-password-input-wrap">
-            <input
-              id="profile-old-password"
-              type={showOldPassword ? 'text' : 'password'}
-              value={oldPassword}
-              onChange={(event) => setOldPassword(event.target.value)}
-              placeholder="Enter current password"
-              required
-            />
-            <button
-              type="button"
-              className="profile-password-toggle"
-              aria-label={showOldPassword ? 'Hide password' : 'Show password'}
-              aria-pressed={showOldPassword}
-              onClick={() => setShowOldPassword((prev) => !prev)}
-            >
-              {showOldPassword ? '🙈' : '👁'}
-            </button>
-          </div>
-
-          <label htmlFor="profile-new-password">New Password</label>
-          <div className="profile-password-input-wrap">
-            <input
-              id="profile-new-password"
-              type={showNewPassword ? 'text' : 'password'}
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              placeholder="At least 8 characters"
-              required
-            />
-            <button
-              type="button"
-              className="profile-password-toggle"
-              aria-label={showNewPassword ? 'Hide password' : 'Show password'}
-              aria-pressed={showNewPassword}
-              onClick={() => setShowNewPassword((prev) => !prev)}
-            >
-              {showNewPassword ? '🙈' : '👁'}
-            </button>
-          </div>
-          <PasswordStrengthIndicator password={newPassword} idPrefix="profile-new-password" />
-
-          <label htmlFor="profile-confirm-password">Confirm New Password</label>
-          <div className="profile-password-input-wrap">
-            <input
-              id="profile-confirm-password"
-              type={showConfirmPassword ? 'text' : 'password'}
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              placeholder="Re-enter new password"
-              required
-            />
-            <button
-              type="button"
-              className="profile-password-toggle"
-              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-              aria-pressed={showConfirmPassword}
-              onClick={() => setShowConfirmPassword((prev) => !prev)}
-            >
-              {showConfirmPassword ? '🙈' : '👁'}
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className="btn btn-forest profile-password-btn"
-            disabled={isChangingPassword}
-            onClick={handlePasswordSubmit}
-          >
-            {isChangingPassword ? 'Updating...' : 'Update Password'}
-          </button>
-        </div>
-      </MotionDiv>
     </MotionForm>
   );
 }

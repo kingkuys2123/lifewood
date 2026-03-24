@@ -28,6 +28,45 @@
   box-shadow: var(--sh-xs);
 }
 
+.users-profile-picture-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  flex-wrap: wrap;
+}
+
+.users-profile-picture-preview-wrap {
+  width: 74px;
+  height: 74px;
+  border-radius: var(--r-full);
+  overflow: hidden;
+  border: 1px solid var(--c-border);
+  background: var(--c-snow);
+  display: grid;
+  place-items: center;
+}
+
+.users-profile-picture-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.users-profile-picture-fallback {
+  font-size: var(--t-11);
+  color: var(--c-steel);
+}
+
+.users-profile-picture-actions {
+  display: flex;
+  gap: var(--s-8);
+  flex-wrap: wrap;
+}
+
+.users-profile-picture-file-input {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .portal-page-summary {
     margin-bottom: var(--s-12);

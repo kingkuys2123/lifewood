@@ -188,6 +188,26 @@
   cursor: wait;
 }
 
+.profile-security-section {
+  border-top: 1px solid var(--c-border);
+  padding-top: var(--s-16);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+}
+
+.profile-security-head {
+  display: grid;
+  gap: 4px;
+}
+
+.profile-security-head h2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: var(--t-18);
+  line-height: 1.2;
+}
+
 .profile-password-card {
   border: 1px solid var(--c-border);
   border-radius: var(--r-16);
@@ -298,6 +318,11 @@
 
   .profile-form .btn {
     width: 100%;
+  }
+
+  .profile-security-section {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .profile-password-btn {

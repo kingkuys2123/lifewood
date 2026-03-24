@@ -95,9 +95,6 @@ export default function AdminDataTable({
                             ? column.columnDef.header
                             : column.id}
                         </span>
-                        <span className="admin-column-item-divider" aria-hidden="true">
-                          |
-                        </span>
                         <input
                           type="checkbox"
                           checked={column.getIsVisible()}

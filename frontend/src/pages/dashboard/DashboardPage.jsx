@@ -1,14 +1,11 @@
 import ApplicantTrendsChart from './components/ApplicantTrendsChart';
-import NotificationsPanel from './components/NotificationsPanel';
 import ProfileQuickCard from './components/ProfileQuickCard';
-import ReportsPanel from './components/ReportsPanel';
 import StatCard from './components/StatCard';
 import { useDashboardMetrics } from './hooks/useDashboardMetrics';
 import './styles/DashboardPage.css';
 
 export default function DashboardPage() {
-  const { metrics, applicantTrends, notifications, reports, settings, loading, error, reload } =
-    useDashboardMetrics();
+  const { metrics, applicantTrends, loading, error, reload } = useDashboardMetrics();
 
   return (
     <section className="dashboard-page">
@@ -35,14 +32,10 @@ export default function DashboardPage() {
       {loading ? (
         <div className="dashboard-loading-grid">
           <div className="dashboard-panel dashboard-skeleton dashboard-skeleton--lg" />
-          <div className="dashboard-panel dashboard-skeleton dashboard-skeleton--sm" />
-          <div className="dashboard-panel dashboard-skeleton dashboard-skeleton--sm" />
         </div>
       ) : (
         <div className="dashboard-content-grid">
           <ApplicantTrendsChart data={applicantTrends} />
-          <NotificationsPanel notifications={notifications} />
-          <ReportsPanel reports={reports} settings={settings} />
         </div>
       )}
     </section>

@@ -12,6 +12,7 @@ export default function ActionModal({
   cancelLabel = 'Cancel',
   tone = 'default',
   hideCancel = false,
+  closeOnBackdrop = true,
   loading = false,
   onConfirm,
   onClose,
@@ -25,7 +26,7 @@ export default function ActionModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={closeOnBackdrop ? onClose : undefined}
         >
           <MotionDiv
             className="action-modal"

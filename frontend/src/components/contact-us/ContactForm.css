@@ -102,6 +102,7 @@
 
 /* ── Input / Textarea base ───────────────────────────────── */
 .contact-form__input,
+.contact-form__select,
 .contact-form__textarea {
     width: 100%;
     font-family: var(--font-body);
@@ -131,6 +132,7 @@
 
 /* Hover state */
 .contact-form__input:hover,
+.contact-form__select:hover,
 .contact-form__textarea:hover {
     border-color: rgba(19, 48, 32, 0.25);
     background: var(--c-snow);
@@ -138,6 +140,7 @@
 
 /* Focus state — forest ring */
 .contact-form__input:focus,
+.contact-form__select:focus,
 .contact-form__textarea:focus {
     border-color: var(--c-forest);
     background: var(--c-white);
@@ -149,12 +152,14 @@
 
 /* Error state */
 .contact-form__input--error,
+.contact-form__select--error,
 .contact-form__textarea--error {
     border-color: #d93025;
     background: #fff8f7;
 }
 
 .contact-form__input--error:focus,
+.contact-form__select--error:focus,
 .contact-form__textarea--error:focus {
     border-color: #d93025;
     box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.1);
@@ -162,8 +167,19 @@
 
 /* Valid state (after user interaction) */
 .contact-form__input--valid,
+.contact-form__select--valid,
 .contact-form__textarea--valid {
     border-color: var(--c-forest);
+}
+
+.contact-form__select {
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--c-steel) 50%),
+        linear-gradient(135deg, var(--c-steel) 50%, transparent 50%);
+    background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px);
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 42px;
 }
 
 /* Textarea specific */

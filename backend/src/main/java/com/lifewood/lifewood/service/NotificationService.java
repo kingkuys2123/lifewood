@@ -130,6 +130,28 @@ public class NotificationService {
     }
 
     @Transactional
+    public NotificationResponseDTO markAsUnread(MarkNotificationDTO request, String username) {
+        UserEntity currentUser = getCurrentUser(username);
+        NotificationEntity notificationEntity = notificationRepository.findById(request.getNotificationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found with id: " + request.getNotificationId()));
+
+        if (!canAccessNotification(currentUser, notificationEntity)) {
+            throw new UnauthorizedException("You are not allowed to update this notification");
+        }
+
+        if (!notificationEntity.isRead()) {
+            log.warn("Notification already marked as unread id={}", notificationEntity.getId());
+        }
+
+        notificationEntity.setRead(false);
+        NotificationEntity updatedNotification = notificationRepository.save(notificationEntity);
+
+        log.info("Marked notification as unread id={} user id={}",
+                updatedNotification.getId(), updatedNotification.getRecipient().getId());
+        return mapToResponse(updatedNotification);
+    }
+
+    @Transactional
     public void markAllAsRead(String username, Long userId) {
         UserEntity currentUser = getCurrentUser(username);
         Long targetUserId = resolveTargetUserId(currentUser, userId);

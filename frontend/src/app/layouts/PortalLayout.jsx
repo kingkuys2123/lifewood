@@ -29,6 +29,8 @@ export default function PortalLayout() {
     unreadCount: unreadNotifications,
     markAllRead: markAllNotificationsRead,
     markOneRead: markNotificationRead,
+    markOneUnread: markNotificationUnread,
+    deleteOne: deleteNotification,
   } = useNotifications({ enabled: Boolean(user) });
 
   const displayName = useMemo(() => {
@@ -100,6 +102,36 @@ export default function PortalLayout() {
       });
     } catch {
       trackEvent('portal_notification_mark_read_failed', {
+        section: 'portal_topbar',
+        notificationId,
+      });
+    }
+  };
+
+  const handleMarkNotificationUnread = async (notificationId) => {
+    try {
+      await markNotificationUnread(notificationId);
+      trackEvent('portal_notification_mark_unread', {
+        section: 'portal_topbar',
+        notificationId,
+      });
+    } catch {
+      trackEvent('portal_notification_mark_unread_failed', {
+        section: 'portal_topbar',
+        notificationId,
+      });
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await deleteNotification(notificationId);
+      trackEvent('portal_notification_delete', {
+        section: 'portal_topbar',
+        notificationId,
+      });
+    } catch {
+      trackEvent('portal_notification_delete_failed', {
         section: 'portal_topbar',
         notificationId,
       });
@@ -302,15 +334,32 @@ export default function PortalLayout() {
                         </div>
                         <p className="portal-notification-title">{item.title}</p>
                         <p className="portal-notification-message">{item.message}</p>
-                        {!item.read ? (
+                        <div className="portal-notification-actions">
+                          {!item.read ? (
+                            <button
+                              type="button"
+                              className="portal-notification-read-btn"
+                              onClick={() => handleMarkNotificationRead(item.id)}
+                            >
+                              Mark as read
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="portal-notification-read-btn"
+                              onClick={() => handleMarkNotificationUnread(item.id)}
+                            >
+                              Mark as unread
+                            </button>
+                          )}
                           <button
                             type="button"
-                            className="portal-notification-read-btn"
-                            onClick={() => handleMarkNotificationRead(item.id)}
+                            className="portal-notification-delete-btn"
+                            onClick={() => handleDeleteNotification(item.id)}
                           >
-                            Mark as read
+                            Delete
                           </button>
-                        ) : null}
+                        </div>
                       </article>
                     ))}
                   </div>

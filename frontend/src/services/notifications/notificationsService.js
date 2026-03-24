@@ -36,6 +36,11 @@ export async function markNotificationAsRead(notificationId) {
   return unwrapApiResponse(response);
 }
 
+export async function markNotificationAsUnread(notificationId) {
+  const response = await httpClient.patch('/notification/mark/unread', { notificationId });
+  return unwrapApiResponse(response);
+}
+
 export async function markAllNotificationsAsRead({ userId } = {}) {
   const response = await httpClient.patch('/notification/mark/all/read', null, {
     params: { userId },

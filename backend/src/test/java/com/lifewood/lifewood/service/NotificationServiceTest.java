@@ -117,6 +117,30 @@ class NotificationServiceTest {
     }
 
     @Test
+    void markAsUnread_successfully() {
+        NotificationEntity notification = NotificationEntity.builder()
+                .id(11L)
+                .title("Test")
+                .message("Test message")
+                .type(NotificationTypeEnum.SYSTEM_INFO)
+                .recipient(testUser)
+                .isRead(true)
+                .build();
+
+        MarkNotificationDTO request = new MarkNotificationDTO();
+        request.setNotificationId(11L);
+
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
+        when(notificationRepository.findById(11L)).thenReturn(Optional.of(notification));
+        when(notificationRepository.save(any(NotificationEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        NotificationResponseDTO response = notificationService.markAsUnread(request, "testuser");
+
+        assertFalse(response.isRead());
+        verify(notificationRepository, times(1)).save(notification);
+    }
+
+    @Test
     void markAllAsRead_usesBulkUpdateForCurrentUser() {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(notificationRepository.markAllAsReadByRecipientId(1L)).thenReturn(3);

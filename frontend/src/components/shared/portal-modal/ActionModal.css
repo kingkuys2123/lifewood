@@ -123,6 +123,31 @@
   grid-column: 1 / -1;
 }
 
+.action-modal-meta-email-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'label action'
+    'value action';
+  align-items: center;
+  column-gap: var(--s-10);
+}
+
+.action-modal-meta-email-row strong {
+  grid-area: label;
+}
+
+.action-modal-meta-email-row span {
+  grid-area: value;
+}
+
+.action-modal-inline-btn {
+  grid-area: action;
+  align-self: center;
+  padding: 6px 10px;
+  font-size: var(--t-12);
+}
+
 .action-modal-meta--view span {
   color: var(--c-charcoal);
   line-height: 1.5;
@@ -158,6 +183,23 @@
   place-items: center;
   color: var(--c-steel);
   font-size: var(--t-13);
+}
+
+.action-modal-user-image-wrap {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-10);
+  background: var(--c-snow);
+  padding: var(--s-10);
+  display: flex;
+  justify-content: center;
+}
+
+.action-modal-user-image-preview {
+  width: min(240px, 100%);
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: var(--r-10);
+  border: 1px solid var(--c-border);
 }
 
 @media (max-width: 560px) {

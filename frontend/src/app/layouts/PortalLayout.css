@@ -478,8 +478,6 @@
 }
 
 .portal-notification-read-btn {
-  justify-self: flex-start;
-  margin-top: 2px;
   font-size: var(--t-12);
   color: var(--c-forest);
   font-weight: var(--fw-semibold);
@@ -490,6 +488,27 @@
 
 .portal-notification-read-btn:hover {
   background: rgba(19, 48, 32, 0.08);
+}
+
+.portal-notification-actions {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.portal-notification-delete-btn {
+  font-size: var(--t-12);
+  color: #9d2333;
+  font-weight: var(--fw-semibold);
+  border-radius: var(--r-8);
+  padding: 4px 8px;
+  transition: background var(--dur-fast);
+}
+
+.portal-notification-delete-btn:hover {
+  background: rgba(157, 35, 51, 0.1);
 }
 
 

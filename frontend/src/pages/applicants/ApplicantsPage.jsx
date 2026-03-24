@@ -196,37 +196,6 @@ export default function ApplicantsPage() {
     document.body.removeChild(anchor);
   };
 
-  const handleApplicantCsvDownload = () => {
-    if (!detail && !modalState.row) {
-      return;
-    }
-
-    const payload = {
-      id: modalState.row?.id || '',
-      firstName: detail?.firstName || modalState.row?.name?.split(' ')?.[0] || '',
-      lastName: detail?.lastName || modalState.row?.name?.split(' ')?.slice(1).join(' ') || '',
-      email: detail?.email || modalState.row?.email || '',
-      age: detail?.age || '',
-      degree: detail?.degree || '',
-      projectAppliedFor: detail?.projectAppliedFor || modalState.row?.program || '',
-      experience: (detail?.experience || '').replace(/\n/g, ' '),
-    };
-
-    const headers = Object.keys(payload);
-    const row = headers.map((header) => `"${String(payload[header] ?? '').replace(/"/g, '""')}"`).join(',');
-    const csv = `${headers.join(',')}\n${row}`;
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `applicant-${payload.id || 'profile'}.csv`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <section className="portal-page">
       <ApplicantsSummary />
@@ -256,6 +225,7 @@ export default function ApplicantsPage() {
         tone={modalContent?.tone ?? 'default'}
         loading={loadingAction}
         hideCancel={modalState.action === 'view'}
+        closeOnBackdrop={!(modalState.action === 'approve' || modalState.action === 'deny')}
         onClose={() => setModalState({ open: false, action: '', row: null })}
         onConfirm={onConfirm}
       >
@@ -343,22 +313,9 @@ export default function ApplicantsPage() {
               <p><strong>🧠 Experience</strong><span>{detail?.experience || '-'}</span></p>
             </div>
             <div className="action-modal-resume-actions">
-              <a href={resumePreviewUrl || '#'} target="_blank" rel="noreferrer" className="btn btn-ghost">
-                Show Resume
-              </a>
               <button type="button" className="btn btn-forest" onClick={handleResumeDownload}>
-                Download Resume
+                Download Resume/CV
               </button>
-              <button type="button" className="btn btn-ghost" onClick={handleApplicantCsvDownload}>
-                Download CSV
-              </button>
-            </div>
-            <div className="action-modal-resume-preview">
-              {resumePreviewUrl ? (
-                <iframe title="Applicant resume preview" src={resumePreviewUrl} loading="lazy" />
-              ) : (
-                <div className="action-modal-resume-fallback">Resume preview unavailable.</div>
-              )}
             </div>
           </>
         ) : null}

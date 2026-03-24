@@ -95,18 +95,18 @@
 
 .dashboard-content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-16);
   align-items: start;
 }
 
 .chart-panel {
-  grid-row: span 2;
+  grid-row: span 1;
 }
 
 .dashboard-loading-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--s-16);
 }
 
@@ -120,7 +120,7 @@
 }
 
 .dashboard-skeleton--lg {
-  grid-row: span 2;
+  grid-row: span 1;
   min-height: 340px;
 }
 

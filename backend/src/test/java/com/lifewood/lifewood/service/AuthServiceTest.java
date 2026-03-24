@@ -9,8 +9,10 @@ import static org.mockito.Mockito.when;
 
 import com.lifewood.lifewood.dto.auth.ForgotPasswordRequestDTO;
 import com.lifewood.lifewood.dto.auth.LoginRequestDTO;
+import com.lifewood.lifewood.dto.auth.RefreshTokenRequestDTO;
 import com.lifewood.lifewood.dto.auth.ResetPasswordRequestDTO;
 import com.lifewood.lifewood.entity.PasswordResetTokenEntity;
+import com.lifewood.lifewood.entity.RefreshTokenEntity;
 import com.lifewood.lifewood.entity.UserEntity;
 import com.lifewood.lifewood.enumeration.UserRoleEnum;
 import com.lifewood.lifewood.filter.JwtUtil;
@@ -142,5 +144,44 @@ class AuthServiceTest {
         var ex = assertThrows(UnauthorizedException.class, () -> authService.login(request));
         assertEquals("Wrong Username/Password", ex.getMessage());
     }
-}
 
+    @Test
+    void refresh_rejectsWhenPersistedTokenMissing() {
+        RefreshTokenRequestDTO request = new RefreshTokenRequestDTO();
+        request.setRefreshToken("incoming-refresh-token");
+
+        when(jwtUtil.isTokenValid("incoming-refresh-token")).thenReturn(true);
+        when(jwtUtil.extractUsername("incoming-refresh-token")).thenReturn("portal.user");
+        when(jwtUtil.extractTokenId("incoming-refresh-token")).thenReturn("token-jti");
+        when(userRepository.findByUsername("portal.user")).thenReturn(Optional.of(user));
+        when(refreshTokenRepository.findByTokenId("token-jti")).thenReturn(Optional.empty());
+
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> authService.refresh(request));
+
+        assertEquals("Invalid refresh token", ex.getMessage());
+    }
+
+    @Test
+    void refresh_rejectsAndRevokesOnTokenHashMismatch() {
+        RefreshTokenRequestDTO request = new RefreshTokenRequestDTO();
+        request.setRefreshToken("incoming-refresh-token");
+
+        RefreshTokenEntity persisted = RefreshTokenEntity.builder()
+                .user(user)
+                .tokenId("token-jti")
+                .tokenHash("different-hash")
+                .expiresAt(LocalDateTime.now().plusMinutes(30))
+                .build();
+
+        when(jwtUtil.isTokenValid("incoming-refresh-token")).thenReturn(true);
+        when(jwtUtil.extractUsername("incoming-refresh-token")).thenReturn("portal.user");
+        when(jwtUtil.extractTokenId("incoming-refresh-token")).thenReturn("token-jti");
+        when(userRepository.findByUsername("portal.user")).thenReturn(Optional.of(user));
+        when(refreshTokenRepository.findByTokenId("token-jti")).thenReturn(Optional.of(persisted));
+
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> authService.refresh(request));
+
+        assertEquals("Invalid refresh token", ex.getMessage());
+        verify(refreshTokenRepository).save(any(RefreshTokenEntity.class));
+    }
+}

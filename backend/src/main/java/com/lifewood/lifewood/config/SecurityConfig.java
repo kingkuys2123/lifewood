@@ -88,8 +88,21 @@ public class SecurityConfig {
     private List<String> parseAllowedOrigins(String originsValue) {
         return Arrays.stream(originsValue.split(","))
                 .map(String::trim)
+                .map(this::stripWrappingQuotes)
+                .map(value -> value.endsWith("/") ? value.substring(0, value.length() - 1) : value)
                 .filter(value -> !value.isBlank())
                 .toList();
+    }
+
+    private String stripWrappingQuotes(String value) {
+        if (value == null || value.length() < 2) {
+            return value;
+        }
+
+        if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+            return value.substring(1, value.length() - 1).trim();
+        }
+        return value;
     }
 
     @Bean

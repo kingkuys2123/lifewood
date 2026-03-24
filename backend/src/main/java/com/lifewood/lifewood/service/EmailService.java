@@ -2,14 +2,17 @@ package com.lifewood.lifewood.service;
 
 import com.lifewood.lifewood.dto.applicant.ContactMessageDTO;
 import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
+import jakarta.annotation.PostConstruct;
+import jakarta.mail.internet.MimeMessage;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
@@ -48,6 +51,24 @@ public class EmailService {
     @Value("${app.mail.brand.website:https://www.lifewood.com}")
     private String brandWebsite;
 
+    @Value("${app.mail.retry.max-attempts:3}")
+    private int maxRetryAttempts;
+
+    @Value("${app.mail.retry.initial-delay-ms:800}")
+    private long initialRetryDelayMs;
+
+    @PostConstruct
+    void logMailConfigurationStatus() {
+        String sender = sanitizeConfiguredValue(fromEmail);
+        String recipient = sanitizeConfiguredValue(notificationTo);
+        log.info("Mail configuration loaded senderConfigured={} notificationRecipientConfigured={} retryAttempts={} asyncMode={}",
+                sender != null && !sender.isBlank(),
+                recipient != null && !recipient.isBlank(),
+                Math.max(1, maxRetryAttempts),
+                true);
+    }
+
+    @Async("mailTaskExecutor")
     public void sendApplicantSubmissionNotification(String applicantEmail, String applicantName, String project) {
         String adminBody = """
                 <p><strong>%s</strong> applied for <strong>%s</strong>.</p>
@@ -61,15 +82,16 @@ public class EmailService {
                 <p>Our team will review your profile and share an update soon.</p>
                 """.formatted(escapeHtml(applicantName), escapeHtml(project));
 
-        sendHtmlMail(notificationTo,
+        sendHtmlMailWithRetry(notificationTo,
                 "New applicant submission",
                 composeTemplate("New Application", "A new applicant has submitted their profile.", adminBody));
 
-        sendHtmlMail(applicantEmail,
+        sendHtmlMailWithRetry(applicantEmail,
                 "Application received",
                 composeTemplate("Application Received", "Your submission is in review.", applicantBody));
     }
 
+    @Async("mailTaskExecutor")
     public void sendApplicantDecisionNotification(
             String applicantEmail,
             String applicantName,
@@ -85,6 +107,7 @@ public class EmailService {
                 .build());
     }
 
+    @Async("mailTaskExecutor")
     public void sendDecisionNotification(ApprovalNotificationDTO request) {
         String decisionLabel = request.getApproved() ? "approved" : "rejected";
         String normalizedMessage = normalizeAdminMessage(request.getAdminMessage());
@@ -106,11 +129,11 @@ public class EmailService {
                 escapeHtml(request.getProjectAppliedFor()),
                 escapeHtml(normalizedMessage));
 
-        sendHtmlMail(notificationTo,
+        sendHtmlMailWithRetry(notificationTo,
                 "Applicant " + decisionLabel,
                 composeTemplate("Application Decision", "A recruitment decision has been recorded.", adminBody));
 
-        sendHtmlMail(
+        sendHtmlMailWithRetry(
                 request.getApplicantEmail(),
                 applicantSubject,
                 composeTemplate(
@@ -121,6 +144,7 @@ public class EmailService {
         log.info("Sent applicant decision emails applicantEmail={} decision={}", request.getApplicantEmail(), decisionLabel);
     }
 
+    @Async("mailTaskExecutor")
     public void sendContactFormMessage(ContactMessageDTO request) {
         String adminBody = """
                 <p><strong>From:</strong> %s (%s)</p>
@@ -141,12 +165,13 @@ public class EmailService {
                 <p>Subject: <strong>%s</strong></p>
                 """.formatted(escapeHtml(request.getName()), escapeHtml(brandName), escapeHtml(request.getSubject()));
 
-        sendHtmlMail(notificationTo, "Contact Message: " + request.getSubject(),
+        sendHtmlMailWithRetry(notificationTo, "Contact Message: " + request.getSubject(),
                 composeTemplate("New Contact Message", "A visitor submitted the contact form.", adminBody));
-        sendHtmlMail(request.getEmail(), "We received your message",
+        sendHtmlMailWithRetry(request.getEmail(), "We received your message",
                 composeTemplate("Message Received", "Thanks for reaching out.", senderBody));
     }
 
+    @Async("mailTaskExecutor")
     public void sendPasswordResetEmail(String recipientEmail, String firstName, String resetUrl) {
         String safeName = firstName == null || firstName.isBlank() ? "there" : firstName;
         String templateBody = resetPasswordBodyTemplate
@@ -166,31 +191,101 @@ public class EmailService {
                 templateBodyHtml,
                 escapeHtml(resetUrl));
 
-        sendHtmlMail(
+        sendHtmlMailWithRetry(
                 recipientEmail,
                 resetPasswordSubjectTemplate,
                 composeTemplate("Password Reset", "Secure account recovery", body));
-        log.info("Sent reset password email to {}", recipientEmail);
     }
 
-    private void sendHtmlMail(String to, String subject, String htmlBody) {
-        try {
-            if (fromEmail == null || fromEmail.isBlank()) {
-                log.error("Email sender (SPRING_MAIL_USERNAME) is not configured!");
-                return;
-            }
-            
-            var message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
-            helper.setFrom(fromEmail);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true);
-            mailSender.send(message);
-            log.info("Sent email to {} with subject: {}", to, subject);
-        } catch (Exception ex) {
-            log.error("Failed to send email to {} with subject {}. Error: {}", to, subject, ex.getMessage(), ex);
+    private void sendHtmlMailWithRetry(String to, String subject, String htmlBody) {
+        String sender = sanitizeConfiguredValue(fromEmail);
+        String recipient = sanitizeConfiguredValue(to);
+
+        if (sender == null || sender.isBlank()) {
+            log.error("Email sender (SPRING_MAIL_USERNAME) is not configured");
+            return;
         }
+
+        if (recipient == null || recipient.isBlank()) {
+            log.warn("Skipping email with blank recipient. subject={}", subject);
+            return;
+        }
+
+        int attempts = Math.max(1, maxRetryAttempts);
+        long baseDelayMs = Math.max(200L, initialRetryDelayMs);
+
+        for (int attempt = 1; attempt <= attempts; attempt++) {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+                helper.setFrom(sender);
+                helper.setTo(recipient);
+                helper.setSubject(subject);
+                helper.setText(htmlBody, true);
+                mailSender.send(message);
+
+                log.info("Email delivery accepted recipient={} subject={} attempt={}/{} messageId={}",
+                        maskEmail(recipient),
+                        subject,
+                        attempt,
+                        attempts,
+                        message.getMessageID());
+                return;
+            } catch (Exception ex) {
+                boolean canRetry = attempt < attempts;
+                log.warn("Email delivery failed recipient={} subject={} attempt={}/{} retryable={} reason={}",
+                        maskEmail(recipient),
+                        subject,
+                        attempt,
+                        attempts,
+                        canRetry,
+                        ex.getMessage());
+                if (!canRetry) {
+                    log.error("Email delivery permanently failed recipient={} subject={} after {} attempts",
+                            maskEmail(recipient),
+                            subject,
+                            attempts,
+                            ex);
+                    return;
+                }
+
+                long sleepMs = Math.min(5000L, baseDelayMs * (1L << (attempt - 1)));
+                try {
+                    TimeUnit.MILLISECONDS.sleep(sleepMs);
+                } catch (InterruptedException interruptedException) {
+                    Thread.currentThread().interrupt();
+                    log.warn("Email retry interrupted for recipient={} subject={}", maskEmail(recipient), subject);
+                    return;
+                }
+            }
+        }
+    }
+
+    private String sanitizeConfiguredValue(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        if (trimmed.length() >= 2 && ((trimmed.startsWith("\"") && trimmed.endsWith("\""))
+                || (trimmed.startsWith("'") && trimmed.endsWith("'")))) {
+            return trimmed.substring(1, trimmed.length() - 1).trim();
+        }
+        return trimmed;
+    }
+
+    private String maskEmail(String email) {
+        if (email == null || email.isBlank() || !email.contains("@")) {
+            return "unknown";
+        }
+
+        String[] parts = email.split("@", 2);
+        String local = parts[0];
+        String domain = parts[1];
+        if (local.length() <= 2) {
+            return "**@" + domain;
+        }
+        return local.substring(0, 2) + "***@" + domain;
     }
 
     private String composeTemplate(String title, String subtitle, String bodyHtml) {

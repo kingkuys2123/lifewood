@@ -4,9 +4,11 @@ import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '../auth
 import { emitGlobalApiError } from './apiEvents';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_TIMEOUT_MS = Number.parseInt(import.meta.env.VITE_API_TIMEOUT_MS || '30000', 10);
 
 const httpClient = axios.create({
-  baseURL: API_BASE_URL
+  baseURL: API_BASE_URL,
+  timeout: Number.isFinite(API_TIMEOUT_MS) && API_TIMEOUT_MS > 0 ? API_TIMEOUT_MS : 30000,
 });
 
 let refreshPromise = null;
@@ -50,6 +52,10 @@ httpClient.interceptors.request.use((config) => {
 httpClient.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (error?.code === 'ECONNABORTED') {
+      error.name = 'TimeoutError';
+    }
+
     const status = error?.response?.status;
     const originalRequest = error?.config;
     const normalizedError = normalizeApiError(error);

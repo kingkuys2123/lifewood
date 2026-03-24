@@ -48,7 +48,7 @@ export default function ApplicantsPage() {
     }
   };
 
-  const { table, globalFilter, setGlobalFilter, loading, error, reload } = useApplicantsTable({
+  const { table, globalFilter, setGlobalFilter, loading, error, reload, updateApplicantStatus, getApplicantRow } = useApplicantsTable({
     pageSize,
     onAction: handleAction,
   });
@@ -115,7 +115,7 @@ export default function ApplicantsPage() {
         setModalState({ open: false, action: '', row: null });
         await reload();
       } catch (err) {
-        toast.error(err?.message || 'Unable to create applicant.');
+        toast.error(err?.isTimeout ? 'Create request timed out. Please try again.' : (err?.message || 'Unable to create applicant.'));
       } finally {
         setLoadingAction(false);
       }
@@ -126,21 +126,33 @@ export default function ApplicantsPage() {
       return;
     }
 
+    const previousStatus = modalState.row?.id ? getApplicantRow(modalState.row.id)?.status : null;
+
     try {
       setLoadingAction(true);
       if (modalState.action === 'approve') {
+        updateApplicantStatus(modalState.row.id, 'Approved');
         await approveApplicant({ applicantId: modalState.row.id, message: decisionMessage });
         toast.success('Applicant approved successfully.');
+        if (!previousStatus) {
+          await reload();
+        }
       } else if (modalState.action === 'deny') {
+        updateApplicantStatus(modalState.row.id, 'Denied');
         await denyApplicant({ applicantId: modalState.row.id, message: decisionMessage });
         toast.success('Applicant denied successfully.');
+        if (!previousStatus) {
+          await reload();
+        }
       }
 
       setModalState({ open: false, action: '', row: null });
       setDecisionMessage('');
-      await reload();
     } catch (err) {
-      toast.error(err?.message || 'Unable to process applicant action.');
+      if (modalState.row?.id) {
+        updateApplicantStatus(modalState.row.id, previousStatus || 'Pending');
+      }
+      toast.error(err?.isTimeout ? 'Action timed out. Please try again.' : (err?.message || 'Unable to process applicant action.'));
     } finally {
       setLoadingAction(false);
     }

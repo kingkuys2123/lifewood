@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
       toast.success('Password reset successful. Please sign in.');
       navigate('/login', { replace: true });
     } catch (err) {
-      toast.error(err?.message || 'Unable to reset password.');
+      toast.error(err?.isTimeout ? 'Reset request timed out. Please try again.' : (err?.message || 'Unable to reset password.'));
     } finally {
       setIsSubmitting(false);
     }

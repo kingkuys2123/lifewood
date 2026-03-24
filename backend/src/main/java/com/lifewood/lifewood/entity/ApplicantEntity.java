@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "applicants")
+@Table(name = "applicants", indexes = {
+        @Index(name = "idx_applicant_deleted_reviewed", columnList = "deleted_at, reviewed"),
+        @Index(name = "idx_applicant_deleted_approved", columnList = "deleted_at, approved"),
+        @Index(name = "idx_applicant_email_deleted", columnList = "email, deleted_at")
+})
 public class ApplicantEntity extends BaseAuditEntity {
 
     @Id

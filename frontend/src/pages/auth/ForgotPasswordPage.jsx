@@ -40,6 +40,8 @@ export default function ForgotPasswordPage() {
         const retryAfter = Number.isFinite(err?.retryAfterSeconds) ? err.retryAfterSeconds : 60;
         setCooldownSeconds(retryAfter);
         toast.error(`Too many requests. Try again in ${retryAfter}s.`);
+      } else if (err?.isTimeout) {
+        toast.error('Request timed out. Please try again.');
       } else {
         toast.error(err?.message || 'Unable to request password reset.');
       }

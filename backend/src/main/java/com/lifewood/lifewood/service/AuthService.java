@@ -98,9 +98,8 @@ public class AuthService {
             passwordResetTokenRepository.save(tokenEntity);
 
             String resetUrl = buildResetUrl(rawToken);
-            log.info("Sending password reset email to: {}", email);
+            log.info("Dispatching password reset email to {} with expiry {} minutes", email, resetTokenValidityMinutes);
             emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), resetUrl);
-            log.info("Password reset email sent successfully to: {}", email);
         } else {
             log.info("Password reset requested for non-existent email: {}", email);
         }
@@ -243,8 +242,34 @@ public class AuthService {
     }
 
     private String buildResetUrl(String rawToken) {
-        String separator = resetPasswordUrl.contains("?") ? "&" : "?";
-        return resetPasswordUrl + separator + "token=" + rawToken;
+        String baseUrl = normalizeResetPasswordUrl(resetPasswordUrl);
+        String separator = baseUrl.contains("?") ? "&" : "?";
+        return baseUrl + separator + "token=" + rawToken;
+    }
+
+    private String normalizeResetPasswordUrl(String configuredUrl) {
+        String fallback = "http://localhost:5173/reset-password";
+        String candidate = stripWrappingQuotes(normalize(configuredUrl));
+        if (candidate.isBlank()) {
+            return fallback;
+        }
+
+        String value = candidate.endsWith("/") ? candidate.substring(0, candidate.length() - 1) : candidate;
+        if (!value.endsWith("/reset-password") && !value.contains("/reset-password?")) {
+            value = value + "/reset-password";
+        }
+        return value;
+    }
+
+    private String stripWrappingQuotes(String value) {
+        if (value == null || value.length() < 2) {
+            return value;
+        }
+
+        if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+            return value.substring(1, value.length() - 1).trim();
+        }
+        return value;
     }
 
     private String generateRawToken() {

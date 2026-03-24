@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -23,7 +24,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "notifications")
+@Table(name = "notifications", indexes = {
+        @Index(name = "idx_notification_user_read_created", columnList = "user_id, is_read, created_at"),
+        @Index(name = "idx_notification_user_created", columnList = "user_id, created_at")
+})
 public class NotificationEntity extends BaseAuditEntity {
 
     @Id

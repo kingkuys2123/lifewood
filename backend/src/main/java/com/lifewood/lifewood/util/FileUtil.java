@@ -8,12 +8,15 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.UUID;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Component
 public class FileUtil {
 
@@ -22,6 +25,17 @@ public class FileUtil {
 
     @Value("${app.file.upload-dir:uploads}")
     private String uploadDir;
+
+    @PostConstruct
+    public void ensureUploadDirectoryReady() {
+        try {
+            Path directory = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Files.createDirectories(directory);
+            log.info("File upload directory ready at {}", directory);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to initialize upload directory", ex);
+        }
+    }
 
     public String storeResume(MultipartFile file) {
         if (file == null || file.isEmpty()) {

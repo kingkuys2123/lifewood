@@ -44,6 +44,12 @@ export function useApplicantsTable({ pageSize = 5, onAction = () => {} } = {}) {
     }
   }, [globalFilter]);
 
+  const updateApplicantStatus = useCallback((id, status) => {
+    setData((prev) => prev.map((row) => (row.id === id ? { ...row, status } : row)));
+  }, []);
+
+  const getApplicantRow = useCallback((id) => data.find((row) => row.id === id) || null, [data]);
+
   useEffect(() => {
     loadApplicants();
   }, [loadApplicants]);
@@ -112,5 +118,7 @@ export function useApplicantsTable({ pageSize = 5, onAction = () => {} } = {}) {
     loading,
     error,
     reload: loadApplicants,
+    updateApplicantStatus,
+    getApplicantRow,
   };
 }

@@ -45,6 +45,25 @@ export function useUsersTable({ pageSize = 5, onAction = () => {} } = {}) {
     }
   }, [globalFilter]);
 
+  const removeUserRow = useCallback((id) => {
+    setData((prev) => prev.filter((row) => row.id !== id));
+  }, []);
+
+  const upsertUserRow = useCallback((user) => {
+    const mapped = mapUserRow(user);
+    setData((prev) => {
+      const index = prev.findIndex((row) => row.id === mapped.id);
+      if (index === -1) {
+        return [mapped, ...prev];
+      }
+      const next = [...prev];
+      next[index] = { ...next[index], ...mapped };
+      return next;
+    });
+  }, []);
+
+  const getUserRow = useCallback((id) => data.find((row) => row.id === id) || null, [data]);
+
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
@@ -129,5 +148,8 @@ export function useUsersTable({ pageSize = 5, onAction = () => {} } = {}) {
     loading,
     error,
     reload: loadUsers,
+    removeUserRow,
+    upsertUserRow,
+    getUserRow,
   };
 }

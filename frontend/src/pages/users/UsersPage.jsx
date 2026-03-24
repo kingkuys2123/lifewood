@@ -105,7 +105,7 @@ export default function UsersPage() {
     }
   };
 
-  const { table, globalFilter, setGlobalFilter, loading, error, reload } = useUsersTable({
+  const { table, globalFilter, setGlobalFilter, loading, error, reload, removeUserRow, upsertUserRow, getUserRow } = useUsersTable({
     pageSize,
     onAction: handleAction,
   });
@@ -163,7 +163,7 @@ export default function UsersPage() {
           return;
         }
 
-        await createUser({
+        const createdUser = await createUser({
           username: form.username.trim(),
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
@@ -173,11 +173,25 @@ export default function UsersPage() {
           role: form.role,
           password: form.password,
         });
+        upsertUserRow(createdUser);
         toast.success('User created successfully.');
       }
 
       if (modalState.action === 'edit' && modalState.row) {
-        await updateUser(modalState.row.id, {
+        const snapshot = getUserRow(modalState.row.id);
+        if (snapshot) {
+          upsertUserRow({
+            ...snapshot,
+            firstName: form.firstName.trim(),
+            lastName: form.lastName.trim(),
+            email: form.email.trim(),
+            phoneNumber: form.phoneNumber.trim(),
+            profilePicture: form.profilePicture.trim(),
+            role: form.role,
+          });
+        }
+
+        const updatedUser = await updateUser(modalState.row.id, {
           firstName: form.firstName.trim(),
           lastName: form.lastName.trim(),
           email: form.email.trim(),
@@ -185,11 +199,17 @@ export default function UsersPage() {
           profilePicture: form.profilePicture.trim(),
           role: form.role,
         });
+        upsertUserRow(updatedUser);
         toast.success('User updated successfully.');
       }
 
       if (modalState.action === 'delete' && modalState.row) {
+        const snapshot = getUserRow(modalState.row.id);
+        removeUserRow(modalState.row.id);
         await deleteUser(modalState.row.id);
+        if (!snapshot) {
+          await reload();
+        }
         toast.success('User deleted successfully.');
       }
 
@@ -197,9 +217,19 @@ export default function UsersPage() {
       setUserDetail(null);
       setNewPassword('');
       setResetPasswordModalOpen(false);
-      await reload();
     } catch (err) {
-      toast.error(err?.message || 'Unable to process user action.');
+      if (modalState.action === 'edit' && modalState.row) {
+        const latest = await fetchUserById(modalState.row.id).catch(() => null);
+        if (latest) {
+          upsertUserRow(latest);
+        }
+      }
+
+      if (modalState.action === 'delete') {
+        await reload();
+      }
+
+      toast.error(err?.isTimeout ? 'User action timed out. Please try again.' : (err?.message || 'Unable to process user action.'));
     } finally {
       setLoadingAction(false);
     }
@@ -225,7 +255,7 @@ export default function UsersPage() {
       setResetPasswordModalOpen(false);
       toast.success('User password reset successfully.');
     } catch (err) {
-      toast.error(err?.message || 'Unable to reset user password.');
+      toast.error(err?.isTimeout ? 'Password reset timed out. Please try again.' : (err?.message || 'Unable to reset user password.'));
     } finally {
       setLoadingAction(false);
     }

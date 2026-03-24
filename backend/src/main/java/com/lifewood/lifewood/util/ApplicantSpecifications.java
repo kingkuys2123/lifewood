@@ -30,5 +30,9 @@ public final class ApplicantSpecifications {
     public static Specification<ApplicantEntity> withReviewed(Boolean reviewed) {
         return (root, query, cb) -> reviewed == null ? cb.conjunction() : cb.equal(root.get("reviewed"), reviewed);
     }
+
+    public static Specification<ApplicantEntity> withActive() {
+        return (root, query, cb) -> cb.isNull(root.get("deletedAt"));
+    }
 }
 

@@ -33,6 +33,20 @@ export default function UsersPage() {
   const [newPassword, setNewPassword] = useState('');
   const toast = useToast();
 
+  const handleCopyEmail = async () => {
+    const email = userDetail?.email || modalState.row?.email;
+    if (!email) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(email);
+      toast.success('Email copied to clipboard.');
+    } catch {
+      toast.error('Unable to copy email.');
+    }
+  };
+
   const handleAction = (action, row) => {
     if (action === 'create') {
       setForm(INITIAL_USER_FORM);
@@ -189,13 +203,29 @@ export default function UsersPage() {
         onConfirm={onConfirm}
       >
         {modalState.action === 'view' && modalState.row ? (
-          <div className="action-modal-meta">
-            <p><strong>Username:</strong> {userDetail?.username || modalState.row.username}</p>
-            <p><strong>Name:</strong> {`${userDetail?.firstName || modalState.row.firstName} ${userDetail?.lastName || modalState.row.lastName}`}</p>
-            <p><strong>Email:</strong> {userDetail?.email || modalState.row.email}</p>
-            <p><strong>Role:</strong> {userDetail?.role || modalState.row.role}</p>
-            <p><strong>Phone Number:</strong> {userDetail?.phoneNumber || '-'}</p>
-          </div>
+          <>
+            <div className="action-modal-meta action-modal-meta--view">
+              <p><strong>Username</strong><span>{userDetail?.username || modalState.row.username}</span></p>
+              <p>
+                <strong>Full Name</strong>
+                <span>{`${userDetail?.firstName || modalState.row.firstName} ${userDetail?.lastName || modalState.row.lastName}`}</span>
+              </p>
+              <p><strong>Email</strong><span>{userDetail?.email || modalState.row.email}</span></p>
+              <p><strong>Role</strong><span>{userDetail?.role || modalState.row.role}</span></p>
+              <p><strong>Phone Number</strong><span>{userDetail?.phoneNumber || '-'}</span></p>
+              <p><strong>Profile Image</strong><span>{userDetail?.profilePicture ? 'Configured' : 'Not set'}</span></p>
+            </div>
+            <div className="action-modal-resume-actions">
+              <button type="button" className="btn btn-ghost" onClick={handleCopyEmail}>
+                Copy Email
+              </button>
+              {userDetail?.profilePicture ? (
+                <a className="btn btn-forest" href={userDetail.profilePicture} target="_blank" rel="noreferrer">
+                  Open Profile Image
+                </a>
+              ) : null}
+            </div>
+          </>
         ) : null}
 
         {(modalState.action === 'create' || modalState.action === 'edit') ? (

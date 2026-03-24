@@ -1,12 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AdminDataTable from '../../components/shared/admin-table/AdminDataTable';
 import ActionModal from '../../components/shared/portal-modal/ActionModal';
 import {
   approveApplicant,
   createApplicant,
   denyApplicant,
+  fetchApplicantResumeFile,
   fetchApplicantById,
-  getApplicantResumeUrl,
 } from './services/applicantsService';
 import ApplicantsSummary from './components/ApplicantsSummary';
 import { useApplicantsTable } from './hooks/useApplicantsTable';
@@ -29,6 +29,8 @@ export default function ApplicantsPage() {
   const [modalState, setModalState] = useState({ open: false, action: '', row: null });
   const [loadingAction, setLoadingAction] = useState(false);
   const [detail, setDetail] = useState(null);
+  const [resumePreviewUrl, setResumePreviewUrl] = useState('');
+  const [resumeFileName, setResumeFileName] = useState('resume');
   const [decisionMessage, setDecisionMessage] = useState('');
   const [createForm, setCreateForm] = useState(INITIAL_CREATE_FORM);
   const toast = useToast();
@@ -89,6 +91,7 @@ export default function ApplicantsPage() {
     if (modalState.action === 'view') {
       setModalState({ open: false, action: '', row: null });
       setDetail(null);
+      setResumePreviewUrl('');
       return;
     }
 
@@ -143,7 +146,86 @@ export default function ApplicantsPage() {
     }
   };
 
-  const resumeUrl = modalState.row?.id ? getApplicantResumeUrl(modalState.row.id) : '';
+  useEffect(() => {
+    let active = true;
+
+    async function loadResumePreview() {
+      if (modalState.action !== 'view' || !modalState.row?.id) {
+        setResumePreviewUrl('');
+        setResumeFileName('resume');
+        return;
+      }
+
+      try {
+        const file = await fetchApplicantResumeFile(modalState.row.id);
+        if (!active) {
+          return;
+        }
+        setResumeFileName(file.fileName || `applicant-${modalState.row.id}-resume`);
+        setResumePreviewUrl(URL.createObjectURL(file.blob));
+      } catch (err) {
+        setResumePreviewUrl('');
+        toast.error(err?.message || 'Unable to load resume preview.');
+      }
+    }
+
+    loadResumePreview();
+
+    return () => {
+      active = false;
+      setResumePreviewUrl((prev) => {
+        if (prev) {
+          URL.revokeObjectURL(prev);
+        }
+        return '';
+      });
+    };
+  }, [modalState.action, modalState.row?.id, toast]);
+
+  const handleResumeDownload = () => {
+    if (!resumePreviewUrl) {
+      toast.error('Resume is not ready yet.');
+      return;
+    }
+
+    const anchor = document.createElement('a');
+    anchor.href = resumePreviewUrl;
+    anchor.download = resumeFileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  };
+
+  const handleApplicantCsvDownload = () => {
+    if (!detail && !modalState.row) {
+      return;
+    }
+
+    const payload = {
+      id: modalState.row?.id || '',
+      firstName: detail?.firstName || modalState.row?.name?.split(' ')?.[0] || '',
+      lastName: detail?.lastName || modalState.row?.name?.split(' ')?.slice(1).join(' ') || '',
+      email: detail?.email || modalState.row?.email || '',
+      age: detail?.age || '',
+      degree: detail?.degree || '',
+      projectAppliedFor: detail?.projectAppliedFor || modalState.row?.program || '',
+      experience: (detail?.experience || '').replace(/\n/g, ' '),
+    };
+
+    const headers = Object.keys(payload);
+    const row = headers.map((header) => `"${String(payload[header] ?? '').replace(/"/g, '""')}"`).join(',');
+    const csv = `${headers.join(',')}\n${row}`;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `applicant-${payload.id || 'profile'}.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <section className="portal-page">
@@ -253,23 +335,30 @@ export default function ApplicantsPage() {
 
         {modalState.action === 'view' && modalState.row ? (
           <>
-            <div className="action-modal-meta">
-              <p><strong>Name:</strong> {detail ? `${detail.firstName} ${detail.lastName}` : modalState.row.name}</p>
-              <p><strong>Email:</strong> {detail?.email || modalState.row.email}</p>
-              <p><strong>Program:</strong> {detail?.projectAppliedFor || modalState.row.program}</p>
-              <p><strong>Degree:</strong> {detail?.degree || '-'}</p>
-              <p><strong>Experience:</strong> {detail?.experience || '-'}</p>
+            <div className="action-modal-meta action-modal-meta--view">
+              <p><strong>👤 Name</strong><span>{detail ? `${detail.firstName} ${detail.lastName}` : modalState.row.name}</span></p>
+              <p><strong>✉ Email</strong><span>{detail?.email || modalState.row.email}</span></p>
+              <p><strong>📁 Program</strong><span>{detail?.projectAppliedFor || modalState.row.program}</span></p>
+              <p><strong>🎓 Degree</strong><span>{detail?.degree || '-'}</span></p>
+              <p><strong>🧠 Experience</strong><span>{detail?.experience || '-'}</span></p>
             </div>
             <div className="action-modal-resume-actions">
-              <a href={getApplicantResumeUrl(modalState.row.id)} target="_blank" rel="noreferrer" className="btn btn-ghost">
-                Preview Resume
+              <a href={resumePreviewUrl || '#'} target="_blank" rel="noreferrer" className="btn btn-ghost">
+                Show Resume
               </a>
-              <a href={getApplicantResumeUrl(modalState.row.id, { download: true })} className="btn btn-forest">
+              <button type="button" className="btn btn-forest" onClick={handleResumeDownload}>
                 Download Resume
-              </a>
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={handleApplicantCsvDownload}>
+                Download CSV
+              </button>
             </div>
             <div className="action-modal-resume-preview">
-              <iframe title="Applicant resume preview" src={resumeUrl} loading="lazy" />
+              {resumePreviewUrl ? (
+                <iframe title="Applicant resume preview" src={resumePreviewUrl} loading="lazy" />
+              ) : (
+                <div className="action-modal-resume-fallback">Resume preview unavailable.</div>
+              )}
             </div>
           </>
         ) : null}

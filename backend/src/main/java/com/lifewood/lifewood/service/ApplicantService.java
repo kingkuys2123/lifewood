@@ -24,8 +24,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,15 +73,13 @@ public class ApplicantService {
 
     @Transactional(readOnly = true)
     public ApplicantResponseDTO getApplicant(Long id) {
-        ApplicantEntity applicantEntity = applicantRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
+        ApplicantEntity applicantEntity = getApplicantById(id);
         return mapToResponse(applicantEntity);
     }
 
     @Transactional(readOnly = true)
     public ResumeFile getApplicantResume(Long id) {
-        ApplicantEntity applicantEntity = applicantRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
+        ApplicantEntity applicantEntity = getApplicantById(id);
 
         Resource resource = fileUtil.loadResumeResource(applicantEntity.getResumePath());
         String fileName = resource.getFilename() == null ? "resume" : resource.getFilename();
@@ -94,7 +94,8 @@ public class ApplicantService {
 
     @Transactional(readOnly = true)
     public Page<ApplicantResponseDTO> getAllApplicants(String keyword, Boolean approved, Boolean reviewed, Pageable pageable) {
-        Specification<ApplicantEntity> specification = Specification.where(ApplicantSpecifications.withKeyword(keyword))
+        Specification<ApplicantEntity> specification = Specification.where(ApplicantSpecifications.withActive())
+                .and(ApplicantSpecifications.withKeyword(keyword))
                 .and(ApplicantSpecifications.withApproved(approved))
                 .and(ApplicantSpecifications.withReviewed(reviewed));
         return applicantRepository.findAll(specification, pageable)
@@ -103,13 +104,12 @@ public class ApplicantService {
 
     @Transactional(readOnly = true)
     public Page<ApplicantResponseDTO> getPendingApplicants(Pageable pageable) {
-        return applicantRepository.findAllByReviewedFalse(pageable).map(this::mapToResponse);
+        return applicantRepository.findAllByReviewedFalseAndDeletedAtIsNull(pageable).map(this::mapToResponse);
     }
 
     @Transactional
     public ApplicantResponseDTO updateApplicant(Long id, UpdateApplicantDTO request) {
-        ApplicantEntity applicantEntity = applicantRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
+        ApplicantEntity applicantEntity = getApplicantById(id);
 
         ensureEmailAvailable(request.getEmail(), id);
 
@@ -136,18 +136,27 @@ public class ApplicantService {
         }
 
         if (excludeApplicantId != null) {
-            return !applicantRepository.existsByEmailIgnoreCaseAndIdNot(normalizedEmail, excludeApplicantId);
+            return !applicantRepository.existsByEmailIgnoreCaseAndDeletedAtIsNullAndIdNot(normalizedEmail, excludeApplicantId);
         }
 
-        return !applicantRepository.existsByEmailIgnoreCase(normalizedEmail);
+        return !applicantRepository.existsByEmailIgnoreCaseAndDeletedAtIsNull(normalizedEmail);
     }
 
     @Transactional
     public void deleteApplicant(Long id) {
-        if (!applicantRepository.existsById(id)) {
-            throw new ResourceNotFoundException("ApplicantEntity not found with id: " + id);
+        ApplicantEntity applicantEntity = getApplicantById(id);
+        applicantEntity.setDeletedAt(LocalDateTime.now());
+        applicantRepository.save(applicantEntity);
+    }
+
+    @Scheduled(cron = "${app.applicant.soft-delete-purge-cron:0 0 3 * * *}")
+    @Transactional
+    public void purgeSoftDeletedApplicants() {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(30);
+        int deleted = applicantRepository.deleteAllSoftDeletedBefore(threshold);
+        if (deleted > 0) {
+            log.info("Purged {} soft-deleted applicants older than 30 days", deleted);
         }
-        applicantRepository.deleteById(id);
     }
 
     @Transactional
@@ -197,8 +206,14 @@ public class ApplicantService {
     }
 
     private ApplicantEntity getApplicantById(Long id) {
-        return applicantRepository.findById(id)
+        ApplicantEntity applicantEntity = applicantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ApplicantEntity not found with id: " + id));
+
+        if (applicantEntity.getDeletedAt() != null) {
+            throw new ResourceNotFoundException("ApplicantEntity not found with id: " + id);
+        }
+
+        return applicantEntity;
     }
 
     private void ensurePending(ApplicantEntity applicantEntity) {

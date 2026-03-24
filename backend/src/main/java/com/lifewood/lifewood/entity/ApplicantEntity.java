@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,7 +35,7 @@ public class ApplicantEntity extends BaseAuditEntity {
     @Column(name = "age", nullable = false)
     private Integer age;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     private String email;
 
     @Column(name = "degree", nullable = false)
@@ -56,5 +57,8 @@ public class ApplicantEntity extends BaseAuditEntity {
     @Builder.Default
     @Column(name = "reviewed", nullable = false)
     private boolean reviewed = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 }
 

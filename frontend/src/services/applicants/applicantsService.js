@@ -43,6 +43,23 @@ export function getApplicantResumeUrl(id, { download = false } = {}) {
   return `${httpClient.defaults.baseURL}/applicant/resume?${query.toString()}`;
 }
 
+export async function fetchApplicantResumeFile(id) {
+  const response = await httpClient.get('/applicant/resume', {
+    params: { id, download: false },
+    responseType: 'blob',
+    suppressGlobalErrorToast: true,
+  });
+
+  const contentDisposition = response.headers?.['content-disposition'] || '';
+  const match = contentDisposition.match(/filename="?([^\"]+)"?/i);
+
+  return {
+    blob: response.data,
+    fileName: match?.[1] || `applicant-${id}-resume`,
+    contentType: response.headers?.['content-type'] || response.data.type,
+  };
+}
+
 export async function approveApplicant(payload) {
   const response = await httpClient.post('/applicant/approve', payload);
   return unwrapApiResponse(response);

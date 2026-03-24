@@ -1,51 +1,77 @@
-import { useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useRef } from 'react';
 import './TypeCVerticalLLMData.css';
 
 /* ── Annotation viewport (right side) ─────────────────────── */
 function AnnotationViewport() {
+  const meshRef = useRef(null);
+  const particles = useMemo(
+    () => Array.from({ length: 28 }, (_, index) => ({
+      id: index,
+      x: (index * 37) % 100,
+      y: (index * 19) % 100,
+      size: 2 + (index % 4),
+      delay: `${(index % 7) * 0.22}s`,
+    })),
+    [],
+  );
+
+  const onPointerMove = (event) => {
+    const node = meshRef.current;
+    if (!node) {
+      return;
+    }
+
+    const bounds = node.getBoundingClientRect();
+    const px = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
+    const py = ((event.clientY - bounds.top) / bounds.height) * 2 - 1;
+    node.style.setProperty('--mx', px.toFixed(3));
+    node.style.setProperty('--my', py.toFixed(3));
+  };
+
+  const onPointerLeave = () => {
+    const node = meshRef.current;
+    if (!node) {
+      return;
+    }
+    node.style.setProperty('--mx', '0');
+    node.style.setProperty('--my', '0');
+  };
+
   return (
     <div className="tyc-hero__right">
-      <div className="tyc-vp">
-        <img
-          src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=900&q=80"
-          alt="Autonomous driving AI annotation"
-          className="tyc-vp__img"
-          loading="eager"
-        />
-        <div className="tyc-vp__overlay" />
+      <div
+        className="tyc-vp tyc-vp--mesh"
+        ref={meshRef}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
+      >
+        <div className="tyc-vp__mesh-bg" aria-hidden="true" />
+        <div className="tyc-vp__sphere" aria-hidden="true" />
+        <div className="tyc-vp__ring tyc-vp__ring--one" aria-hidden="true" />
+        <div className="tyc-vp__ring tyc-vp__ring--two" aria-hidden="true" />
 
-        {/* Corner annotations */}
-        <div className="tyc-vp__corner tyc-vp__corner--tl" />
-        <div className="tyc-vp__corner tyc-vp__corner--tr" />
-        <div className="tyc-vp__corner tyc-vp__corner--bl" />
-        <div className="tyc-vp__corner tyc-vp__corner--br" />
-
-        {/* Moving scan line */}
-        <div className="tyc-vp__scan" aria-hidden="true" />
-
-        {/* Simulated bounding boxes */}
-        <div
-          className="tyc-vp__bbox"
-          style={{ top: '22%', left: '30%', width: '22%', height: '32%' }}
-          aria-hidden="true"
-        >
-          <span className="tyc-vp__bbox-label">Vehicle · 97.4%</span>
-        </div>
-        <div
-          className="tyc-vp__bbox"
-          style={{ top: '38%', left: '62%', width: '14%', height: '24%',
-            animationDelay: '1.4s',
-            borderColor: 'rgba(4,98,65,0.85)'
-          }}
-          aria-hidden="true"
-        >
-          <span className="tyc-vp__bbox-label" style={{ color: 'rgba(4,200,130,0.95)' }}>Pedestrian · 93.1%</span>
+        <div className="tyc-vp__particles" aria-hidden="true">
+          {particles.map((particle) => (
+            <span
+              key={particle.id}
+              className="tyc-vp__particle"
+              style={{
+                '--x': `${particle.x}%`,
+                '--y': `${particle.y}%`,
+                '--size': `${particle.size}px`,
+                '--delay': particle.delay,
+              }}
+            />
+          ))}
         </div>
 
-        {/* Bottom info bar */}
+        <div className="tyc-vp__annotation-card" aria-hidden="true">
+          <p className="tyc-vp__annotation-title">Semantic Intelligence Mesh</p>
+          <p className="tyc-vp__annotation-sub">3D Vertical Dataset Fusion</p>
+        </div>
+
         <div className="tyc-vp__label-bar">
-          <span className="tyc-vp__label-text">Live Annotation Feed</span>
+          <span className="tyc-vp__label-text">Interactive 3D Cognition Node</span>
           <span className="tyc-vp__label-dot" />
         </div>
       </div>
@@ -87,7 +113,7 @@ export default function TypeCHero() {
             <h1 className="tyc-hero__h1">
               <span className="tyc-hero__h1-sub">Type C –</span>
               <span className="tyc-hero__h1-main">
-                Vertical<br />
+                Vertical{' '}
                 <span className="tyc-hero__h1-accent">LLM</span> Data
               </span>
             </h1>

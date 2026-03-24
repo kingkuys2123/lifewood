@@ -111,7 +111,7 @@ class UserServiceTest {
                 BadRequestException.class,
                 () -> userService.updateCurrentUser("portal.user", request));
 
-        assertEquals("Email already exists", ex.getMessage());
+        assertEquals("Email has already been used", ex.getMessage());
         verify(userRepository, never()).save(any(UserEntity.class));
     }
 

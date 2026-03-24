@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useReveal } from '../../../hooks/useReveal';
 import './AIProjects.css';
 
@@ -162,70 +162,38 @@ const ICONS = {
   ),
 };
 
-/* single accordion row */
-function AccordionItem({ project, isOpen, onToggle, index }) {
+function ProjectCard({ project, active, onHover, onClick }) {
   return (
-    <div className={`aip-acc__item${isOpen ? ' is-open' : ''}`} style={{ '--idx': index }}>
-      <button
-        className="aip-acc__trigger"
-        onClick={onToggle}
-        aria-expanded={isOpen}
-        aria-controls={`aip-panel-${project.id}`}
-      >
+    <button
+      type="button"
+      className={`aip-acc__card${active ? ' is-active' : ''}`}
+      onMouseEnter={onHover}
+      onFocus={onHover}
+      onClick={onClick}
+      aria-label={`Open ${project.title}`}
+    >
+      <div className="aip-acc__card-media">
+        <img src={project.img} alt={project.title} loading="lazy" />
+        <span className="aip-acc__card-shade" aria-hidden="true" />
+      </div>
+      <div className="aip-acc__card-content">
         <span className="aip-acc__icon-wrap" style={{ '--ic': project.color }}>
           {ICONS[project.icon]}
         </span>
-        <span className="aip-acc__trigger-text">
-          <span className="aip-acc__num">{project.id}</span>
-          <span className="aip-acc__title">{project.title}</span>
-        </span>
-        <span className="aip-acc__chevron" aria-hidden="true">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <path d="M3 6l5 5 5-5"/>
-          </svg>
-        </span>
-      </button>
-      <div className="aip-acc__panel" id={`aip-panel-${project.id}`} role="region">
-        <div className="aip-acc__panel-inner">
-          <div className="aip-acc__desc">
-            {project.description.split(/\n\n+/).map((para, pi) => (
-              <p key={pi} className="aip-acc__para">
-                {para.split('\n').map((line, li, arr) => (
-                  <span key={li}>
-                    {line}
-                    {li < arr.length - 1 && <br />}
-                  </span>
-                ))}
-              </p>
-            ))}
-          </div>
-          <a href="/contact" className="aip-acc__cta">
-            Learn more
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-              <path d="M3 8h10M9 4l4 4-4 4"/>
-            </svg>
-          </a>
-        </div>
+        <span className="aip-acc__num">{project.id}</span>
+        <span className="aip-acc__title">{project.title}</span>
+        <span className="aip-acc__summary">{project.summary}</span>
       </div>
-    </div>
+    </button>
   );
 }
 
 export default function AIPAccordion() {
-  const [openId, setOpenId] = useState('2.1');
-  const [previewId, setPreviewId] = useState('2.1'); // never goes null
+  const [activeId, setActiveId] = useState('2.1');
   const ref = useRef(null);
   useReveal(ref, 0.05);
 
-  const toggle = (id) => {
-    setOpenId(prev => {
-      const next = prev === id ? null : id;
-      if (next !== null) setPreviewId(next); // only update preview when opening
-      return next;
-    });
-  };
-
-  const active = PROJECTS.find(p => p.id === previewId);
+  const active = useMemo(() => PROJECTS.find((project) => project.id === activeId) || PROJECTS[0], [activeId]);
 
   return (
     <section className="aip-acc-section" ref={ref}>
@@ -239,39 +207,47 @@ export default function AIPAccordion() {
           <h2 className="aip-acc__h2">What we currently handle</h2>
         </div>
 
-        <div className="aip-acc__layout">
-          {/* left sticky preview */}
-          <div className="aip-acc__preview reveal reveal-delay-1" aria-hidden="true">
-            <div className="aip-acc__preview-frame">
-              {PROJECTS.map(p => (
-                <img
-                  key={p.id}
-                  src={p.img}
-                  alt={p.title}
-                  loading="lazy"
-                  className={`aip-acc__preview-img${previewId === p.id ? ' is-active' : ''}`}
-                />
-              ))}
-              {active && (
-                <div className="aip-acc__preview-badge" style={{ '--ic': active.color }}>
-                  <span className="aip-acc__preview-icon">{ICONS[active.icon]}</span>
-                  <span>{active.summary}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* right accordion */}
-          <div className="aip-acc__list reveal reveal-delay-2">
-            {PROJECTS.map((p, i) => (
-              <AccordionItem
-                key={p.id}
-                project={p}
-                isOpen={openId === p.id}
-                onToggle={() => toggle(p.id)}
-                index={i}
+        <div className="aip-acc__layout aip-acc__layout--cards">
+          <div className="aip-acc__cards reveal reveal-delay-1" role="list" aria-label="AI projects">
+            {PROJECTS.map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                active={active.id === project.id}
+                onHover={() => setActiveId(project.id)}
+                onClick={() => setActiveId(project.id)}
               />
             ))}
+          </div>
+
+          <div className="aip-acc__detail reveal reveal-delay-2" style={{ '--ic': active.color }}>
+            <div className="aip-acc__detail-header">
+              <span className="aip-acc__preview-icon">{ICONS[active.icon]}</span>
+              <div>
+                <p className="aip-acc__num">{active.id}</p>
+                <h3 className="aip-acc__detail-title">{active.title}</h3>
+              </div>
+            </div>
+
+            <div className="aip-acc__desc">
+              {active.description.split(/\n\n+/).map((para, pi) => (
+                <p key={pi} className="aip-acc__para">
+                  {para.split('\n').map((line, li, arr) => (
+                    <span key={li}>
+                      {line}
+                      {li < arr.length - 1 && <br />}
+                    </span>
+                  ))}
+                </p>
+              ))}
+            </div>
+
+            <a href="/contact" className="aip-acc__cta">
+              Learn more
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4"/>
+              </svg>
+            </a>
           </div>
         </div>
       </div>

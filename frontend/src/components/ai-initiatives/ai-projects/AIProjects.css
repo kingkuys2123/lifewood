@@ -195,6 +195,85 @@
   align-items: start;
 }
 
+.aip-acc__layout--cards {
+  grid-template-columns: 1.2fr 1fr;
+}
+
+.aip-acc__cards {
+  display: grid;
+  gap: var(--s-16);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.aip-acc__card {
+  border: 1px solid var(--c-mist);
+  border-radius: var(--r-20);
+  overflow: hidden;
+  background: var(--c-white);
+  text-align: left;
+  transition: transform var(--dur-base), box-shadow var(--dur-base), border-color var(--dur-base);
+}
+
+.aip-acc__card:hover,
+.aip-acc__card.is-active {
+  transform: translateY(-3px);
+  box-shadow: var(--sh-lg);
+  border-color: var(--c-steel);
+}
+
+.aip-acc__card-media {
+  position: relative;
+  height: 140px;
+}
+
+.aip-acc__card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aip-acc__card-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0));
+}
+
+.aip-acc__card-content {
+  padding: var(--s-16);
+  display: grid;
+  gap: var(--s-8);
+}
+
+.aip-acc__summary {
+  font-size: var(--t-13);
+  color: var(--c-steel);
+  line-height: 1.6;
+}
+
+.aip-acc__detail {
+  border: 1px solid var(--c-mist);
+  border-radius: var(--r-20);
+  padding: var(--s-24);
+  background: color-mix(in srgb, var(--c-white) 94%, transparent);
+  box-shadow: var(--sh-md);
+  position: sticky;
+  top: calc(var(--navbar-h) + var(--s-24));
+}
+
+.aip-acc__detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  margin-bottom: var(--s-16);
+}
+
+.aip-acc__detail-title {
+  font-family: var(--font-display);
+  font-size: var(--t-24);
+  line-height: 1.2;
+  color: var(--c-charcoal);
+}
+
 /* ── Left preview ── */
 .aip-acc__preview {
   position: sticky;
@@ -409,9 +488,26 @@
     grid-template-columns: 340px 1fr;
     gap: var(--s-40);
   }
+
+  .aip-acc__layout--cards {
+    grid-template-columns: 1fr;
+  }
+
+  .aip-acc__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .aip-acc__detail {
+    position: relative;
+    top: 0;
+  }
 }
 @media (max-width: 820px) {
   .aip-acc__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .aip-acc__cards {
     grid-template-columns: 1fr;
   }
   .aip-acc__preview {

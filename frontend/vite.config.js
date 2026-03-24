@@ -8,5 +8,19 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     base: env.VITE_BASE_PATH || '/',
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-charts': ['recharts'],
+            'vendor-maps': ['leaflet', 'react-leaflet'],
+            'vendor-table': ['@tanstack/react-table'],
+            'vendor-motion': ['framer-motion'],
+            'vendor-network': ['axios', '@stomp/stompjs', 'sockjs-client'],
+          },
+        },
+      },
+    },
   }
 })

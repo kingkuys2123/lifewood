@@ -86,7 +86,7 @@ public class UserController {
                 userService.updateCurrentUser(authentication.getName(), request)));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/change-password")
     public ResponseEntity<ApiResponse<Object>> changePassword(
             @RequestParam("id") Long id,

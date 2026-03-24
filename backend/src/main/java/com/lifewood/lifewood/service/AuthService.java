@@ -94,6 +94,18 @@ public class AuthService {
         });
     }
 
+    @Transactional(readOnly = true)
+    public boolean isResetTokenValid(String token) {
+        String rawToken = normalize(token);
+        if (rawToken.isBlank()) {
+            return false;
+        }
+
+        return passwordResetTokenRepository.findByTokenHash(hashToken(rawToken))
+                .map(this::isTokenUsable)
+                .orElse(false);
+    }
+
     @Transactional
     public void resetPassword(ResetPasswordRequestDTO request) {
         String rawToken = normalize(request.getToken());
@@ -103,7 +115,7 @@ public class AuthService {
         PasswordResetTokenEntity tokenEntity = passwordResetTokenRepository.findByTokenHash(hashToken(rawToken))
                 .orElseThrow(() -> new BadRequestException("Invalid or expired reset token"));
 
-        if (tokenEntity.getUsedAt() != null || tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (!isTokenUsable(tokenEntity)) {
             throw new BadRequestException("Invalid or expired reset token");
         }
 
@@ -137,6 +149,10 @@ public class AuthService {
                 .tokenType("Bearer")
                 .expiresIn(jwtUtil.getAccessTokenValidityMs())
                 .build();
+    }
+
+    private boolean isTokenUsable(PasswordResetTokenEntity tokenEntity) {
+        return tokenEntity.getUsedAt() == null && !tokenEntity.getExpiresAt().isBefore(LocalDateTime.now());
     }
 
     private String buildResetUrl(String rawToken) {

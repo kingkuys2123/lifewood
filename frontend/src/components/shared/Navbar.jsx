@@ -1,38 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import brandIcon from '../../assets/branding/lifewood-icon.png';
+import { NAV_ITEMS, ALWAYS_SOLID_PATHS } from './navbarConfig';
 import './Navbar.css';
 
-export const NAV_ITEMS = [
-    { label: 'Home', to: '/' },
-    {
-        label: 'AI Initiatives',
-        children: [
-            { label: 'AI Projects', to: '/ai-initiatives/projects' },
-            { label: 'AI Services', to: '/ai-initiatives/services' },
-        ],
-    },
-    { label: 'Internal News', to: '/internal-news' },
-    {
-        label: 'Our Company',
-        children: [
-            { label: 'About Us', to: '/our-company/about' },
-            { label: 'Offices', to: '/our-company/offices' },
-        ],
-    },
-    { label: 'Philanthropy & Impact', to: '/philanthropy' },
-    {
-        label: 'What We Offer',
-        children: [
-            { label: 'Type A - Data Servicing', to: '/offer/type-a' },
-            { label: 'Type B - Horizontal LLM Data', to: '/offer/type-b' },
-            { label: 'Type C - Vertical LLM Data', to: '/offer/type-c' },
-            { label: 'Type D - AIGC', to: '/offer/type-d' },
-        ],
-    },
-    { label: 'Careers', to: '/careers' },
-    { label: 'Contact Us', to: '/contact' },
-];
 
 /** Detects whether we are currently in the mobile breakpoint */
 function useIsMobile(breakpoint = 1100) {
@@ -50,6 +21,7 @@ function DropdownItem({ item, closeMobileMenu }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
     const isMobile = useIsMobile();
+    const isOpen = isMobile ? open : open;
 
     // Close dropdown when clicking outside (desktop only)
     useEffect(() => {
@@ -61,10 +33,18 @@ function DropdownItem({ item, closeMobileMenu }) {
         return () => document.removeEventListener('mousedown', close);
     }, [isMobile]);
 
-    // Close accordion when switching to desktop
-    useEffect(() => {
-        if (!isMobile) setOpen(false);
-    }, [isMobile]);
+    const location = useLocation();
+    const isParentActive = item.children?.some(c => location.pathname === c.to);
+
+    const handleDesktopEnter = () => { if (!isMobile) setOpen(true); };
+    const handleDesktopLeave = () => { if (!isMobile) setOpen(false); };
+    const handleMobileToggle = (e) => {
+        if (isMobile) {
+            e.preventDefault();
+            e.stopPropagation();
+            setOpen((v) => !v);
+        }
+    };
 
     if (!item.children) {
         return (
@@ -83,36 +63,23 @@ function DropdownItem({ item, closeMobileMenu }) {
         );
     }
 
-    const location = useLocation();
-    // Highlight the parent button when any child route is currently active
-    const isParentActive = item.children?.some(c => location.pathname === c.to);
-
-    const handleDesktopEnter = () => { if (!isMobile) setOpen(true); };
-    const handleDesktopLeave = () => { if (!isMobile) setOpen(false); };
-    const handleMobileToggle = (e) => {
-        if (isMobile) {
-            e.preventDefault();
-            e.stopPropagation();
-            setOpen((v) => !v);
-        }
-    };
 
     return (
         <li
             ref={ref}
-            className={`nav__item nav__item--has-drop${open ? ' nav__item--open' : ''}`}
+            className={`nav__item nav__item--has-drop${isOpen ? ' nav__item--open' : ''}`}
             onMouseEnter={handleDesktopEnter}
             onMouseLeave={handleDesktopLeave}
         >
             <button
                 className={`nav__link nav__link--parent${isParentActive ? ' nav__link--active' : ''}`}
-                aria-expanded={open}
+                aria-expanded={isOpen}
                 aria-haspopup="true"
                 onClick={handleMobileToggle}
             >
                 {item.label}
                 <svg
-                    className={`nav__caret${open ? ' nav__caret--open' : ''}`}
+                    className={`nav__caret${isOpen ? ' nav__caret--open' : ''}`}
                     width="10"
                     height="6"
                     viewBox="0 0 10 6"
@@ -145,19 +112,6 @@ function DropdownItem({ item, closeMobileMenu }) {
     );
 }
 
-/** Routes where the hero is white — navbar must always be solid */
-const ALWAYS_SOLID_PATHS = [
-    '/privacy-policy',
-    '/cookie-policy',
-    '/terms-and-conditions',
-    '/contact',
-    '/apply',
-    '/internal-news',
-    '/philanthropy',
-    '/careers',
-    '/ai-initiatives',
-    '/offer',
-];
 
 export default function Navbar() {
     const [scrolled, setScrolled] = useState(false);
@@ -170,11 +124,6 @@ export default function Navbar() {
     );
 
     const closeMobileMenu = useCallback(() => setMobileOpen(false), []);
-
-    // Close drawer on route change
-    useEffect(() => {
-        closeMobileMenu();
-    }, [location.pathname, closeMobileMenu]);
 
     // Scroll sentinel
     useEffect(() => {

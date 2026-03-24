@@ -31,14 +31,15 @@ export default function useScrollProgress() {
             });
         };
 
-        // Set initial value on mount
-        calculate();
-
         window.addEventListener('scroll', onScroll, { passive: true });
+
+        // Set initial value after mount
+        const initialRafId = requestAnimationFrame(calculate);
 
         return () => {
             window.removeEventListener('scroll', onScroll);
             if (rafId) cancelAnimationFrame(rafId);
+            if (initialRafId) cancelAnimationFrame(initialRafId);
         };
     }, [calculate]);
 

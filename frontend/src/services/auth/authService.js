@@ -27,3 +27,10 @@ export async function resetPassword(payload, options = {}) {
   return unwrapApiResponse(response);
 }
 
+export async function validateResetToken(token, options = {}) {
+  const response = await httpClient.post('/auth/reset-password/validate', null, {
+    params: { token },
+    suppressGlobalErrorToast: options.suppressGlobalErrorToast,
+  });
+  return unwrapApiResponse(response);
+}

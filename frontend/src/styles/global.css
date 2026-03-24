@@ -412,6 +412,14 @@ textarea {
   background: var(--c-ice);
 }
 
+.app-page-loading {
+  min-height: 40vh;
+  display: grid;
+  place-items: center;
+  color: #1f3d2f;
+  font-weight: 600;
+}
+
 .portal-page-error {
   color: #9d2333;
   font-size: var(--t-13);

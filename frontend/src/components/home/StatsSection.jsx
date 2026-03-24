@@ -40,8 +40,10 @@ function useCountUp(target, duration = 1400, active = false) {
     const rafRef = useRef(null);
 
     useEffect(() => {
-        if (!active) return;
-        setCount(0);
+        if (!active) {
+            return;
+        }
+
         const start = performance.now();
         const step = (now) => {
             const progress = Math.min((now - start) / duration, 1);

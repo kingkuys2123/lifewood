@@ -51,7 +51,7 @@ export async function fetchApplicantResumeFile(id) {
   });
 
   const contentDisposition = response.headers?.['content-disposition'] || '';
-  const match = contentDisposition.match(/filename="?([^\"]+)"?/i);
+  const match = contentDisposition.match(/filename="?([^"]+)"?/i);
 
   return {
     blob: response.data,

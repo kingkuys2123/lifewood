@@ -92,13 +92,6 @@ export default function ServicesSection() {
         return () => reduce.removeEventListener('change', onChange);
     }, []);
 
-    useEffect(() => {
-        const syncRailState = () => handleRailScroll();
-        syncRailState();
-        window.addEventListener('resize', syncRailState);
-        return () => window.removeEventListener('resize', syncRailState);
-    }, []);
-
     const handleRailScroll = () => {
         const rail = railRef.current;
         if (!rail) return;
@@ -132,6 +125,13 @@ export default function ServicesSection() {
         });
         setActiveIndex(nearest);
     };
+
+    useEffect(() => {
+        const syncRailState = () => handleRailScroll();
+        syncRailState();
+        window.addEventListener('resize', syncRailState);
+        return () => window.removeEventListener('resize', syncRailState);
+    }, []);
 
     const scrollRailBy = (direction) => {
         const rail = railRef.current;

@@ -2,8 +2,10 @@ package com.lifewood.lifewood.controller;
 
 import com.lifewood.lifewood.dto.ApiResponse;
 import com.lifewood.lifewood.dto.auth.AuthResponseDTO;
+import com.lifewood.lifewood.dto.auth.ForgotPasswordRequestDTO;
 import com.lifewood.lifewood.dto.auth.LoginRequestDTO;
 import com.lifewood.lifewood.dto.auth.RefreshTokenRequestDTO;
+import com.lifewood.lifewood.dto.auth.ResetPasswordRequestDTO;
 import com.lifewood.lifewood.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +30,19 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponseDTO>> refresh(@Valid @RequestBody RefreshTokenRequestDTO request) {
         return ResponseEntity.ok(ApiResponse.success("Token refreshed", authService.refresh(request)));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
+        authService.requestPasswordReset(request);
+        return ResponseEntity.ok(ApiResponse.success(
+                "If this email exists, a password reset link has been sent",
+                null));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Password reset successful", null));
     }
 }

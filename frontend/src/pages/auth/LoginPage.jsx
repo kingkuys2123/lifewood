@@ -11,7 +11,7 @@ export default function LoginPage() {
           <p className="auth-chip">Admin Portal</p>
         </div>
         <h1>Sign in to Lifewood Admin</h1>
-        <p>Use your organization account to continue.</p>
+        <p>Use your username or work email to continue.</p>
         <LoginForm />
       </section>
     </main>

@@ -36,6 +36,12 @@ public class EmailService {
     @Value("${app.mail.templates.rejection-body:Hello {{name}},\n\nThank you for applying to {{project}}. Your application was not selected this time.\n\n{{message}}}")
     private String rejectionBodyTemplate;
 
+    @Value("${app.mail.templates.reset-password-subject:Reset your Lifewood Admin password}")
+    private String resetPasswordSubjectTemplate;
+
+    @Value("${app.mail.templates.reset-password-body:Hello {{name}},\n\nWe received a request to reset your password.\n\nUse this link: {{resetUrl}}\n\nIf you did not request this, please ignore this message.}")
+    private String resetPasswordBodyTemplate;
+
     @Value("${app.mail.brand.name:Lifewood}")
     private String brandName;
 
@@ -139,6 +145,36 @@ public class EmailService {
                 composeTemplate("New Contact Message", "A visitor submitted the contact form.", adminBody));
         sendHtmlMail(request.getEmail(), "We received your message",
                 composeTemplate("Message Received", "Thanks for reaching out.", senderBody));
+    }
+
+    public void sendPasswordResetEmail(String recipientEmail, String firstName, String resetUrl) {
+        String safeName = firstName == null || firstName.isBlank() ? "there" : firstName;
+        String templateBody = resetPasswordBodyTemplate
+                .replace("{{name}}", safeName)
+                .replace("{{resetUrl}}", resetUrl);
+        String templateBodyHtml = escapeHtml(templateBody).replace("\n", "<br/>");
+
+        String body = """
+                <p>Hello %s,</p>
+                <p style="color:#4b5563;">%s</p>
+                <p>We received a request to reset your password.</p>
+                <p>
+                  <a href=\"%s\" style=\"display:inline-block;padding:10px 16px;border-radius:999px;background:#133020;color:#ffffff;text-decoration:none;font-weight:600;\">Reset Password</a>
+                </p>
+                <p style=\"font-size:13px;color:#6b7280;\">If the button does not work, copy this URL into your browser:<br/><a href=\"%s\" style=\"color:#133020;word-break:break-all;\">%s</a></p>
+                <p style=\"font-size:13px;color:#6b7280;\">This link expires soon and can only be used once.</p>
+                """.formatted(
+                escapeHtml(safeName),
+                templateBodyHtml,
+                escapeHtml(resetUrl),
+                escapeHtml(resetUrl),
+                escapeHtml(resetUrl));
+
+        sendHtmlMail(
+                recipientEmail,
+                resetPasswordSubjectTemplate,
+                composeTemplate("Password Reset", "Secure account recovery", body));
+        log.info("Sent reset password email to {}", recipientEmail);
     }
 
     private void sendHtmlMail(String to, String subject, String htmlBody) {

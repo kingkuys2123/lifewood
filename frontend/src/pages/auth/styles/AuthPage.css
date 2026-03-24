@@ -69,6 +69,39 @@
     transform var(--dur-base) var(--ease-out);
 }
 
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap input {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--r-full);
+  background: rgba(19, 48, 32, 0.08);
+  color: var(--c-forest);
+  transition: background var(--dur-fast), transform var(--dur-fast);
+}
+
+.password-toggle-btn:hover {
+  background: rgba(19, 48, 32, 0.14);
+}
+
+.password-toggle-btn:focus-visible {
+  outline: 2px solid rgba(19, 48, 32, 0.25);
+  outline-offset: 2px;
+}
+
 .auth-form input:focus {
   border-color: var(--c-forest);
   box-shadow: 0 0 0 3px rgba(19, 48, 32, 0.12);
@@ -96,6 +129,17 @@
   margin-top: var(--s-12);
   width: 100%;
   min-height: 44px;
+}
+
+.auth-helper-link-wrap {
+  margin-top: var(--s-14);
+  text-align: center;
+  color: var(--c-steel);
+}
+
+.auth-helper-link {
+  color: var(--c-forest);
+  font-weight: var(--fw-medium);
 }
 
 .auth-error-message {

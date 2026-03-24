@@ -4,7 +4,9 @@ import PortalLayout from './app/layouts/PortalLayout';
 import PublicSiteLayout from './app/layouts/PublicSiteLayout';
 import AuthProvider from './app/providers/AuthProvider';
 import ApplicantsPage from './pages/applicants/ApplicantsPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import LoginPage from './pages/auth/LoginPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import LandingPage from './pages/landing/LandingPage';
 import Home from './pages/landing-page/home/Home';
@@ -36,6 +38,8 @@ export default function App() {
         <Routes>
           <Route path="/admin" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           <Route
             path="/portal"

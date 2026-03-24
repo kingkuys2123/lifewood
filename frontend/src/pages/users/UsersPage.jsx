@@ -11,6 +11,7 @@ import {
 import UsersSummary from './components/UsersSummary';
 import { useUsersTable } from './hooks/useUsersTable';
 import { useToast } from '../../app/providers/useToast';
+import { validatePasswordStrength } from '../auth/utils/passwordValidation';
 import './styles/UsersPage.css';
 
 const INITIAL_USER_FORM = {
@@ -31,6 +32,8 @@ export default function UsersPage() {
   const [userDetail, setUserDetail] = useState(null);
   const [form, setForm] = useState(INITIAL_USER_FORM);
   const [newPassword, setNewPassword] = useState('');
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const toast = useToast();
 
   const handleCopyEmail = async () => {
@@ -126,6 +129,12 @@ export default function UsersPage() {
       setLoadingAction(true);
 
       if (modalState.action === 'create') {
+        const createPasswordError = validatePasswordStrength(form.password);
+        if (createPasswordError) {
+          toast.error(createPasswordError);
+          return;
+        }
+
         await createUser({
           username: form.username.trim(),
           firstName: form.firstName.trim(),
@@ -149,6 +158,11 @@ export default function UsersPage() {
           role: form.role,
         });
         if (newPassword.trim()) {
+          const resetPasswordError = validatePasswordStrength(newPassword);
+          if (resetPasswordError) {
+            toast.error(resetPasswordError);
+            return;
+          }
           await resetUserPassword(modalState.row.id, { newPassword: newPassword.trim() });
         }
         toast.success('User updated successfully.');
@@ -294,24 +308,46 @@ export default function UsersPage() {
             {modalState.action === 'create' ? (
               <div className="action-modal-field" style={{ gridColumn: '1 / -1' }}>
                 <label htmlFor="usr-password">Password</label>
-                <input
-                  id="usr-password"
-                  type="password"
-                  value={form.password}
-                  onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
-                  placeholder="At least 8 characters"
-                />
+                <div className="password-input-wrap">
+                  <input
+                    id="usr-password"
+                    type={showCreatePassword ? 'text' : 'password'}
+                    value={form.password}
+                    onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
+                    placeholder="At least 8 characters"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    aria-label={showCreatePassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showCreatePassword}
+                    onClick={() => setShowCreatePassword((prev) => !prev)}
+                  >
+                    {showCreatePassword ? '🙈' : '👁'}
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="action-modal-field" style={{ gridColumn: '1 / -1' }}>
                 <label htmlFor="usr-new-password">Reset Password (optional)</label>
-                <input
-                  id="usr-new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  placeholder="Leave blank to keep existing password"
-                />
+                <div className="password-input-wrap">
+                  <input
+                    id="usr-new-password"
+                    type={showResetPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(event) => setNewPassword(event.target.value)}
+                    placeholder="Leave blank to keep existing password"
+                  />
+                  <button
+                    type="button"
+                    className="password-toggle-btn"
+                    aria-label={showResetPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showResetPassword}
+                    onClick={() => setShowResetPassword((prev) => !prev)}
+                  >
+                    {showResetPassword ? '🙈' : '👁'}
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -68,6 +68,29 @@
   background: var(--c-white);
 }
 
+.action-modal .password-input-wrap {
+  position: relative;
+}
+
+.action-modal .password-input-wrap input {
+  width: 100%;
+  padding-right: 46px;
+}
+
+.action-modal .password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-full);
+  display: inline-grid;
+  place-items: center;
+  background: rgba(19, 48, 32, 0.08);
+  color: var(--c-forest);
+}
+
 .action-modal-field textarea {
   resize: vertical;
   min-height: 92px;

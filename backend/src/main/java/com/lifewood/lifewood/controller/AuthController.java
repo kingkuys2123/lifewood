@@ -33,6 +33,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("Token refreshed", authService.refresh(request)));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Object>> logout(@Valid @RequestBody RefreshTokenRequestDTO request) {
+        authService.logout(request);
+        return ResponseEntity.ok(ApiResponse.success("Logged out successfully", null));
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<ApiResponse<Object>> forgotPassword(@Valid @RequestBody ForgotPasswordRequestDTO request) {
         authService.requestPasswordReset(request);

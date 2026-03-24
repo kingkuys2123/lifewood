@@ -6,9 +6,11 @@ import com.lifewood.lifewood.dto.auth.LoginRequestDTO;
 import com.lifewood.lifewood.dto.auth.RefreshTokenRequestDTO;
 import com.lifewood.lifewood.dto.auth.ResetPasswordRequestDTO;
 import com.lifewood.lifewood.entity.PasswordResetTokenEntity;
+import com.lifewood.lifewood.entity.RefreshTokenEntity;
 import com.lifewood.lifewood.entity.UserEntity;
 import com.lifewood.lifewood.filter.JwtUtil;
 import com.lifewood.lifewood.repository.PasswordResetTokenRepository;
+import com.lifewood.lifewood.repository.RefreshTokenRepository;
 import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.BadRequestException;
 import com.lifewood.lifewood.util.UnauthorizedException;
@@ -38,6 +40,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
@@ -48,6 +51,7 @@ public class AuthService {
     @Value("${app.frontend.reset-password-url:http://localhost:5173/reset-password}")
     private String resetPasswordUrl;
 
+    @Transactional
     public AuthResponseDTO login(LoginRequestDTO request) {
         String identifier = normalize(request.getUsername());
         try {
@@ -63,6 +67,7 @@ public class AuthService {
 
         String accessToken = jwtUtil.generateAccessToken(userEntity.getUsername(), userEntity.getRole().name());
         String refreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername(), userEntity.getRole().name());
+        rotatePersistedRefreshToken(userEntity, null, refreshToken);
         log.info("UserEntity authenticated: {}", userEntity.getUsername());
 
         return AuthResponseDTO.builder()
@@ -132,23 +137,98 @@ public class AuthService {
         passwordResetTokenRepository.deleteByUser_Id(userEntity.getId());
     }
 
+    @Transactional
     public AuthResponseDTO refresh(RefreshTokenRequestDTO request) {
-        if (!jwtUtil.isTokenValid(request.getRefreshToken())) {
+        String incomingRefreshToken = normalize(request.getRefreshToken());
+        if (!jwtUtil.isTokenValid(incomingRefreshToken)) {
             throw new UnauthorizedException("Invalid refresh token");
         }
-        String username = jwtUtil.extractUsername(request.getRefreshToken());
+
+        String username = jwtUtil.extractUsername(incomingRefreshToken);
+        String tokenId = jwtUtil.extractTokenId(incomingRefreshToken);
+
         UserEntity userEntity = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
 
+        RefreshTokenEntity persistedToken = refreshTokenRepository.findByTokenId(tokenId)
+                .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
+
+        if (!isRefreshTokenUsable(persistedToken, incomingRefreshToken, userEntity.getId())) {
+            revokeRefreshToken(persistedToken, null);
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+
         String accessToken = jwtUtil.generateAccessToken(userEntity.getUsername(), userEntity.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername(), userEntity.getRole().name());
+        String nextRefreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername(), userEntity.getRole().name());
+        rotatePersistedRefreshToken(userEntity, persistedToken, nextRefreshToken);
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(nextRefreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtUtil.getAccessTokenValidityMs())
                 .build();
+    }
+
+    @Transactional
+    public void logout(RefreshTokenRequestDTO request) {
+        String incomingRefreshToken = normalize(request.getRefreshToken());
+        if (!jwtUtil.isTokenValid(incomingRefreshToken)) {
+            return;
+        }
+
+        String tokenId = jwtUtil.extractTokenId(incomingRefreshToken);
+        refreshTokenRepository.findByTokenId(tokenId)
+                .ifPresent(tokenEntity -> revokeRefreshToken(tokenEntity, null));
+    }
+
+    private void rotatePersistedRefreshToken(UserEntity userEntity, RefreshTokenEntity currentToken, String nextRawToken) {
+        purgeExpiredRefreshTokens();
+
+        if (currentToken == null) {
+            refreshTokenRepository.findByUser_IdAndRevokedAtIsNull(userEntity.getId())
+                    .forEach(tokenEntity -> revokeRefreshToken(tokenEntity, null));
+        }
+
+        String nextTokenId = jwtUtil.extractTokenId(nextRawToken);
+        if (currentToken != null) {
+            revokeRefreshToken(currentToken, nextTokenId);
+        }
+
+        RefreshTokenEntity tokenEntity = RefreshTokenEntity.builder()
+                .user(userEntity)
+                .tokenId(nextTokenId)
+                .tokenHash(hashToken(nextRawToken))
+                .expiresAt(LocalDateTime.now().plusNanos(jwtUtil.getRefreshTokenValidityMs() * 1_000_000))
+                .build();
+
+        refreshTokenRepository.save(tokenEntity);
+    }
+
+    private boolean isRefreshTokenUsable(RefreshTokenEntity tokenEntity, String rawToken, Long expectedUserId) {
+        if (tokenEntity.getRevokedAt() != null || tokenEntity.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+
+        if (!tokenEntity.getUser().getId().equals(expectedUserId)) {
+            return false;
+        }
+
+        return tokenEntity.getTokenHash().equals(hashToken(rawToken));
+    }
+
+    private void revokeRefreshToken(RefreshTokenEntity tokenEntity, String replacedByTokenId) {
+        if (tokenEntity.getRevokedAt() != null) {
+            return;
+        }
+
+        tokenEntity.setRevokedAt(LocalDateTime.now());
+        tokenEntity.setReplacedByTokenId(replacedByTokenId);
+        refreshTokenRepository.save(tokenEntity);
+    }
+
+    private void purgeExpiredRefreshTokens() {
+        refreshTokenRepository.deleteByExpiresAtBefore(LocalDateTime.now());
     }
 
     private boolean isTokenUsable(PasswordResetTokenEntity tokenEntity) {

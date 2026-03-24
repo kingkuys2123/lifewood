@@ -15,10 +15,12 @@ import com.lifewood.lifewood.entity.UserEntity;
 import com.lifewood.lifewood.enumeration.UserRoleEnum;
 import com.lifewood.lifewood.filter.JwtUtil;
 import com.lifewood.lifewood.repository.PasswordResetTokenRepository;
+import com.lifewood.lifewood.repository.RefreshTokenRepository;
 import com.lifewood.lifewood.repository.UserRepository;
 import com.lifewood.lifewood.util.BadRequestException;
 import com.lifewood.lifewood.util.UnauthorizedException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,9 @@ class AuthServiceTest {
 
     @Mock
     private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -83,7 +88,10 @@ class AuthServiceTest {
         when(userRepository.findByEmailIgnoreCase("portal@example.com")).thenReturn(Optional.of(user));
         when(jwtUtil.generateAccessToken("portal.user", "ADMIN")).thenReturn("access-token");
         when(jwtUtil.generateRefreshToken("portal.user", "ADMIN")).thenReturn("refresh-token");
+        when(jwtUtil.extractTokenId("refresh-token")).thenReturn("refresh-token-id");
         when(jwtUtil.getAccessTokenValidityMs()).thenReturn(3600000L);
+        when(jwtUtil.getRefreshTokenValidityMs()).thenReturn(604800000L);
+        when(refreshTokenRepository.findByUser_IdAndRevokedAtIsNull(10L)).thenReturn(List.of());
 
         var response = authService.login(request);
 
@@ -135,5 +143,4 @@ class AuthServiceTest {
         assertEquals("Wrong Username/Password", ex.getMessage());
     }
 }
-
 

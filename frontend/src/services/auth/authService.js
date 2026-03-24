@@ -34,3 +34,10 @@ export async function validateResetToken(token, options = {}) {
   });
   return unwrapApiResponse(response);
 }
+
+export async function logout(payload, options = {}) {
+  const response = await httpClient.post('/auth/logout', payload, {
+    suppressGlobalErrorToast: options.suppressGlobalErrorToast,
+  });
+  return unwrapApiResponse(response);
+}

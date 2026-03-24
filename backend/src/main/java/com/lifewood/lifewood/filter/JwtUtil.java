@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,7 @@ public class JwtUtil {
 	}
 
 	public String generateRefreshToken(String username, String role) {
-		return buildToken(username, role, refreshTokenValidityMs);
+		return buildRefreshToken(username, role, UUID.randomUUID().toString());
 	}
 
 	public String extractUsername(String token) {
@@ -35,6 +36,10 @@ public class JwtUtil {
 
 	public String extractRole(String token) {
 		return extractClaims(token).get("role", String.class);
+	}
+
+	public String extractTokenId(String token) {
+		return extractClaims(token).getId();
 	}
 
 	public boolean isTokenValid(String token) {
@@ -47,6 +52,23 @@ public class JwtUtil {
 
 	public long getAccessTokenValidityMs() {
 		return accessTokenValidityMs;
+	}
+
+	public long getRefreshTokenValidityMs() {
+		return refreshTokenValidityMs;
+	}
+
+	private String buildRefreshToken(String username, String role, String tokenId) {
+		Date now = new Date();
+		Date expiry = new Date(now.getTime() + refreshTokenValidityMs);
+		return Jwts.builder()
+				.subject(username)
+				.id(tokenId)
+				.claim("role", role)
+				.issuedAt(now)
+				.expiration(expiry)
+				.signWith(getSigningKey())
+				.compact();
 	}
 
 	private String buildToken(String username, String role, long validityMs) {
@@ -73,4 +95,3 @@ public class JwtUtil {
 		return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 	}
 }
-

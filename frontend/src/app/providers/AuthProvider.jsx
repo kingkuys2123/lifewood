@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from './useAuth';
-import { login as loginRequest, refresh as refreshRequest } from '../../services/auth/authService';
+import { login as loginRequest, logout as logoutRequest, refresh as refreshRequest } from '../../services/auth/authService';
 import { clearCachedUserId, hasTokenExpired, parseAuthUser } from '../../services/auth/authSession';
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '../../services/auth/tokenStorage';
 import { setUnauthorizedHandler } from '../../services/api/httpClient';
@@ -93,11 +93,20 @@ export function AuthProvider({ children }) {
     return nextUser;
   };
 
-  const logout = useCallback(() => {
-    clearTokens();
-    clearCachedUserId();
-    setUser(null);
-    navigate('/login', { replace: true });
+  const logout = useCallback(async () => {
+    const refreshToken = getRefreshToken();
+    try {
+      if (refreshToken) {
+        await logoutRequest({ refreshToken }, { suppressGlobalErrorToast: true });
+      }
+    } catch {
+      // Best-effort logout; always continue with local token cleanup.
+    } finally {
+      clearTokens();
+      clearCachedUserId();
+      setUser(null);
+      navigate('/login', { replace: true });
+    }
   }, [navigate]);
 
   const value = useMemo(

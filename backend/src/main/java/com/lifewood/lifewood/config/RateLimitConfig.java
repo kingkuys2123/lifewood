@@ -45,11 +45,18 @@ public class RateLimitConfig {
      * Returns true if request is allowed, false if rate limit exceeded.
      */
     public boolean allowRequest(String ip) {
+        return allowRequestForKey(ip);
+    }
+
+    /**
+     * Get or create a rate limiter for a logical key (e.g. IP + endpoint + method).
+     */
+    public boolean allowRequestForKey(String key) {
         try {
-            RateLimiter rateLimiter = limiters.get(ip);
+            RateLimiter rateLimiter = limiters.get(key);
             return rateLimiter.tryAcquire();
         } catch (ExecutionException e) {
-            log.error("Error retrieving rate limiter for IP: {}", ip, e);
+            log.error("Error retrieving rate limiter for key: {}", key, e);
             return false;
         }
     }

@@ -14,10 +14,13 @@ export function unwrapApiResponse(response) {
 
 export function normalizeApiError(error) {
   const messageFromApi = error?.response?.data?.message;
+  const retryAfterHeader = error?.response?.headers?.['retry-after'];
+  const retryAfterSeconds = Number.parseInt(retryAfterHeader, 10);
   const fallback = error?.message || 'Something went wrong. Please try again.';
 
   return {
     status: error?.response?.status,
     message: messageFromApi || fallback,
+    retryAfterSeconds: Number.isFinite(retryAfterSeconds) ? retryAfterSeconds : null,
   };
 }

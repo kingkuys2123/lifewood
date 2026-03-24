@@ -188,6 +188,77 @@
   cursor: wait;
 }
 
+.profile-password-card {
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-16);
+  background: rgba(255, 255, 255, 0.84);
+  padding: var(--s-14);
+  display: grid;
+  gap: var(--s-8);
+}
+
+.profile-password-card h3 {
+  font-family: var(--font-display);
+  font-size: var(--t-18);
+  line-height: 1.2;
+}
+
+.profile-password-card p {
+  margin-bottom: 2px;
+}
+
+.profile-password-grid {
+  display: grid;
+  gap: var(--s-10);
+}
+
+.profile-password-grid label {
+  font-size: var(--t-13);
+  font-weight: var(--fw-semibold);
+}
+
+.profile-password-input-wrap {
+  position: relative;
+}
+
+.profile-password-input-wrap input {
+  width: 100%;
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-10);
+  padding: 10px 44px 10px 12px;
+  outline: none;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.profile-password-input-wrap input:focus {
+  border-color: var(--c-forest);
+  box-shadow: 0 0 0 3px rgba(19, 48, 32, 0.12);
+}
+
+.profile-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-full);
+  display: inline-grid;
+  place-items: center;
+  background: rgba(19, 48, 32, 0.08);
+  color: var(--c-forest);
+}
+
+.profile-password-toggle:focus-visible {
+  outline: 2px solid rgba(19, 48, 32, 0.3);
+  outline-offset: 2px;
+}
+
+.profile-password-btn {
+  margin-top: var(--s-4);
+  width: fit-content;
+}
+
 .profile-save-feedback {
   font-size: var(--t-13);
   color: var(--c-forest);
@@ -226,6 +297,10 @@
   }
 
   .profile-form .btn {
+    width: 100%;
+  }
+
+  .profile-password-btn {
     width: 100%;
   }
 }

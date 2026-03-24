@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { getProfile, saveProfile as saveProfileRequest } from '../services/profileService';
+import {
+  changeMyPassword as changeMyPasswordRequest,
+  getProfile,
+  saveProfile as saveProfileRequest,
+} from '../services/profileService';
+import { validatePasswordStrength } from '../../auth/utils/passwordValidation';
 
 const EMPTY_FORM = {
   id: null,
@@ -53,6 +58,29 @@ export function useProfileForm() {
       setSaveState('idle');
       setError(err?.message || 'Unable to save profile.');
     }
+  };
+
+  const changePassword = async ({ oldPassword, newPassword, confirmPassword }) => {
+    const trimmedOldPassword = (oldPassword || '').trim();
+    const trimmedNewPassword = (newPassword || '').trim();
+
+    if (!trimmedOldPassword) {
+      throw new Error('Current password is required.');
+    }
+
+    const passwordError = validatePasswordStrength(trimmedNewPassword);
+    if (passwordError) {
+      throw new Error(passwordError);
+    }
+
+    if (trimmedNewPassword !== (confirmPassword || '').trim()) {
+      throw new Error('New password and confirmation do not match.');
+    }
+
+    await changeMyPasswordRequest({
+      oldPassword: trimmedOldPassword,
+      newPassword: trimmedNewPassword,
+    });
   };
 
   useEffect(() => {
@@ -111,6 +139,7 @@ export function useProfileForm() {
     updateProfilePicture,
     avatarPreview,
     saveProfile,
+    changePassword,
     saveState,
     loading,
     error,

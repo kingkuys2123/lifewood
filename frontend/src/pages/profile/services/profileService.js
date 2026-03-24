@@ -1,4 +1,8 @@
-import { fetchMyProfile, updateMyProfile } from '../../../services/users/usersService';
+import {
+  changeMyPassword as changeMyPasswordRequest,
+  fetchMyProfile,
+  updateMyProfile,
+} from '../../../services/users/usersService';
 
 function mapProfile(user) {
   return {
@@ -30,3 +34,8 @@ export async function saveProfile(profile) {
   const user = await updateMyProfile(payload);
   return mapProfile(user);
 }
+
+export async function changeMyPassword(payload) {
+  await changeMyPasswordRequest(payload);
+}
+

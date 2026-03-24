@@ -179,6 +179,11 @@ public class EmailService {
 
     private void sendHtmlMail(String to, String subject, String htmlBody) {
         try {
+            if (fromEmail == null || fromEmail.isBlank()) {
+                log.error("Email sender (SPRING_MAIL_USERNAME) is not configured!");
+                return;
+            }
+            
             var message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
             helper.setFrom(fromEmail);
@@ -186,9 +191,9 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
             mailSender.send(message);
-            log.info("Email sent to {} with subject {}", to, subject);
+            log.info("Sent email to {} with subject: {}", to, subject);
         } catch (Exception ex) {
-            log.error("Failed to send email to {}", to, ex);
+            log.error("Failed to send email to {} with subject {}. Error: {}", to, subject, ex.getMessage(), ex);
         }
     }
 

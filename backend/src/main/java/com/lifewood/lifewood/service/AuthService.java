@@ -81,8 +81,11 @@ public class AuthService {
     @Transactional
     public void requestPasswordReset(ForgotPasswordRequestDTO request) {
         String email = normalize(request.getEmail());
+        log.debug("Processing password reset request for email: {}", email);
 
-        userRepository.findByEmailIgnoreCase(email).ifPresent(user -> {
+        var userOptional = userRepository.findByEmailIgnoreCase(email);
+        if (userOptional.isPresent()) {
+            UserEntity user = userOptional.get();
             passwordResetTokenRepository.deleteByUser_Id(user.getId());
             passwordResetTokenRepository.deleteByExpiresAtBefore(LocalDateTime.now());
 
@@ -95,8 +98,12 @@ public class AuthService {
             passwordResetTokenRepository.save(tokenEntity);
 
             String resetUrl = buildResetUrl(rawToken);
+            log.info("Sending password reset email to: {}", email);
             emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), resetUrl);
-        });
+            log.info("Password reset email sent successfully to: {}", email);
+        } else {
+            log.info("Password reset requested for non-existent email: {}", email);
+        }
     }
 
     @Transactional(readOnly = true)

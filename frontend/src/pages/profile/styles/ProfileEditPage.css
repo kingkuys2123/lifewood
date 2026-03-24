@@ -198,7 +198,7 @@
 }
 
 .profile-password-card h3 {
-  font-family: var(--font-display);
+  font-family: var(--font-display), sans-serif;
   font-size: var(--t-18);
   line-height: 1.2;
 }

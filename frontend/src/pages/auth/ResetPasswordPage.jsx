@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useToast } from '../../app/providers/useToast';
+import PasswordStrengthIndicator from '../../components/shared/password/PasswordStrengthIndicator';
 import { resetPassword } from './services/authService';
 import { validatePasswordStrength } from './utils/passwordValidation';
 import wordmark from '../../assets/branding/lifewood-icon-text.png';
@@ -81,6 +82,7 @@ export default function ResetPasswordPage() {
               {showNewPassword ? '🙈' : '👁'}
             </button>
           </div>
+          <PasswordStrengthIndicator password={newPassword} idPrefix="reset-new-password" />
 
           <label htmlFor="confirm-password">Confirm New Password</label>
           <div className="password-input-wrap">

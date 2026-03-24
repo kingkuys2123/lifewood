@@ -11,6 +11,7 @@ import {
 import UsersSummary from './components/UsersSummary';
 import { useUsersTable } from './hooks/useUsersTable';
 import { useToast } from '../../app/providers/useToast';
+import PasswordStrengthIndicator from '../../components/shared/password/PasswordStrengthIndicator';
 import { validatePasswordStrength } from '../auth/utils/passwordValidation';
 import './styles/UsersPage.css';
 
@@ -326,6 +327,7 @@ export default function UsersPage() {
                     {showCreatePassword ? '🙈' : '👁'}
                   </button>
                 </div>
+                <PasswordStrengthIndicator password={form.password} idPrefix="create-user-password" />
               </div>
             ) : (
               <div className="action-modal-field" style={{ gridColumn: '1 / -1' }}>
@@ -348,6 +350,9 @@ export default function UsersPage() {
                     {showResetPassword ? '🙈' : '👁'}
                   </button>
                 </div>
+                {newPassword.trim() ? (
+                  <PasswordStrengthIndicator password={newPassword} idPrefix="reset-user-password" />
+                ) : null}
               </div>
             )}
           </div>

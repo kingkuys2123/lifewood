@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import PasswordStrengthIndicator from '../../../components/shared/password/PasswordStrengthIndicator';
 
 const MotionDiv = motion.div;
 const MotionLabel = motion.label;
@@ -189,6 +190,7 @@ export default function ProfileForm({
               {showNewPassword ? '🙈' : '👁'}
             </button>
           </div>
+          <PasswordStrengthIndicator password={newPassword} idPrefix="profile-new-password" />
 
           <label htmlFor="profile-confirm-password">Confirm New Password</label>
           <div className="profile-password-input-wrap">

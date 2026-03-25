@@ -323,9 +323,9 @@ public class EmailService {
 
         // Values used by your current EmailJS template.
         templateParams.put("title", safeTemplateValue(subject));
-        templateParams.put("subtitle", "");
-        templateParams.put("cta_text", "");
-        templateParams.put("cta_url", "");
+        templateParams.put("subtitle", "Lifewood notification");
+        templateParams.put("cta_text", "Open Lifewood");
+        templateParams.put("cta_url", safeTemplateValue(brandWebsite));
 
         templateParams.put("brand_name", safeTemplateValue(brandName));
         templateParams.put("brand_website", safeTemplateValue(brandWebsite));

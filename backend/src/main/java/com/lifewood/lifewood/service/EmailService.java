@@ -4,6 +4,7 @@ import com.lifewood.lifewood.dto.applicant.ContactMessageDTO;
 import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
 import jakarta.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -254,7 +256,8 @@ public class EmailService {
                         attempts);
                 return;
             } catch (Exception ex) {
-                boolean canRetry = attempt < attempts;
+                boolean retryableError = isRetryableEmailError(ex);
+                boolean canRetry = attempt < attempts && retryableError;
                 log.warn("Email delivery failed recipient={} subject={} attempt={}/{} retryable={} reason={}",
                         maskEmail(toEmail),
                         subject,
@@ -298,6 +301,7 @@ public class EmailService {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, MediaType.ALL));
 
         String effectivePublicKey = publicKey == null ? "" : publicKey.trim();
         String effectivePrivateKey = privateKey == null ? "" : privateKey.trim();
@@ -308,26 +312,54 @@ public class EmailService {
         request.put("template_id", templateId);
         request.put("user_id", effectivePublicKey);
         request.put("accessToken", effectivePrivateKey);
-        request.put("template_params", java.util.Map.of(
-                "to_email", toEmail,
-                "to_name", toName,
-                "subject", subject,
-                "message_html", bodyHtml,
-                "brand_name", brandName,
-                "brand_website", brandWebsite
-        ));
+        java.util.Map<String, Object> templateParams = new java.util.HashMap<>();
+        templateParams.put("to_email", safeTemplateValue(toEmail));
+        templateParams.put("to_name", safeTemplateValue(toName));
+        templateParams.put("subject", safeTemplateValue(subject));
 
-        ResponseEntity<java.util.Map> response = emailRestTemplate.postForEntity(
+        // Support both legacy and current template variable names.
+        templateParams.put("message_html", safeTemplateValue(bodyHtml));
+        templateParams.put("body_html", safeTemplateValue(bodyHtml));
+
+        // Values used by your current EmailJS template.
+        templateParams.put("title", safeTemplateValue(subject));
+        templateParams.put("subtitle", "");
+        templateParams.put("cta_text", "");
+        templateParams.put("cta_url", "");
+
+        templateParams.put("brand_name", safeTemplateValue(brandName));
+        templateParams.put("brand_website", safeTemplateValue(brandWebsite));
+
+        request.put("template_params", templateParams);
+
+        ResponseEntity<String> response = emailRestTemplate.postForEntity(
                 apiUrl,
                 new HttpEntity<>(request, headers),
-                java.util.Map.class);
+                String.class);
 
         if (response.getStatusCode().value() < 200 || response.getStatusCode().value() >= 300) {
-            String errorBody = response.getBody() != null ? response.getBody().toString() : "Unknown error";
+            String errorBody = response.getBody() != null ? response.getBody() : "Unknown error";
             throw new IllegalStateException("EmailJS API error (" + response.getStatusCode().value() + "): " + errorBody);
         }
 
         log.debug("EmailJS request sent successfully for recipient={}", maskEmail(toEmail));
+    }
+
+    /**
+     * Retries only transient failures.
+     * 4xx responses (especially auth/config issues) are treated as non-retryable.
+     */
+    private boolean isRetryableEmailError(Exception ex) {
+        if (ex instanceof HttpClientErrorException clientError) {
+            int status = clientError.getStatusCode().value();
+            if (status >= 400 && status < 500) {
+                if (status == 412) {
+                    log.error("EmailJS/Gmail precondition failed (412). This is typically a Gmail OAuth scope issue in the EmailJS service. Reconnect Gmail in EmailJS and re-consent required scopes.");
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -379,6 +411,10 @@ public class EmailService {
     private String normalizeAdminMessage(String adminMessage) {
         String message = adminMessage == null ? "" : adminMessage.trim();
         return message.isEmpty() ? "No additional message from the recruitment team." : message;
+    }
+
+    private String safeTemplateValue(String value) {
+        return value == null ? "" : value;
     }
 }
 

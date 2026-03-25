@@ -168,7 +168,7 @@ public class EmailService {
         sendHtmlMailWithRetry(notificationTo, "Contact Message: " + request.getSubject(),
                 composeTemplate("New Contact Message", "A visitor submitted the contact form.", adminBody));
         sendHtmlMailWithRetry(request.getEmail(), "We received your message",
-                composeTemplate("Message Received", "Thanks for reaching out.", senderBody));
+                composeTemplate("Message Received", "Thanks for reaching out!", senderBody));
     }
 
     @Async("mailTaskExecutor")

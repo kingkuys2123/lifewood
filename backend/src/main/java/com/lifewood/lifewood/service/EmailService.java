@@ -238,7 +238,7 @@ public class EmailService {
                 <p style="font-size:13px;color:#6b7280;">This link expires in 30 minutes and can only be used once. If you did not request this, please ignore this email.</p>
                 """;
 
-        sendEmailWithRetry(recipientEmail, safeName, "Reset your " + brandName + " Admin password",
+        sendEmailWithRetry(recipientEmail, safeName, "Reset your password",
                 "Secure account recovery", bodyHtml,
                 "Reset Password", resetUrl);
     }

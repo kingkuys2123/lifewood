@@ -56,6 +56,9 @@ public class EmailService {
     @Value("${app.mail.brand.website:https://www.lifewood.com}")
     private String brandWebsite;
 
+    @Value("${app.mail.brand.logo-url:}")
+    private String brandLogoUrl;
+
     @Value("${app.mail.retry.max-attempts:3}")
     private int maxRetryAttempts;
 
@@ -94,16 +97,19 @@ public class EmailService {
                 <p>Please review this application in the admin portal.</p>
                 """.formatted(escapeHtml(applicantName), escapeHtml(project), escapeHtml(applicantEmail));
 
-        sendEmailWithRetry(notificationTo, "Admin Notification", "New applicant submission", adminBodyHtml);
+        sendEmailWithRetry(notificationTo, "Admin Notification", "New applicant submission",
+                "A new applicant profile is ready for review.", adminBodyHtml,
+                "Open Admin Portal", brandWebsite + "/admin/applicants");
 
         // Applicant confirmation
         String applicantBodyHtml = """
-                <p>Hello %s,</p>
                 <p>Thank you for applying to <strong>%s</strong>. We have successfully received your application.</p>
                 <p>Our team will review your profile and share an update soon.</p>
-                """.formatted(escapeHtml(applicantName), escapeHtml(project));
+                """.formatted(escapeHtml(project));
 
-        sendEmailWithRetry(applicantEmail, applicantName, "Application received", applicantBodyHtml);
+        sendEmailWithRetry(applicantEmail, applicantName, "Application received",
+                "Your submission is in review.", applicantBodyHtml,
+                "Visit Lifewood", brandWebsite);
     }
 
     /**
@@ -150,26 +156,28 @@ public class EmailService {
                 escapeHtml(request.getProjectAppliedFor()),
                 escapeHtml(normalizedMessage));
 
-        sendEmailWithRetry(notificationTo, "Admin Notification", "Applicant " + decisionLabel, adminBodyHtml);
+        sendEmailWithRetry(notificationTo, "Admin Notification", "Applicant " + decisionLabel,
+                "A recruitment decision has been recorded.", adminBodyHtml,
+                "Open Admin Portal", brandWebsite + "/admin/applicants");
 
         // Applicant notification
         String applicantBodyHtml;
         if (request.getApproved()) {
             applicantBodyHtml = """
-                    <p>Hello %s,</p>
                     <p>Great news! Your application for <strong>%s</strong> has been approved.</p>
                     <p>%s</p>
-                    """.formatted(escapeHtml(request.getApplicantName()), escapeHtml(request.getProjectAppliedFor()), escapeHtml(normalizedMessage));
+                    """.formatted(escapeHtml(request.getProjectAppliedFor()), escapeHtml(normalizedMessage));
         } else {
             applicantBodyHtml = """
-                    <p>Hello %s,</p>
                     <p>Thank you for applying to <strong>%s</strong>. Your application was not selected this time.</p>
                     <p>%s</p>
-                    """.formatted(escapeHtml(request.getApplicantName()), escapeHtml(request.getProjectAppliedFor()), escapeHtml(normalizedMessage));
+                    """.formatted(escapeHtml(request.getProjectAppliedFor()), escapeHtml(normalizedMessage));
         }
 
         String applicantSubject = request.getApproved() ? "Application Update - Approved" : "Application Update - Rejected";
-        sendEmailWithRetry(request.getApplicantEmail(), request.getApplicantName(), applicantSubject, applicantBodyHtml);
+        sendEmailWithRetry(request.getApplicantEmail(), request.getApplicantName(), applicantSubject,
+                "Status update for your " + request.getProjectAppliedFor() + " application.", applicantBodyHtml,
+                "Visit Lifewood", brandWebsite);
 
         log.info("Sent applicant decision emails applicantEmail={} decision={}", 
                 maskEmail(request.getApplicantEmail()), decisionLabel);
@@ -198,16 +206,19 @@ public class EmailService {
                 escapeHtml(request.getSubject()),
                 escapeHtml(request.getMessage()).replace("\n", "<br/>"));
 
-        sendEmailWithRetry(notificationTo, "Admin Notification", "Contact Message: " + request.getSubject(), adminBodyHtml);
+        sendEmailWithRetry(notificationTo, "Admin Notification", "Contact Message: " + request.getSubject(),
+                "A new message was submitted from the contact form.", adminBodyHtml,
+                "Open Admin Portal", brandWebsite + "/admin");
 
         // Sender confirmation
         String senderBodyHtml = """
-                <p>Hello %s,</p>
                 <p>Thanks for contacting %s. We received your message and our team will respond as soon as possible.</p>
                 <p>Subject: <strong>%s</strong></p>
-                """.formatted(escapeHtml(request.getName()), escapeHtml(brandName), escapeHtml(request.getSubject()));
+                """.formatted(escapeHtml(brandName), escapeHtml(request.getSubject()));
 
-        sendEmailWithRetry(request.getEmail(), request.getName(), "We received your message", senderBodyHtml);
+        sendEmailWithRetry(request.getEmail(), request.getName(), "We received your message",
+                "Thanks for reaching out.", senderBodyHtml,
+                "Visit Lifewood", brandWebsite);
     }
 
     /**
@@ -223,21 +234,26 @@ public class EmailService {
         String safeName = firstName == null || firstName.isBlank() ? "there" : firstName;
 
         String bodyHtml = """
-                <p>Hello %s,</p>
                 <p style="color:#4b5563;">We received a request to reset your password. Click the button below to proceed.</p>
-                <p>
-                  <a href="%s" style="display:inline-block;padding:10px 16px;border-radius:999px;background:#133020;color:#ffffff;text-decoration:none;font-weight:600;">Reset Password</a>
-                </p>
                 <p style="font-size:13px;color:#6b7280;">This link expires in 30 minutes and can only be used once. If you did not request this, please ignore this email.</p>
-                """.formatted(escapeHtml(safeName), escapeHtml(resetUrl));
+                """;
 
-        sendEmailWithRetry(recipientEmail, safeName, "Reset your " + brandName + " Admin password", bodyHtml);
+        sendEmailWithRetry(recipientEmail, safeName, "Reset your " + brandName + " Admin password",
+                "Secure account recovery", bodyHtml,
+                "Reset Password", resetUrl);
     }
 
     /**
      * Send email via EmailJS HTTP API with retry logic
      */
-    private void sendEmailWithRetry(String toEmail, String toName, String subject, String bodyHtml) {
+    private void sendEmailWithRetry(
+            String toEmail,
+            String toName,
+            String subject,
+            String subtitle,
+            String bodyHtml,
+            String ctaText,
+            String ctaUrl) {
         if (toEmail == null || toEmail.isBlank()) {
             log.warn("Skipping email with blank recipient");
             return;
@@ -248,7 +264,7 @@ public class EmailService {
 
         for (int attempt = 1; attempt <= attempts; attempt++) {
             try {
-                deliverViaEmailJs(toEmail, toName, subject, bodyHtml);
+                deliverViaEmailJs(toEmail, toName, subject, subtitle, bodyHtml, ctaText, ctaUrl);
                 log.info("Email delivery accepted recipient={} subject={} attempt={}/{}",
                         maskEmail(toEmail),
                         subject,
@@ -294,7 +310,14 @@ public class EmailService {
      * - user_id: Public Key
      * - accessToken: Private Key (required when account is in strict mode)
      */
-    private void deliverViaEmailJs(String toEmail, String toName, String subject, String bodyHtml) {
+    private void deliverViaEmailJs(
+            String toEmail,
+            String toName,
+            String subject,
+            String subtitle,
+            String bodyHtml,
+            String ctaText,
+            String ctaUrl) {
         if (!isEmailJsConfigured()) {
             throw new IllegalStateException("EmailJS credentials not configured");
         }
@@ -323,12 +346,13 @@ public class EmailService {
 
         // Values used by your current EmailJS template.
         templateParams.put("title", safeTemplateValue(subject));
-        templateParams.put("subtitle", "Lifewood notification");
-        templateParams.put("cta_text", "Open Lifewood");
-        templateParams.put("cta_url", safeTemplateValue(brandWebsite));
+        templateParams.put("subtitle", safeTemplateValue(subtitle));
+        templateParams.put("cta_text", safeTemplateValue(ctaText));
+        templateParams.put("cta_url", safeTemplateValue(ctaUrl));
 
         templateParams.put("brand_name", safeTemplateValue(brandName));
         templateParams.put("brand_website", safeTemplateValue(brandWebsite));
+        templateParams.put("logo_url", safeTemplateValue(brandLogoUrl));
 
         request.put("template_params", templateParams);
 

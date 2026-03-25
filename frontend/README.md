@@ -15,7 +15,7 @@ npm run dev
 npm run build
 ```
 
-## Key Routes 
+## Key Routes
 
 - `/admin` - Portal landing page with login call-to-action
 - `/login` - Static login portal (username/email, forgot password, password, sign in)

@@ -1,8 +1,6 @@
 package com.lifewood.lifewood.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lifewood.lifewood.dto.applicant.ContactMessageDTO;
-import com.lifewood.lifewood.dto.email.EmailPayloadDTO;
 import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
 import jakarta.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
@@ -18,20 +16,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Email Service using EmailJS HTTP API with Universal Template System
+ * Email Service using EmailJS HTTP API
  * 
- * This service transforms all email types (password reset, applicant notifications, contact messages)
- * into a unified EmailPayloadDTO structure and sends them via EmailJS HTTP API.
+ * This service sends emails via EmailJS using secure private key authentication.
+ * Private key is sent as the "user_id" field in the request body for server-side authentication.
  * 
- * All HTML composition, template rendering, and email logic stays in the backend (Java).
- * The universal EmailJS template receives dynamic variables via the payload structure.
- * 
- * Key design:
- * - Backend is the source of truth for all email content and branding
- * - Each public sendXxxEmail() method builds an EmailPayloadDTO with structured data
- * - Payloads are passed to deliverViaEmailJs() which handles HTTP API communication
- * - EmailJS template dynamically renders the email based on payload variables
- * - No SMTP setup needed; relies on HTTPS, compatible with Railway Free/Trial
+ * Works on Railway Free/Trial without SMTP restrictions.
  */
 @Slf4j
 @Service
@@ -39,19 +29,21 @@ import org.springframework.web.client.RestTemplate;
 public class EmailService {
 
     private final RestTemplate emailRestTemplate;
-    private final ObjectMapper objectMapper;
-
-    @Value("${app.mail.emailjs.api-key:}")
-    private String emailJsApiKey;
 
     @Value("${app.mail.emailjs.service-id:}")
-    private String emailJsServiceId;
+    private String serviceId;
 
     @Value("${app.mail.emailjs.template-id:}")
-    private String emailJsTemplateId;
+    private String templateId;
+
+    @Value("${app.mail.emailjs.public-key:}")
+    private String publicKey;
+
+    @Value("${app.mail.emailjs.private-key:}")
+    private String privateKey;
 
     @Value("${app.mail.emailjs.api-url:https://api.emailjs.com/api/v1.0/email/send}")
-    private String emailJsApiUrl;
+    private String apiUrl;
 
     @Value("${app.mail.notification-to:}")
     private String notificationTo;
@@ -70,27 +62,21 @@ public class EmailService {
 
     @PostConstruct
     void logMailConfigurationStatus() {
-        boolean hasApiKey = emailJsApiKey != null && !emailJsApiKey.isBlank();
-        boolean hasServiceId = emailJsServiceId != null && !emailJsServiceId.isBlank();
-        boolean hasTemplateId = emailJsTemplateId != null && !emailJsTemplateId.isBlank();
+        boolean hasServiceId = serviceId != null && !serviceId.isBlank();
+        boolean hasTemplateId = templateId != null && !templateId.isBlank();
+        boolean hasPublicKey = publicKey != null && !publicKey.isBlank();
+        boolean hasPrivateKey = privateKey != null && !privateKey.isBlank();
 
-        log.info("Mail configuration loaded provider=emailjs apiKeyConfigured={} serviceIdConfigured={} templateIdConfigured={} asyncMode=true",
-                hasApiKey, hasServiceId, hasTemplateId);
+        log.info("Mail configuration loaded provider=emailjs serviceIdConfigured={} templateIdConfigured={} publicKeyConfigured={} privateKeyConfigured={} asyncMode=true",
+                hasServiceId, hasTemplateId, hasPublicKey, hasPrivateKey);
 
-        if (!hasApiKey || !hasServiceId || !hasTemplateId) {
-            log.warn("EmailJS configuration is incomplete. Email sending will fail until all env vars are set: APP_MAIL_EMAILJS_API_KEY, APP_MAIL_EMAILJS_SERVICE_ID, APP_MAIL_EMAILJS_TEMPLATE_ID");
+        if (!hasServiceId || !hasTemplateId || !hasPublicKey || !hasPrivateKey) {
+            log.warn("EmailJS configuration is incomplete. Please set all environment variables: APP_MAIL_EMAILJS_SERVICE_ID, APP_MAIL_EMAILJS_TEMPLATE_ID, APP_MAIL_EMAILJS_PUBLIC_KEY, APP_MAIL_EMAILJS_PRIVATE_KEY");
         }
     }
 
     /**
      * Send applicant submission notification
-     * 
-     * Composed of:
-     * 1. Admin notification: New applicant alert
-     * 2. Applicant confirmation: Submission received confirmation
-     * 
-     * Both emails are built from the same backend logic but sent to different recipients
-     * with customized content via EmailPayloadDTO mapping.
      */
     @Async("mailTaskExecutor")
     public void sendApplicantSubmissionNotification(String applicantEmail, String applicantName, String project) {
@@ -99,61 +85,27 @@ public class EmailService {
             return;
         }
 
-        // Admin notification payload
+        // Admin notification
         String adminBodyHtml = """
                 <p><strong>%s</strong> applied for <strong>%s</strong>.</p>
                 <p>Email: %s</p>
                 <p>Please review this application in the admin portal.</p>
                 """.formatted(escapeHtml(applicantName), escapeHtml(project), escapeHtml(applicantEmail));
 
-        EmailPayloadDTO adminPayload = EmailPayloadDTO.builder()
-                .to(notificationTo)
-                .subject("New applicant submission")
-                .emailType("applicant-submission-admin")
-                .recipientName("Admin")
-                .title("New Application")
-                .subtitle("A new applicant has submitted their profile.")
-                .bodyHtml(adminBodyHtml)
-                .brandName(brandName)
-                .brandWebsite(brandWebsite)
-                .isAdminNotification(true)
-                .build();
-        adminPayload.addMetadata("applicantName", applicantName);
-        adminPayload.addMetadata("projectName", project);
-        adminPayload.addMetadata("applicantEmail", applicantEmail);
+        sendEmailWithRetry(notificationTo, "Admin Notification", "New applicant submission", adminBodyHtml);
 
-        sendEmailWithRetry(adminPayload);
-
-        // Applicant confirmation payload
+        // Applicant confirmation
         String applicantBodyHtml = """
                 <p>Hello %s,</p>
                 <p>Thank you for applying to <strong>%s</strong>. We have successfully received your application.</p>
                 <p>Our team will review your profile and share an update soon.</p>
                 """.formatted(escapeHtml(applicantName), escapeHtml(project));
 
-        EmailPayloadDTO applicantPayload = EmailPayloadDTO.builder()
-                .to(applicantEmail)
-                .subject("Application received")
-                .emailType("applicant-submission-confirmation")
-                .recipientName(applicantName)
-                .title("Application Received")
-                .subtitle("Your submission is in review.")
-                .bodyHtml(applicantBodyHtml)
-                .brandName(brandName)
-                .brandWebsite(brandWebsite)
-                .isAdminNotification(false)
-                .build();
-        applicantPayload.addMetadata("projectName", project);
-
-        sendEmailWithRetry(applicantPayload);
+        sendEmailWithRetry(applicantEmail, applicantName, "Application received", applicantBodyHtml);
     }
 
     /**
-     * Send applicant decision notification (approval or rejection)
-     * 
-     * Composed of:
-     * 1. Admin notification: Decision recorded
-     * 2. Applicant notification: Personalized approval/rejection message
+     * Send applicant decision notification
      */
     @Async("mailTaskExecutor")
     public void sendApplicantDecisionNotification(
@@ -162,11 +114,6 @@ public class EmailService {
             String project,
             boolean approved,
             String customMessage) {
-
-        if (!isEmailJsConfigured()) {
-            log.warn("EmailJS not configured; skipping decision notification");
-            return;
-        }
 
         sendDecisionNotification(ApprovalNotificationDTO.builder()
                 .applicantEmail(applicantEmail)
@@ -201,25 +148,7 @@ public class EmailService {
                 escapeHtml(request.getProjectAppliedFor()),
                 escapeHtml(normalizedMessage));
 
-        EmailPayloadDTO adminPayload = EmailPayloadDTO.builder()
-                .to(notificationTo)
-                .subject("Applicant " + decisionLabel)
-                .emailType("applicant-decision-admin")
-                .recipientName("Admin")
-                .title("Application Decision")
-                .subtitle("A recruitment decision has been recorded.")
-                .bodyHtml(adminBodyHtml)
-                .brandName(brandName)
-                .brandWebsite(brandWebsite)
-                .isAdminNotification(true)
-                .build();
-        adminPayload.addMetadata("applicantName", request.getApplicantName());
-        adminPayload.addMetadata("applicantEmail", request.getApplicantEmail());
-        adminPayload.addMetadata("projectName", request.getProjectAppliedFor());
-        adminPayload.addMetadata("decision", decisionLabel);
-        adminPayload.addMetadata("adminMessage", normalizedMessage);
-
-        sendEmailWithRetry(adminPayload);
+        sendEmailWithRetry(notificationTo, "Admin Notification", "Applicant " + decisionLabel, adminBodyHtml);
 
         // Applicant notification
         String applicantBodyHtml;
@@ -237,22 +166,8 @@ public class EmailService {
                     """.formatted(escapeHtml(request.getApplicantName()), escapeHtml(request.getProjectAppliedFor()), escapeHtml(normalizedMessage));
         }
 
-        EmailPayloadDTO applicantPayload = EmailPayloadDTO.builder()
-                .to(request.getApplicantEmail())
-                .subject(request.getApproved() ? "Application Update - Approved" : "Application Update - Rejected")
-                .emailType(request.getApproved() ? "applicant-approved" : "applicant-rejected")
-                .recipientName(request.getApplicantName())
-                .title(request.getApproved() ? "Application Approved" : "Application Update")
-                .subtitle("Status update for your " + escapeHtml(request.getProjectAppliedFor()) + " application.")
-                .bodyHtml(applicantBodyHtml)
-                .brandName(brandName)
-                .brandWebsite(brandWebsite)
-                .isAdminNotification(false)
-                .build();
-        applicantPayload.addMetadata("projectName", request.getProjectAppliedFor());
-        applicantPayload.addMetadata("decision", decisionLabel);
-
-        sendEmailWithRetry(applicantPayload);
+        String applicantSubject = request.getApproved() ? "Application Update - Approved" : "Application Update - Rejected";
+        sendEmailWithRetry(request.getApplicantEmail(), request.getApplicantName(), applicantSubject, applicantBodyHtml);
 
         log.info("Sent applicant decision emails applicantEmail={} decision={}", 
                 maskEmail(request.getApplicantEmail()), decisionLabel);
@@ -260,10 +175,6 @@ public class EmailService {
 
     /**
      * Send contact form message
-     * 
-     * Composed of:
-     * 1. Admin notification: New message received
-     * 2. Sender confirmation: Thank you message
      */
     @Async("mailTaskExecutor")
     public void sendContactFormMessage(ContactMessageDTO request) {
@@ -285,23 +196,7 @@ public class EmailService {
                 escapeHtml(request.getSubject()),
                 escapeHtml(request.getMessage()).replace("\n", "<br/>"));
 
-        EmailPayloadDTO adminPayload = EmailPayloadDTO.builder()
-                .to(notificationTo)
-                .subject("Contact Message: " + request.getSubject())
-                .emailType("contact-admin")
-                .recipientName("Admin")
-                .title("New Contact Message")
-                .subtitle("A visitor submitted the contact form.")
-                .bodyHtml(adminBodyHtml)
-                .brandName(brandName)
-                .brandWebsite(brandWebsite)
-                .isAdminNotification(true)
-                .build();
-        adminPayload.addMetadata("senderName", request.getName());
-        adminPayload.addMetadata("senderEmail", request.getEmail());
-        adminPayload.addMetadata("messageSubject", request.getSubject());
-
-        sendEmailWithRetry(adminPayload);
+        sendEmailWithRetry(notificationTo, "Admin Notification", "Contact Message: " + request.getSubject(), adminBodyHtml);
 
         // Sender confirmation
         String senderBodyHtml = """
@@ -310,20 +205,7 @@ public class EmailService {
                 <p>Subject: <strong>%s</strong></p>
                 """.formatted(escapeHtml(request.getName()), escapeHtml(brandName), escapeHtml(request.getSubject()));
 
-        EmailPayloadDTO senderPayload = EmailPayloadDTO.builder()
-                .to(request.getEmail())
-                .subject("We received your message")
-                .emailType("contact-confirmation")
-                .recipientName(request.getName())
-                .title("Message Received")
-                .subtitle("Thanks for reaching out!")
-                .bodyHtml(senderBodyHtml)
-                .brandName(brandName)
-                .brandWebsite(brandWebsite)
-                .isAdminNotification(false)
-                .build();
-
-        sendEmailWithRetry(senderPayload);
+        sendEmailWithRetry(request.getEmail(), request.getName(), "We received your message", senderBodyHtml);
     }
 
     /**
@@ -347,35 +229,14 @@ public class EmailService {
                 <p style="font-size:13px;color:#6b7280;">This link expires in 30 minutes and can only be used once. If you did not request this, please ignore this email.</p>
                 """.formatted(escapeHtml(safeName), escapeHtml(resetUrl));
 
-        EmailPayloadDTO payload = EmailPayloadDTO.builder()
-                .to(recipientEmail)
-                .subject("Reset your Lifewood Admin password")
-                .emailType("password-reset")
-                .recipientName(safeName)
-                .title("Password Reset")
-                .subtitle("Secure account recovery")
-                .ctaText("Reset Password")
-                .ctaUrl(resetUrl)
-                .bodyHtml(bodyHtml)
-                .brandName(brandName)
-                .brandWebsite(brandWebsite)
-                .isAdminNotification(false)
-                .build();
-
-        sendEmailWithRetry(payload);
+        sendEmailWithRetry(recipientEmail, safeName, "Reset your " + brandName + " Admin password", bodyHtml);
     }
 
     /**
      * Send email via EmailJS HTTP API with retry logic
-     * 
-     * This method:
-     * 1. Wraps the EmailPayloadDTO in EmailJS format
-     * 2. Makes HTTP POST request to EmailJS API
-     * 3. Implements exponential backoff retry on failure
-     * 4. Logs masked email addresses and response status
      */
-    private void sendEmailWithRetry(EmailPayloadDTO payload) {
-        if (payload == null || payload.getTo() == null || payload.getTo().isBlank()) {
+    private void sendEmailWithRetry(String toEmail, String toName, String subject, String bodyHtml) {
+        if (toEmail == null || toEmail.isBlank()) {
             log.warn("Skipping email with blank recipient");
             return;
         }
@@ -385,20 +246,18 @@ public class EmailService {
 
         for (int attempt = 1; attempt <= attempts; attempt++) {
             try {
-                String messageId = deliverViaEmailJs(payload);
-                log.info("Email delivery accepted recipient={} subject={} emailType={} attempt={}/{} messageId={}",
-                        maskEmail(payload.getTo()),
-                        payload.getSubject(),
-                        payload.getEmailType(),
+                deliverViaEmailJs(toEmail, toName, subject, bodyHtml);
+                log.info("Email delivery accepted recipient={} subject={} attempt={}/{}",
+                        maskEmail(toEmail),
+                        subject,
                         attempt,
-                        attempts,
-                        messageId);
+                        attempts);
                 return;
             } catch (Exception ex) {
                 boolean canRetry = attempt < attempts;
                 log.warn("Email delivery failed recipient={} subject={} attempt={}/{} retryable={} reason={}",
-                        maskEmail(payload.getTo()),
-                        payload.getSubject(),
+                        maskEmail(toEmail),
+                        subject,
                         attempt,
                         attempts,
                         canRetry,
@@ -406,8 +265,8 @@ public class EmailService {
 
                 if (!canRetry) {
                     log.error("Email delivery permanently failed recipient={} subject={} after {} attempts",
-                            maskEmail(payload.getTo()),
-                            payload.getSubject(),
+                            maskEmail(toEmail),
+                            subject,
                             attempts,
                             ex);
                     return;
@@ -418,7 +277,7 @@ public class EmailService {
                     TimeUnit.MILLISECONDS.sleep(sleepMs);
                 } catch (InterruptedException interruptedException) {
                     Thread.currentThread().interrupt();
-                    log.warn("Email retry interrupted for recipient={} subject={}", maskEmail(payload.getTo()), payload.getSubject());
+                    log.warn("Email retry interrupted for recipient={} subject={}", maskEmail(toEmail), subject);
                     return;
                 }
             }
@@ -428,82 +287,57 @@ public class EmailService {
     /**
      * Deliver email via EmailJS HTTP API
      * 
-     * Transforms EmailPayloadDTO into EmailJS request format:
-     * {
-     *   "service_id": "...",
-     *   "template_id": "...",
-     *   "user_id": "...",
-     *   "template_params": { ... EmailPayloadDTO fields as template variables ... }
-     * }
-     * 
-     * The EmailJS universal template receives all payload fields as variables
-     * and dynamically renders the email based on emailType and content.
+     * Uses private key authentication by sending it as "user_id" in the request body.
+     * This is for server-side/backend authentication (unlike public key which is for frontend).
      */
-    private String deliverViaEmailJs(EmailPayloadDTO payload) {
+    private void deliverViaEmailJs(String toEmail, String toName, String subject, String bodyHtml) {
         if (!isEmailJsConfigured()) {
-            throw new IllegalStateException("EmailJS API key, service ID, or template ID not configured");
+            throw new IllegalStateException("EmailJS credentials not configured");
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Build template parameters from payload
-        // All EmailPayloadDTO fields become available as variables in the EmailJS template
-        java.util.Map<String, Object> templateParams = new java.util.HashMap<>();
-        templateParams.put("to_email", payload.getTo());
-        templateParams.put("to_name", payload.getRecipientName());
-        templateParams.put("subject", payload.getSubject());
-        templateParams.put("email_type", payload.getEmailType());
-        templateParams.put("title", payload.getTitle());
-        templateParams.put("subtitle", payload.getSubtitle());
-        templateParams.put("body_html", payload.getBodyHtml());
-        templateParams.put("cta_text", payload.getCtaText());
-        templateParams.put("cta_url", payload.getCtaUrl());
-        templateParams.put("brand_name", payload.getBrandName());
-        templateParams.put("brand_website", payload.getBrandWebsite());
-        
-        // Include metadata if present
-        if (payload.getMetadata() != null) {
-            payload.getMetadata().forEach(templateParams::put);
-        }
-
-        // Build EmailJS request
-        java.util.Map<String, Object> emailJsRequest = new java.util.HashMap<>();
-        emailJsRequest.put("service_id", emailJsServiceId);
-        emailJsRequest.put("template_id", emailJsTemplateId);
-        emailJsRequest.put("user_id", emailJsApiKey);
-        emailJsRequest.put("template_params", templateParams);
+        // Build request payload with private key authentication
+        // The "user_id" field must contain the private key for server-side auth
+        java.util.Map<String, Object> request = new java.util.HashMap<>();
+        request.put("service_id", serviceId);
+        request.put("template_id", templateId);
+        request.put("user_id", privateKey);  // CRITICAL: Private key for server-side authentication
+        request.put("template_params", java.util.Map.of(
+                "to_email", toEmail,
+                "to_name", toName,
+                "subject", subject,
+                "message_html", bodyHtml,
+                "brand_name", brandName,
+                "brand_website", brandWebsite
+        ));
 
         ResponseEntity<java.util.Map> response = emailRestTemplate.postForEntity(
-                emailJsApiUrl,
-                new HttpEntity<>(emailJsRequest, headers),
+                apiUrl,
+                new HttpEntity<>(request, headers),
                 java.util.Map.class);
 
         if (response.getStatusCode().value() < 200 || response.getStatusCode().value() >= 300) {
-            throw new IllegalStateException("EmailJS API returned non-success status: " + response.getStatusCode().value());
+            String errorBody = response.getBody() != null ? response.getBody().toString() : "Unknown error";
+            throw new IllegalStateException("EmailJS API error (" + response.getStatusCode().value() + "): " + errorBody);
         }
 
-        // EmailJS returns message_id in response body
-        if (response.getBody() != null) {
-            Object messageId = response.getBody().get("message_id");
-            return messageId != null ? messageId.toString() : "success-" + response.getStatusCode().value();
-        }
-
-        return "success-" + response.getStatusCode().value();
+        log.debug("EmailJS request sent successfully for recipient={}", maskEmail(toEmail));
     }
 
     /**
      * Check if EmailJS is properly configured
      */
     private boolean isEmailJsConfigured() {
-        boolean hasApiKey = emailJsApiKey != null && !emailJsApiKey.isBlank();
-        boolean hasServiceId = emailJsServiceId != null && !emailJsServiceId.isBlank();
-        boolean hasTemplateId = emailJsTemplateId != null && !emailJsTemplateId.isBlank();
-        return hasApiKey && hasServiceId && hasTemplateId;
+        return (serviceId != null && !serviceId.isBlank())
+                && (templateId != null && !templateId.isBlank())
+                && (publicKey != null && !publicKey.isBlank())
+                && (privateKey != null && !privateKey.isBlank());
     }
 
     /**
-     * Mask email for logging purposes
+     * Mask email for logging
      */
     private String maskEmail(String email) {
         if (email == null || email.isBlank() || !email.contains("@")) {
@@ -536,11 +370,12 @@ public class EmailService {
     }
 
     /**
-     * Normalize admin message for template inclusion
+     * Normalize admin message
      */
     private String normalizeAdminMessage(String adminMessage) {
         String message = adminMessage == null ? "" : adminMessage.trim();
         return message.isEmpty() ? "No additional message from the recruitment team." : message;
     }
 }
+
 

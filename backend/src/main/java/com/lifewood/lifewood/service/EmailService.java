@@ -2,27 +2,41 @@ package com.lifewood.lifewood.service;
 
 import com.lifewood.lifewood.dto.applicant.ContactMessageDTO;
 import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
-import jakarta.mail.internet.MimeMessage;
-import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final RestTemplate emailRestTemplate;
+    private final ObjectMapper objectMapper;
 
-    @Value("${spring.mail.username}")
+    @Value("${app.mail.from}")
     private String fromEmail;
+
+    @Value("${app.mail.resend.api-key:}")
+    private String resendApiKey;
+
+    @Value("${app.mail.resend.api-url:https://api.resend.com/emails}")
+    private String resendApiUrl;
 
     @Value("${app.mail.notification-to}")
     private String notificationTo;
@@ -61,8 +75,12 @@ public class EmailService {
     void logMailConfigurationStatus() {
         String sender = sanitizeConfiguredValue(fromEmail);
         String recipient = sanitizeConfiguredValue(notificationTo);
-        log.info("Mail configuration loaded senderConfigured={} notificationRecipientConfigured={} retryAttempts={} asyncMode={}",
+        String apiKey = sanitizeConfiguredValue(resendApiKey);
+        String apiUrl = sanitizeConfiguredValue(resendApiUrl);
+        log.info("Mail configuration loaded provider=resend senderConfigured={} apiKeyConfigured={} apiUrlConfigured={} notificationRecipientConfigured={} retryAttempts={} asyncMode={}",
                 sender != null && !sender.isBlank(),
+                apiKey != null && !apiKey.isBlank(),
+                apiUrl != null && !apiUrl.isBlank(),
                 recipient != null && !recipient.isBlank(),
                 Math.max(1, maxRetryAttempts),
                 true);
@@ -200,9 +218,21 @@ public class EmailService {
     private void sendHtmlMailWithRetry(String to, String subject, String htmlBody) {
         String sender = sanitizeConfiguredValue(fromEmail);
         String recipient = sanitizeConfiguredValue(to);
+        String apiKey = sanitizeConfiguredValue(resendApiKey);
+        String apiUrl = sanitizeConfiguredValue(resendApiUrl);
 
         if (sender == null || sender.isBlank()) {
-            log.error("Email sender (SPRING_MAIL_USERNAME) is not configured");
+            log.error("Email sender (APP_MAIL_FROM) is not configured");
+            return;
+        }
+
+        if (apiKey == null || apiKey.isBlank()) {
+            log.error("Resend API key (APP_MAIL_RESEND_API_KEY) is not configured");
+            return;
+        }
+
+        if (apiUrl == null || apiUrl.isBlank()) {
+            log.error("Resend API URL (APP_MAIL_RESEND_API_URL) is not configured");
             return;
         }
 
@@ -216,22 +246,36 @@ public class EmailService {
 
         for (int attempt = 1; attempt <= attempts; attempt++) {
             try {
-                MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
-                helper.setFrom(sender);
-                helper.setTo(recipient);
-                helper.setSubject(subject);
-                helper.setText(htmlBody, true);
-                mailSender.send(message);
+                String providerMessageId = deliverWithResend(apiUrl, apiKey, sender, recipient, subject, htmlBody);
 
                 log.info("Email delivery accepted recipient={} subject={} attempt={}/{} messageId={}",
                         maskEmail(recipient),
                         subject,
                         attempt,
                         attempts,
-                        message.getMessageID());
+                        providerMessageId);
                 return;
-            } catch (Exception ex) {
+            } catch (RestClientResponseException ex) {
+                boolean canRetry = attempt < attempts;
+                log.warn("Email delivery failed recipient={} subject={} attempt={}/{} retryable={} status={} reason={} responseBody={}",
+                        maskEmail(recipient),
+                        subject,
+                        attempt,
+                        attempts,
+                        canRetry,
+                        ex.getStatusCode().value(),
+                        ex.getMessage(),
+                        truncateForLog(ex.getResponseBodyAsString()));
+                if (!canRetry) {
+                    log.error("Email delivery permanently failed recipient={} subject={} after {} attempts",
+                            maskEmail(recipient),
+                            subject,
+                            attempts,
+                            ex);
+                    return;
+                }
+                sleepBeforeRetry(baseDelayMs, attempt, recipient, subject);
+            } catch (RestClientException ex) {
                 boolean canRetry = attempt < attempts;
                 log.warn("Email delivery failed recipient={} subject={} attempt={}/{} retryable={} reason={}",
                         maskEmail(recipient),
@@ -248,17 +292,94 @@ public class EmailService {
                             ex);
                     return;
                 }
-
-                long sleepMs = Math.min(5000L, baseDelayMs * (1L << (attempt - 1)));
-                try {
-                    TimeUnit.MILLISECONDS.sleep(sleepMs);
-                } catch (InterruptedException interruptedException) {
-                    Thread.currentThread().interrupt();
-                    log.warn("Email retry interrupted for recipient={} subject={}", maskEmail(recipient), subject);
+                sleepBeforeRetry(baseDelayMs, attempt, recipient, subject);
+            } catch (IllegalStateException ex) {
+                boolean canRetry = attempt < attempts;
+                log.warn("Email delivery failed recipient={} subject={} attempt={}/{} retryable={} reason={}",
+                        maskEmail(recipient),
+                        subject,
+                        attempt,
+                        attempts,
+                        canRetry,
+                        ex.getMessage());
+                if (!canRetry) {
+                    log.error("Email delivery permanently failed recipient={} subject={} after {} attempts",
+                            maskEmail(recipient),
+                            subject,
+                            attempts,
+                            ex);
                     return;
                 }
+                sleepBeforeRetry(baseDelayMs, attempt, recipient, subject);
             }
         }
+    }
+
+    private String deliverWithResend(
+            String apiUrl,
+            String apiKey,
+            String sender,
+            String recipient,
+            String subject,
+            String htmlBody) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        Map<String, Object> payload = Map.of(
+                "from", sender,
+                "to", List.of(recipient),
+                "subject", subject,
+                "html", htmlBody);
+
+        ResponseEntity<String> response = emailRestTemplate.postForEntity(
+                apiUrl,
+                new HttpEntity<>(payload, headers),
+                String.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new IllegalStateException("Resend API returned non-success status: " + response.getStatusCode().value());
+        }
+
+        String messageId = extractResendMessageId(response.getBody());
+        if (messageId == null || messageId.isBlank()) {
+            throw new IllegalStateException("Resend API accepted request but did not return message id");
+        }
+        return messageId;
+    }
+
+    private String extractResendMessageId(String responseBody) {
+        if (responseBody == null || responseBody.isBlank()) {
+            return null;
+        }
+
+        try {
+            JsonNode root = objectMapper.readTree(responseBody);
+            JsonNode idNode = root.get("id");
+            return idNode == null ? null : idNode.asText();
+        } catch (Exception ex) {
+            log.warn("Failed to parse Resend response body. reason={} body={}", ex.getMessage(), truncateForLog(responseBody));
+            return null;
+        }
+    }
+
+    private void sleepBeforeRetry(long baseDelayMs, int attempt, String recipient, String subject) {
+        long sleepMs = Math.min(5000L, baseDelayMs * (1L << (attempt - 1)));
+        try {
+            TimeUnit.MILLISECONDS.sleep(sleepMs);
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            log.warn("Email retry interrupted for recipient={} subject={}", maskEmail(recipient), subject);
+        }
+    }
+
+    private String truncateForLog(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        int maxLength = 320;
+        return value.length() <= maxLength ? value : value.substring(0, maxLength) + "...";
     }
 
     private String sanitizeConfiguredValue(String value) {

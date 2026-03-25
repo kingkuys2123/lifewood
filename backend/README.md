@@ -7,7 +7,7 @@ Spring Boot REST API with MVC architecture, JWT authentication, role-based autho
 - Spring Boot 3.3.5
 - Spring Security + JWT (jjwt)
 - Spring Data JPA + MySQL
-- Spring Mail
+- Resend transactional email API (HTTPS)
 - Spring WebSocket (STOMP)
 - Springdoc OpenAPI
 - Lombok
@@ -57,8 +57,22 @@ Spring Boot REST API with MVC architecture, JWT authentication, role-based autho
 Set values in `src/main/resources/application.properties`:
 - MySQL datasource URL, username, password
 - JWT secret and token validity
-- Mail host/username/password
+- Mail sender and Resend API key/url (`APP_MAIL_FROM`, `APP_MAIL_RESEND_API_KEY`, `APP_MAIL_RESEND_API_URL`)
 - Upload directory
+
+### Production Email (Resend over HTTPS)
+Required environment variables for Railway:
+- `APP_MAIL_RESEND_API_KEY` (Resend API key)
+- `APP_MAIL_FROM` (verified sender, e.g. `noreply@yourdomain.com`)
+- `APP_MAIL_NOTIFICATION_TO` (internal notification inbox)
+- `APP_FRONTEND_RESET_PASSWORD_URL` (frontend reset route)
+
+Optional tuning:
+- `APP_MAIL_RESEND_API_URL` (default: `https://api.resend.com/emails`)
+- `APP_MAIL_RESEND_CONNECT_TIMEOUT_MS` (default: `6000`)
+- `APP_MAIL_RESEND_READ_TIMEOUT_MS` (default: `12000`)
+- `APP_MAIL_RETRY_MAX_ATTEMPTS` (default: `3`)
+- `APP_MAIL_RETRY_INITIAL_DELAY_MS` (default: `800`)
 
 ## Run
 ```bash

@@ -285,10 +285,11 @@ public class EmailService {
     }
 
     /**
-     * Deliver email via EmailJS HTTP API
-     * 
-     * Uses private key authentication by sending it as "user_id" in the request body.
-     * This is for server-side/backend authentication (unlike public key which is for frontend).
+     * Deliver email via EmailJS HTTP API.
+     *
+     * EmailJS expects:
+     * - user_id: Public Key
+     * - accessToken: Private Key (required when account is in strict mode)
      */
     private void deliverViaEmailJs(String toEmail, String toName, String subject, String bodyHtml) {
         if (!isEmailJsConfigured()) {
@@ -298,12 +299,15 @@ public class EmailService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Build request payload with private key authentication
-        // The "user_id" field must contain the private key for server-side auth
+        String effectivePublicKey = publicKey == null ? "" : publicKey.trim();
+        String effectivePrivateKey = privateKey == null ? "" : privateKey.trim();
+
+        // Build request payload with correct EmailJS key mapping.
         java.util.Map<String, Object> request = new java.util.HashMap<>();
         request.put("service_id", serviceId);
         request.put("template_id", templateId);
-        request.put("user_id", privateKey);  // CRITICAL: Private key for server-side authentication
+        request.put("user_id", effectivePublicKey);
+        request.put("accessToken", effectivePrivateKey);
         request.put("template_params", java.util.Map.of(
                 "to_email", toEmail,
                 "to_name", toName,

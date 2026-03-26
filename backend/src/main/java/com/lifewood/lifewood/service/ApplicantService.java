@@ -5,6 +5,10 @@ import com.lifewood.lifewood.dto.applicant.ApproveApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
 import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.UpdateApplicantDTO;
+import com.lifewood.lifewood.dto.dashboard.AdminPerformanceDTO;
+import com.lifewood.lifewood.dto.dashboard.ApplicantsOverviewDTO;
+import com.lifewood.lifewood.dto.dashboard.SubmissionPointDTO;
+import com.lifewood.lifewood.dto.dashboard.SubmissionSeriesDTO;
 import com.lifewood.lifewood.dto.notification.ApprovalNotificationDTO;
 import com.lifewood.lifewood.entity.ApplicantEntity;
 import com.lifewood.lifewood.entity.NotificationEntity;
@@ -23,12 +27,24 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.temporal.WeekFields;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -44,6 +60,9 @@ public class ApplicantService {
     private final EmailService emailService;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+
+    @Value("${app.dashboard.zone-id:UTC}")
+    private String dashboardZoneId;
 
     @Transactional
     public ApplicantResponseDTO createApplicant(AddApplicantDTO request) {
@@ -160,12 +179,14 @@ public class ApplicantService {
     }
 
     @Transactional
-    public ApplicantResponseDTO approveApplicant(ApproveApplicantDTO request) {
+    public ApplicantResponseDTO approveApplicant(ApproveApplicantDTO request, String reviewerUsername) {
         ApplicantEntity applicantEntity = getApplicantById(request.getApplicantId());
         ensurePending(applicantEntity);
 
         applicantEntity.setApproved(true);
         applicantEntity.setReviewed(true);
+        applicantEntity.setReviewedBy(reviewerUsername);
+        applicantEntity.setReviewedAt(LocalDateTime.now(resolveDashboardZone()));
         ApplicantEntity savedApplicantEntity = applicantRepository.save(applicantEntity);
 
         ApprovalNotificationDTO decisionNotification = ApprovalNotificationDTO.builder()
@@ -183,12 +204,14 @@ public class ApplicantService {
     }
 
     @Transactional
-    public ApplicantResponseDTO denyApplicant(DenyApplicantDTO request) {
+    public ApplicantResponseDTO denyApplicant(DenyApplicantDTO request, String reviewerUsername) {
         ApplicantEntity applicantEntity = getApplicantById(request.getApplicantId());
         ensurePending(applicantEntity);
 
         applicantEntity.setApproved(false);
         applicantEntity.setReviewed(true);
+        applicantEntity.setReviewedBy(reviewerUsername);
+        applicantEntity.setReviewedAt(LocalDateTime.now(resolveDashboardZone()));
         ApplicantEntity savedApplicantEntity = applicantRepository.save(applicantEntity);
 
         ApprovalNotificationDTO decisionNotification = ApprovalNotificationDTO.builder()
@@ -203,6 +226,77 @@ public class ApplicantService {
 
         log.info("Denied applicant id={} email={}", savedApplicantEntity.getId(), savedApplicantEntity.getEmail());
         return mapToResponse(savedApplicantEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public ApplicantsOverviewDTO getApplicantsOverview() {
+        ZoneId zoneId = resolveDashboardZone();
+        LocalDateTime now = LocalDateTime.now(zoneId);
+        LocalDateTime todayStart = now.toLocalDate().atStartOfDay();
+        LocalDateTime tomorrowStart = todayStart.plusDays(1);
+
+        return ApplicantsOverviewDTO.builder()
+                .todayNewApplicants(applicantRepository
+                        .countByDeletedAtIsNullAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(todayStart, tomorrowStart))
+                .pendingApplications(applicantRepository.countByDeletedAtIsNullAndReviewedFalse())
+                .approvedApplications(applicantRepository.countByDeletedAtIsNullAndReviewedTrueAndApprovedTrue())
+                .deniedApplications(applicantRepository.countByDeletedAtIsNullAndReviewedTrueAndApprovedFalse())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public SubmissionSeriesDTO getSubmissionRate(int days) {
+        int boundedDays = Math.max(2, Math.min(days, 90));
+        ZoneId zoneId = resolveDashboardZone();
+        LocalDate toDate = LocalDate.now(zoneId).plusDays(1);
+        LocalDate fromDate = toDate.minusDays(boundedDays);
+
+        return buildSeries(fromDate, toDate, "day");
+    }
+
+    @Transactional(readOnly = true)
+    public SubmissionSeriesDTO getMonthlySubmissions(LocalDate from, LocalDate to, String month, String granularity) {
+        ZoneId zoneId = resolveDashboardZone();
+
+        LocalDate resolvedFrom;
+        LocalDate resolvedToExclusive;
+        if (month != null && !month.isBlank()) {
+            YearMonth yearMonth = YearMonth.parse(month);
+            resolvedFrom = yearMonth.atDay(1);
+            resolvedToExclusive = yearMonth.plusMonths(1).atDay(1);
+        } else {
+            LocalDate defaultTo = LocalDate.now(zoneId).plusDays(1);
+            LocalDate defaultFrom = defaultTo.minusDays(30);
+            resolvedFrom = from == null ? defaultFrom : from;
+            resolvedToExclusive = to == null ? defaultTo : to.plusDays(1);
+        }
+
+        if (!resolvedFrom.isBefore(resolvedToExclusive)) {
+            throw new BadRequestException("Invalid date range. 'from' must be before 'to'.");
+        }
+
+        String resolvedGranularity = normalizeGranularity(granularity);
+        return buildSeries(resolvedFrom, resolvedToExclusive, resolvedGranularity);
+    }
+
+    @Transactional(readOnly = true)
+    public AdminPerformanceDTO getAdminPerformance(String username) {
+        String reviewer = username == null ? "" : username.trim();
+        if (reviewer.isEmpty()) {
+            throw new BadRequestException("Reviewer username is required");
+        }
+
+        long approved = applicantRepository
+                .countByDeletedAtIsNullAndReviewedTrueAndReviewedByIgnoreCaseAndApprovedTrue(reviewer);
+        long denied = applicantRepository
+                .countByDeletedAtIsNullAndReviewedTrueAndReviewedByIgnoreCaseAndApprovedFalse(reviewer);
+
+        return AdminPerformanceDTO.builder()
+                .adminUsername(reviewer)
+                .approvedCount(approved)
+                .deniedCount(denied)
+                .totalReviewed(approved + denied)
+                .build();
     }
 
     private ApplicantEntity getApplicantById(Long id) {
@@ -295,5 +389,132 @@ public class ApplicantService {
     private String normalizeDecisionMessage(String customMessage) {
         String message = customMessage == null ? "" : customMessage.trim();
         return message.isEmpty() ? "" : "Message: " + message;
+    }
+
+    private ZoneId resolveDashboardZone() {
+        try {
+            return ZoneId.of(dashboardZoneId);
+        } catch (Exception ex) {
+            return ZoneId.of("UTC");
+        }
+    }
+
+    private String normalizeGranularity(String granularity) {
+        if (granularity == null || granularity.isBlank()) {
+            return "day";
+        }
+
+        String normalized = granularity.trim().toLowerCase(Locale.ROOT);
+        if (!List.of("day", "week", "month").contains(normalized)) {
+            throw new BadRequestException("Unsupported granularity. Use day, week, or month.");
+        }
+        return normalized;
+    }
+
+    private SubmissionSeriesDTO buildSeries(LocalDate from, LocalDate toExclusive, String granularity) {
+        LocalDateTime fromDateTime = from.atStartOfDay();
+        LocalDateTime toDateTime = toExclusive.atStartOfDay();
+
+        Map<LocalDate, Long> dailyCounts = new HashMap<>();
+        for (Object[] row : applicantRepository.countDailySubmissionsBetween(fromDateTime, toDateTime)) {
+            Object dateRaw = row[0];
+            LocalDate date = dateRaw instanceof LocalDate
+                    ? (LocalDate) dateRaw
+                    : ((java.sql.Date) dateRaw).toLocalDate();
+            Number countRaw = (Number) row[1];
+            long count = countRaw == null ? 0L : countRaw.longValue();
+            dailyCounts.put(date, count);
+        }
+
+        List<SubmissionPointDTO> points = switch (granularity) {
+            case "week" -> buildWeeklyPoints(from, toExclusive, dailyCounts);
+            case "month" -> buildMonthlyPoints(from, toExclusive, dailyCounts);
+            default -> buildDailyPoints(from, toExclusive, dailyCounts);
+        };
+
+        long total = points.stream().mapToLong(SubmissionPointDTO::submissions).sum();
+
+        return SubmissionSeriesDTO.builder()
+                .from(from.toString())
+                .to(toExclusive.minusDays(1).toString())
+                .totalSubmissions(total)
+                .points(points)
+                .build();
+    }
+
+    private List<SubmissionPointDTO> buildDailyPoints(LocalDate from, LocalDate toExclusive, Map<LocalDate, Long> dailyCounts) {
+        List<SubmissionPointDTO> points = new ArrayList<>();
+        long previous = 0;
+        boolean hasPrevious = false;
+
+        for (LocalDate cursor = from; cursor.isBefore(toExclusive); cursor = cursor.plusDays(1)) {
+            long count = dailyCounts.getOrDefault(cursor, 0L);
+            points.add(SubmissionPointDTO.builder()
+                    .label(cursor.toString())
+                    .submissions(count)
+                    .changePercent(calculateChangePercent(previous, count, hasPrevious))
+                    .build());
+            previous = count;
+            hasPrevious = true;
+        }
+
+        return points;
+    }
+
+    private List<SubmissionPointDTO> buildWeeklyPoints(LocalDate from, LocalDate toExclusive, Map<LocalDate, Long> dailyCounts) {
+        WeekFields weekFields = WeekFields.ISO;
+        Map<String, Long> grouped = new HashMap<>();
+
+        for (LocalDate cursor = from; cursor.isBefore(toExclusive); cursor = cursor.plusDays(1)) {
+            int weekNumber = cursor.get(weekFields.weekOfWeekBasedYear());
+            int weekYear = cursor.get(weekFields.weekBasedYear());
+            String key = weekYear + "-W" + String.format(Locale.ROOT, "%02d", weekNumber);
+            grouped.merge(key, dailyCounts.getOrDefault(cursor, 0L), Long::sum);
+        }
+
+        return buildFromGroupedMap(grouped);
+    }
+
+    private List<SubmissionPointDTO> buildMonthlyPoints(LocalDate from, LocalDate toExclusive, Map<LocalDate, Long> dailyCounts) {
+        Map<String, Long> grouped = new HashMap<>();
+
+        for (LocalDate cursor = from; cursor.isBefore(toExclusive); cursor = cursor.plusDays(1)) {
+            String key = YearMonth.from(cursor).toString();
+            grouped.merge(key, dailyCounts.getOrDefault(cursor, 0L), Long::sum);
+        }
+
+        return buildFromGroupedMap(grouped);
+    }
+
+    private List<SubmissionPointDTO> buildFromGroupedMap(Map<String, Long> grouped) {
+        List<Map.Entry<String, Long>> entries = new ArrayList<>(grouped.entrySet());
+        entries.sort(Comparator.comparing(Map.Entry::getKey));
+
+        List<SubmissionPointDTO> points = new ArrayList<>();
+        long previous = 0;
+        boolean hasPrevious = false;
+        for (Map.Entry<String, Long> entry : entries) {
+            long count = entry.getValue();
+            points.add(SubmissionPointDTO.builder()
+                    .label(entry.getKey())
+                    .submissions(count)
+                    .changePercent(calculateChangePercent(previous, count, hasPrevious))
+                    .build());
+            previous = count;
+            hasPrevious = true;
+        }
+        return points;
+    }
+
+    private Double calculateChangePercent(long previousValue, long currentValue, boolean hasPrevious) {
+        if (!hasPrevious) {
+            return null;
+        }
+        if (previousValue == 0) {
+            return currentValue == 0 ? 0.0 : 100.0;
+        }
+
+        double raw = ((double) (currentValue - previousValue) / previousValue) * 100;
+        return BigDecimal.valueOf(raw).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 }

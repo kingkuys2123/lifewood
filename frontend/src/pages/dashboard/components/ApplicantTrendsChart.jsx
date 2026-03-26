@@ -1,7 +1,7 @@
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -11,7 +11,26 @@ import { motion } from 'framer-motion';
 
 const MotionSection = motion.section;
 
-export default function ApplicantTrendsChart({ data }) {
+function renderTooltipContent({ active, payload, label }) {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const entry = payload[0]?.payload;
+  const change = entry?.changePercent;
+  const changeLabel =
+    change == null ? 'No prior point' : `${change > 0 ? '+' : ''}${Number(change).toFixed(2)}% vs previous`;
+
+  return (
+    <div className="dashboard-chart-tooltip">
+      <p>{label}</p>
+      <strong>{entry?.submissions || 0} submissions</strong>
+      <small>{changeLabel}</small>
+    </div>
+  );
+}
+
+export default function ApplicantTrendsChart({ data, title = 'Submission Rate' }) {
   return (
     <MotionSection
       className="dashboard-panel chart-panel"
@@ -20,21 +39,17 @@ export default function ApplicantTrendsChart({ data }) {
       transition={{ duration: 0.24 }}
     >
       <header>
-        <h3>Applicant Trends by Date</h3>
+        <h3>{title}</h3>
       </header>
       <div className="dashboard-chart-wrap">
         <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={data}>
+          <AreaChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e8e8ed" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip
-              contentStyle={{ borderRadius: 12, border: '1px solid rgba(0, 0, 0, 0.12)' }}
-              cursor={{ stroke: '#133020', strokeOpacity: 0.2 }}
-            />
-            <Line type="monotone" dataKey="applicants" stroke="#133020" strokeWidth={3} />
-            <Line type="monotone" dataKey="approved" stroke="#f5a623" strokeWidth={3} />
-          </LineChart>
+            <XAxis dataKey="label" />
+            <YAxis allowDecimals={false} />
+            <Tooltip content={renderTooltipContent} cursor={{ stroke: '#133020', strokeOpacity: 0.2 }} />
+            <Area type="monotone" dataKey="submissions" stroke="#133020" fill="rgba(19, 48, 32, 0.15)" strokeWidth={3} />
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </MotionSection>

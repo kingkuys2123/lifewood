@@ -23,7 +23,9 @@ import lombok.Setter;
 @Table(name = "applicants", indexes = {
         @Index(name = "idx_applicant_deleted_reviewed", columnList = "deleted_at, reviewed"),
         @Index(name = "idx_applicant_deleted_approved", columnList = "deleted_at, approved"),
-        @Index(name = "idx_applicant_email_deleted", columnList = "email, deleted_at")
+        @Index(name = "idx_applicant_email_deleted", columnList = "email, deleted_at"),
+        @Index(name = "idx_applicant_deleted_created", columnList = "deleted_at, created_at"),
+        @Index(name = "idx_applicant_deleted_reviewer", columnList = "deleted_at, reviewed_by, reviewed, approved")
 })
 public class ApplicantEntity extends BaseAuditEntity {
 
@@ -62,6 +64,12 @@ public class ApplicantEntity extends BaseAuditEntity {
     @Builder.Default
     @Column(name = "reviewed", nullable = false)
     private boolean reviewed = false;
+
+    @Column(name = "reviewed_by")
+    private String reviewedBy;
+
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

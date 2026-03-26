@@ -6,6 +6,9 @@ import com.lifewood.lifewood.dto.applicant.ApproveApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.ApplicantResponseDTO;
 import com.lifewood.lifewood.dto.applicant.DenyApplicantDTO;
 import com.lifewood.lifewood.dto.applicant.UpdateApplicantDTO;
+import com.lifewood.lifewood.dto.dashboard.AdminPerformanceDTO;
+import com.lifewood.lifewood.dto.dashboard.ApplicantsOverviewDTO;
+import com.lifewood.lifewood.dto.dashboard.SubmissionSeriesDTO;
 import com.lifewood.lifewood.service.ApplicantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -27,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -109,13 +115,52 @@ public class ApplicantController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/approve")
-    public ResponseEntity<ApiResponse<ApplicantResponseDTO>> approveApplicant(@Valid @RequestBody ApproveApplicantDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("Applicant approved successfully", applicantService.approveApplicant(request)));
+    public ResponseEntity<ApiResponse<ApplicantResponseDTO>> approveApplicant(
+            @Valid @RequestBody ApproveApplicantDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success("Applicant approved successfully",
+                applicantService.approveApplicant(request, authentication.getName())));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/deny")
-    public ResponseEntity<ApiResponse<ApplicantResponseDTO>> denyApplicant(@Valid @RequestBody DenyApplicantDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("Applicant denied successfully", applicantService.denyApplicant(request)));
+    public ResponseEntity<ApiResponse<ApplicantResponseDTO>> denyApplicant(
+            @Valid @RequestBody DenyApplicantDTO request,
+            Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success("Applicant denied successfully",
+                applicantService.denyApplicant(request, authentication.getName())));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/dashboard/overview")
+    public ResponseEntity<ApiResponse<ApplicantsOverviewDTO>> getDashboardOverview() {
+        return ResponseEntity.ok(ApiResponse.success("Dashboard overview fetched successfully",
+                applicantService.getApplicantsOverview()));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/dashboard/submission-rate")
+    public ResponseEntity<ApiResponse<SubmissionSeriesDTO>> getSubmissionRate(
+            @RequestParam(value = "days", defaultValue = "14") int days) {
+        return ResponseEntity.ok(ApiResponse.success("Submission rate fetched successfully",
+                applicantService.getSubmissionRate(days)));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/dashboard/submissions")
+    public ResponseEntity<ApiResponse<SubmissionSeriesDTO>> getMonthlySubmissions(
+            @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(value = "to", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(value = "month", required = false) String month,
+            @RequestParam(value = "granularity", defaultValue = "day") String granularity) {
+        return ResponseEntity.ok(ApiResponse.success("Monthly submissions fetched successfully",
+                applicantService.getMonthlySubmissions(from, to, month, granularity)));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/dashboard/admin-performance")
+    public ResponseEntity<ApiResponse<AdminPerformanceDTO>> getAdminPerformance(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success("Admin performance fetched successfully",
+                applicantService.getAdminPerformance(authentication.getName())));
     }
 }

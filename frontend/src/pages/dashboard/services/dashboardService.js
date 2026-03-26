@@ -1,31 +1,91 @@
-import { fetchApplicants } from '../../../services/applicants/applicantsService';
-import { fetchUsers } from '../../../services/users/usersService';
+import httpClient from '../../../services/api/httpClient';
+import { unwrapApiResponse } from '../../../services/api/apiResponse';
 
-const FALLBACK_TRENDS = [
-  { date: 'Mon', applicants: 0, approved: 0 },
-  { date: 'Tue', applicants: 0, approved: 0 },
-  { date: 'Wed', applicants: 0, approved: 0 },
-  { date: 'Thu', applicants: 0, approved: 0 },
-  { date: 'Fri', applicants: 0, approved: 0 },
-];
+function normalizeSeries(payload) {
+  const points = payload?.points || [];
+  return points.map((point) => ({
+    label: point.label,
+    submissions: point.submissions,
+    changePercent: point.changePercent,
+  }));
+}
 
-export async function getDashboardData() {
-  const [usersPage, applicantsPage, reviewedPage] = await Promise.all([
-    fetchUsers({ pageIndex: 0, pageSize: 1 }),
-    fetchApplicants({ reviewed: false, pageIndex: 0, pageSize: 50 }),
-    fetchApplicants({ reviewed: true, approved: true, pageIndex: 0, pageSize: 50 }),
+export async function fetchApplicantsOverview() {
+  const response = await httpClient.get('/applicant/dashboard/overview');
+  return unwrapApiResponse(response);
+}
+
+export async function fetchSubmissionRate(days = 14) {
+  const response = await httpClient.get('/applicant/dashboard/submission-rate', {
+    params: { days },
+  });
+  return unwrapApiResponse(response);
+}
+
+export async function fetchMonthlySubmissions({ from, to, month, granularity = 'day' } = {}) {
+  const response = await httpClient.get('/applicant/dashboard/submissions', {
+    params: {
+      from: from || undefined,
+      to: to || undefined,
+      month: month || undefined,
+      granularity,
+    },
+  });
+  return unwrapApiResponse(response);
+}
+
+export async function fetchAdminPerformance() {
+  const response = await httpClient.get('/applicant/dashboard/admin-performance');
+  return unwrapApiResponse(response);
+}
+
+export async function getDashboardData(filters) {
+  const [overview, submissionRate, monthlySubmissions, adminPerformance] = await Promise.all([
+    fetchApplicantsOverview(),
+    fetchSubmissionRate(14),
+    fetchMonthlySubmissions(filters),
+    fetchAdminPerformance(),
   ]);
-
-  const totalUsers = usersPage?.totalElements || 0;
-  const pendingApplicants = applicantsPage?.totalElements || 0;
-  const approvedApplicants = reviewedPage?.totalElements || 0;
 
   return {
     metrics: [
-      { id: 'total-users', label: 'Total Users', value: String(totalUsers), delta: 'Live' },
-      { id: 'active-applicants', label: 'Pending Applicants', value: String(pendingApplicants), delta: 'Live' },
-      { id: 'approved-this-month', label: 'Approved Applicants', value: String(approvedApplicants), delta: 'Live' },
+      {
+        id: 'today-new',
+        label: "Today's New Applicants",
+        value: String(overview?.todayNewApplicants || 0),
+        delta: 'Today',
+      },
+      {
+        id: 'pending',
+        label: 'Pending Applications',
+        value: String(overview?.pendingApplications || 0),
+        delta: 'Waiting review',
+      },
+      {
+        id: 'approved',
+        label: 'Approved Applications',
+        value: String(overview?.approvedApplications || 0),
+        delta: 'Reviewed',
+      },
+      {
+        id: 'denied',
+        label: 'Denied Applications',
+        value: String(overview?.deniedApplications || 0),
+        delta: 'Reviewed',
+      },
     ],
-    applicantTrends: FALLBACK_TRENDS,
+    submissionRateSeries: normalizeSeries(submissionRate),
+    monthlySubmissionsSeries: normalizeSeries(monthlySubmissions),
+    monthlySubmissionsMeta: {
+      from: monthlySubmissions?.from,
+      to: monthlySubmissions?.to,
+      totalSubmissions: monthlySubmissions?.totalSubmissions || 0,
+    },
+    adminPerformance: {
+      adminUsername: adminPerformance?.adminUsername,
+      approvedCount: adminPerformance?.approvedCount || 0,
+      deniedCount: adminPerformance?.deniedCount || 0,
+      totalReviewed: adminPerformance?.totalReviewed || 0,
+    },
   };
 }

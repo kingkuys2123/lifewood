@@ -79,7 +79,7 @@ class ApplicantServiceTest {
         when(userRepository.findByEmail("jane@example.com")).thenReturn(Optional.empty());
         when(userRepository.findAllByRole(any())).thenReturn(List.of());
 
-        ApplicantResponseDTO response = applicantService.approveApplicant(request);
+        ApplicantResponseDTO response = applicantService.approveApplicant(request, "admin.ops");
 
         assertTrue(response.isApproved());
         assertTrue(response.isReviewed());
@@ -88,6 +88,7 @@ class ApplicantServiceTest {
         verify(applicantRepository, times(1)).save(applicantCaptor.capture());
         assertTrue(applicantCaptor.getValue().isApproved());
         assertTrue(applicantCaptor.getValue().isReviewed());
+        assertEquals("admin.ops", applicantCaptor.getValue().getReviewedBy());
 
         ArgumentCaptor<ApprovalNotificationDTO> notificationCaptor = ArgumentCaptor.forClass(ApprovalNotificationDTO.class);
         verify(emailService, times(1)).sendDecisionNotification(notificationCaptor.capture());
@@ -106,7 +107,7 @@ class ApplicantServiceTest {
         when(userRepository.findByEmail("jane@example.com")).thenReturn(Optional.empty());
         when(userRepository.findAllByRole(any())).thenReturn(List.of());
 
-        ApplicantResponseDTO response = applicantService.denyApplicant(request);
+        ApplicantResponseDTO response = applicantService.denyApplicant(request, "admin.ops");
 
         assertFalse(response.isApproved());
         assertTrue(response.isReviewed());
@@ -126,7 +127,8 @@ class ApplicantServiceTest {
         pendingApplicant.setApproved(true);
         when(applicantRepository.findById(10L)).thenReturn(Optional.of(pendingApplicant));
 
-        BadRequestException exception = assertThrows(BadRequestException.class, () -> applicantService.approveApplicant(request));
+        BadRequestException exception = assertThrows(BadRequestException.class,
+                () -> applicantService.approveApplicant(request, "admin.ops"));
 
         assertEquals("Applicant has already been processed", exception.getMessage());
     }

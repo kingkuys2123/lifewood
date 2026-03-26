@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from './useAuth';
 import { login as loginRequest, logout as logoutRequest, refresh as refreshRequest } from '../../services/auth/authService';
 import { clearCachedUserId, hasTokenExpired, parseAuthUser } from '../../services/auth/authSession';
+import { clearAdminGateAccess } from '../../services/auth/adminGateStorage';
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '../../services/auth/tokenStorage';
 import { setUnauthorizedHandler } from '../../services/api/httpClient';
 
@@ -104,6 +105,7 @@ export function AuthProvider({ children }) {
     } finally {
       clearTokens();
       clearCachedUserId();
+      clearAdminGateAccess();
       setUser(null);
       navigate('/login', { replace: true });
     }

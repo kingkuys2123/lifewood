@@ -1,6 +1,8 @@
 package com.lifewood.lifewood.controller;
 
 import com.lifewood.lifewood.dto.ApiResponse;
+import com.lifewood.lifewood.dto.auth.AdminGateUnlockRequestDTO;
+import com.lifewood.lifewood.dto.auth.AdminGateUnlockResponseDTO;
 import com.lifewood.lifewood.dto.auth.AuthResponseDTO;
 import com.lifewood.lifewood.dto.auth.ForgotPasswordRequestDTO;
 import com.lifewood.lifewood.dto.auth.LoginRequestDTO;
@@ -8,8 +10,10 @@ import com.lifewood.lifewood.dto.auth.RefreshTokenRequestDTO;
 import com.lifewood.lifewood.dto.auth.ResetPasswordRequestDTO;
 import com.lifewood.lifewood.service.AuthService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +27,22 @@ public class AuthController {
 
     private final AuthService authService;
 
+    @PostMapping("/admin-gate/unlock")
+    public ResponseEntity<ApiResponse<AdminGateUnlockResponseDTO>> unlockAdminGate(
+            @Valid @RequestBody AdminGateUnlockRequestDTO request,
+            HttpServletRequest httpServletRequest) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Admin gate unlocked",
+                authService.unlockAdminGate(request, getClientIp(httpServletRequest))));
+    }
+
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
-        return ResponseEntity.ok(ApiResponse.success("Login successful", authService.login(request)));
+    public ResponseEntity<ApiResponse<AuthResponseDTO>> login(
+            @Valid @RequestBody LoginRequestDTO request,
+            @RequestHeader(value = "X-Admin-Gate-Token", required = false) String adminGateToken,
+            HttpServletRequest httpServletRequest) {
+        return ResponseEntity.ok(ApiResponse.success("Login successful",
+                authService.login(request, adminGateToken, getClientIp(httpServletRequest))));
     }
 
     @PostMapping("/refresh")
@@ -56,5 +73,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
         authService.resetPassword(request);
         return ResponseEntity.ok(ApiResponse.success("Password reset successful", null));
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) {
+            return forwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

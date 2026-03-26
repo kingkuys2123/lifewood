@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { hasAdminGateAccess } from '../../services/auth/adminGateStorage';
 import { useAuth } from '../providers/useAuth';
 
 export default function ProtectedRoute({ children, allowedRoles = [] }) {
@@ -10,6 +11,11 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   if (!isAuthenticated) {
+    const hasGateAccess = hasAdminGateAccess();
+    if (!hasGateAccess) {
+      return <Navigate to="/" replace />;
+    }
+
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 

@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lifewood.lifewood.dto.auth.AdminGateUnlockRequestDTO;
+import com.lifewood.lifewood.dto.auth.AdminGateUnlockResponseDTO;
 import com.lifewood.lifewood.dto.auth.AuthResponseDTO;
 import com.lifewood.lifewood.dto.auth.RefreshTokenRequestDTO;
 import com.lifewood.lifewood.service.AuthService;
@@ -32,6 +34,28 @@ class AuthControllerTest {
 
     @MockBean
     private AuthService authService;
+
+    @Test
+    void unlockAdminGate_returnsTokenPayload() throws Exception {
+        AdminGateUnlockRequestDTO request = new AdminGateUnlockRequestDTO();
+        request.setKeyword("kingkuys2123");
+
+        AdminGateUnlockResponseDTO response = AdminGateUnlockResponseDTO.builder()
+                .gateToken("gate-token")
+                .tokenType("Bearer")
+                .expiresInMs(900000L)
+                .build();
+
+        when(authService.unlockAdminGate(any(AdminGateUnlockRequestDTO.class), any())).thenReturn(response);
+
+        mockMvc.perform(post("/auth/admin-gate/unlock")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(true))
+                .andExpect(jsonPath("$.data.gateToken").value("gate-token"))
+                .andExpect(jsonPath("$.data.tokenType").value("Bearer"));
+    }
 
     @Test
     void refresh_returnsRotatedTokens() throws Exception {

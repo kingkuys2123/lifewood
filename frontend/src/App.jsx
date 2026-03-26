@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import AdminGateRoute from './app/guards/AdminGateRoute';
 import ProtectedRoute from './app/guards/ProtectedRoute';
 import PortalLayout from './app/layouts/PortalLayout';
 import PublicSiteLayout from './app/layouts/PublicSiteLayout';
@@ -12,7 +13,6 @@ const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('./pages/dashboard/DashboardPage'));
-const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const Home = lazy(() => import('./pages/landing-page/home/Home'));
 const ProfileEditPage = lazy(() => import('./pages/profile/ProfileEditPage'));
 const CookiePolicy = lazy(() => import('./pages/policies/CookiePolicy'));
@@ -53,8 +53,22 @@ export default function App() {
       <AuthProvider>
         <Suspense fallback={<RouteFallback />}>
           <Routes>
-            <Route path="/admin" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/admin"
+              element={(
+                <AdminGateRoute>
+                  <LoginPage />
+                </AdminGateRoute>
+              )}
+            />
+            <Route
+              path="/login"
+              element={(
+                <AdminGateRoute>
+                  <LoginPage />
+                </AdminGateRoute>
+              )}
+            />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
 

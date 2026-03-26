@@ -1,8 +1,18 @@
 import httpClient from '../api/httpClient';
 import { unwrapApiResponse } from '../api/apiResponse';
+import { getAdminGateToken } from './adminGateStorage';
 
 export async function login(payload, options = {}) {
+  const gateToken = getAdminGateToken();
   const response = await httpClient.post('/auth/login', payload, {
+    headers: gateToken ? { 'X-Admin-Gate-Token': gateToken } : undefined,
+    suppressGlobalErrorToast: options.suppressGlobalErrorToast,
+  });
+  return unwrapApiResponse(response);
+}
+
+export async function unlockAdminGate(payload, options = {}) {
+  const response = await httpClient.post('/auth/admin-gate/unlock', payload, {
     suppressGlobalErrorToast: options.suppressGlobalErrorToast,
   });
   return unwrapApiResponse(response);

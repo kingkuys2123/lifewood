@@ -1,6 +1,8 @@
 package com.lifewood.lifewood.service;
 
 import com.lifewood.lifewood.dto.auth.AuthResponseDTO;
+import com.lifewood.lifewood.dto.auth.AdminGateUnlockRequestDTO;
+import com.lifewood.lifewood.dto.auth.AdminGateUnlockResponseDTO;
 import com.lifewood.lifewood.dto.auth.ForgotPasswordRequestDTO;
 import com.lifewood.lifewood.dto.auth.LoginRequestDTO;
 import com.lifewood.lifewood.dto.auth.RefreshTokenRequestDTO;
@@ -44,6 +46,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
     private final JwtUtil jwtUtil;
+    private final AdminGateService adminGateService;
 
     @Value("${app.auth.reset-token-validity-minutes:30}")
     private long resetTokenValidityMinutes;
@@ -52,12 +55,20 @@ public class AuthService {
     private String resetPasswordUrl;
 
     @Transactional
-    public AuthResponseDTO login(LoginRequestDTO request) {
+    public AdminGateUnlockResponseDTO unlockAdminGate(AdminGateUnlockRequestDTO request, String clientIp) {
+        return adminGateService.unlock(request.getKeyword(), clientIp);
+    }
+
+    @Transactional
+    public AuthResponseDTO login(LoginRequestDTO request, String adminGateToken, String source) {
+        adminGateService.assertValidGateToken(adminGateToken, source);
+
         String identifier = normalize(request.getUsername());
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(identifier, request.getPassword()));
         } catch (AuthenticationException ex) {
+            log.warn("Failed login attempt source={} identifier={}", source, identifier);
             throw new UnauthorizedException("Wrong Username/Password");
         }
 
@@ -68,7 +79,7 @@ public class AuthService {
         String accessToken = jwtUtil.generateAccessToken(userEntity.getUsername(), userEntity.getRole().name());
         String refreshToken = jwtUtil.generateRefreshToken(userEntity.getUsername(), userEntity.getRole().name());
         rotatePersistedRefreshToken(userEntity, null, refreshToken);
-        log.info("UserEntity authenticated: {}", userEntity.getUsername());
+        log.info("UserEntity authenticated: {} source={}", userEntity.getUsername(), source);
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)

@@ -59,6 +59,9 @@ class AuthServiceTest {
     @Mock
     private JwtUtil jwtUtil;
 
+    @Mock
+    private AdminGateService adminGateService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -95,7 +98,7 @@ class AuthServiceTest {
         when(jwtUtil.getRefreshTokenValidityMs()).thenReturn(604800000L);
         when(refreshTokenRepository.findByUser_IdAndRevokedAtIsNull(10L)).thenReturn(List.of());
 
-        var response = authService.login(request);
+        var response = authService.login(request, "gate-token", "203.0.113.10");
 
         assertEquals("access-token", response.getAccessToken());
         assertEquals("refresh-token", response.getRefreshToken());
@@ -141,7 +144,8 @@ class AuthServiceTest {
         when(authenticationManager.authenticate(any()))
                 .thenThrow(new BadCredentialsException("Bad credentials"));
 
-        var ex = assertThrows(UnauthorizedException.class, () -> authService.login(request));
+        var ex = assertThrows(UnauthorizedException.class,
+                () -> authService.login(request, "gate-token", "203.0.113.10"));
         assertEquals("Wrong Username/Password", ex.getMessage());
     }
 

@@ -31,7 +31,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final RateLimitConfig rateLimitConfig;
     private final ObjectMapper objectMapper;
 
-    @Value("${app.auth.rate-limit.endpoints:/auth/login,/auth/forgot-password,/auth/reset-password,/auth/reset-password/validate}")
+    @Value("${app.auth.rate-limit.endpoints:/auth/login,/auth/admin-gate/unlock,/auth/forgot-password,/auth/reset-password,/auth/reset-password/validate}")
     private String rateLimitedEndpoints;
 
     @Override

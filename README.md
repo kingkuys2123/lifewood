@@ -77,6 +77,8 @@
       <img src="https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white" />
       <img src="https://img.shields.io/badge/Recharts-22B5BF?style=for-the-badge" />
       <img src="https://img.shields.io/badge/EmailJS-FF5A00?style=for-the-badge&logo=maildotru&logoColor=white" />
+      <img src="https://img.shields.io/badge/StompJS-000000?style=for-the-badge" />
+      <img src="https://img.shields.io/badge/SockJS-000000?style=for-the-badge" />
     </td>
   </tr>
   <tr>

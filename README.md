@@ -77,8 +77,6 @@
       <img src="https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white" />
       <img src="https://img.shields.io/badge/Recharts-22B5BF?style=for-the-badge" />
       <img src="https://img.shields.io/badge/EmailJS-FF5A00?style=for-the-badge&logo=maildotru&logoColor=white" />
-      <img src="https://img.shields.io/badge/StompJS-000000?style=for-the-badge" />
-      <img src="https://img.shields.io/badge/SockJS-000000?style=for-the-badge" />
     </td>
   </tr>
   <tr>
@@ -86,7 +84,6 @@
     <td>
       <img src="https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" />
       <img src="https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" />
-      <img src="https://img.shields.io/badge/Google_Guava-4285F4?style=for-the-badge&logo=google&logoColor=white" />
     </td>
   </tr>
   <tr>
@@ -114,7 +111,7 @@
       <img src="https://img.shields.io/badge/IntelliJ_IDEA-000000?style=for-the-badge&logo=intellijidea&logoColor=white" />
     </td>
   </tr>
-    <tr>
+  <tr>
     <td><strong>AI</strong></td>
     <td>
       <img src="https://img.shields.io/badge/GitHub_Copilot-000000?style=for-the-badge&logo=githubcopilot&logoColor=white" />
@@ -122,7 +119,7 @@
   </tr>
 </table>
 
-<br>
+<br/>
 
 ## Team
 
